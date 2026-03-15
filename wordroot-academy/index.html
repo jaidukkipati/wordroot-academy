@@ -4,41 +4,56 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>WordRoot Academy — Etymology Workbook</title>
-<meta name="description" content="AI-powered etymology workbook for advanced vocabulary learning. Master Latin, Greek, and Anglo-Saxon root words with a 4-step learning system."/>
+<meta name="description" content="Search any English word to instantly discover its root words, etymology, pronunciation, synonyms, antonyms, idioms and phrases."/>
 <meta name="author" content="WordRoot Academy"/>
-<meta property="og:title" content="WordRoot Academy"/>
-<meta property="og:description" content="Master etymology and vocabulary through root words, combinations, literary context and revision quizzes."/>
+<meta property="og:title" content="WordRoot Academy v1.1.0"/>
+<meta property="og:description" content="Master etymology through root words, combinations, literary context and revision quizzes."/>
 <meta property="og:type" content="website"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ═══════════════════════════════════════════════════
-   WordRoot Academy v1.0.0
-   Build: 2025-01-01
-   Storage: localStorage (cross-device via Firebase optional)
+   WordRoot Academy v1.1.0
+   Build: 2025-03-15
+   Storage: localStorage (wra: prefix)
+   New in v1.1.0:
+     - Word Search panel with sentence guard
+     - Root identification from any English word
+     - Etymology origin story
+     - Pronunciation with speaker icon
+     - Dialect/accent/country selector
+     - Synonyms & antonyms
+     - Idioms & phrases
+     - Contextual images (Unsplash)
+     - Cross-browser compatible (Chrome/Firefox/Safari/Edge)
 ═══════════════════════════════════════════════════ */
-:root {
+:root{
   --sun:#FFD93D;--sun-d:#F4A300;--coral:#FF6B6B;--coral-d:#E63946;
   --mint:#06D6A0;--mint-d:#05A77D;--sky:#4CC9F0;--sky-d:#0096C7;
-  --violet:#9B5DE5;--violet-d:#6A0DAD;--rose:#FF9EBB;
+  --violet:#9B5DE5;--violet-d:#6A0DAD;
   --ink:#1A1A2E;--ink2:#2D2D4E;--ink3:#4A4A6A;
   --paper:#FFFDF5;--paper2:#FFF8EC;--white:#FFFFFF;
-  --r:18px;--rs:10px;--sh:0 8px 32px rgba(26,26,46,.12);--shl:0 16px 48px rgba(26,26,46,.18);
+  --r:18px;--rs:10px;
+  --sh:0 8px 32px rgba(26,26,46,.12);
+  --shl:0 16px 48px rgba(26,26,46,.18);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;z-index:0;background:
   radial-gradient(ellipse 700px 500px at 10% 20%,rgba(255,217,61,.10) 0%,transparent 60%),
   radial-gradient(ellipse 600px 400px at 90% 80%,rgba(155,93,229,.08) 0%,transparent 60%),
   radial-gradient(ellipse 500px 400px at 50% 50%,rgba(6,214,160,.06) 0%,transparent 70%);
   pointer-events:none}
+
+/* ── SCREENS ── */
 .screen{position:relative;z-index:1;display:none;min-height:100vh}
 .screen.active{display:flex}
+
 /* ── AUTH ── */
 #authScreen{align-items:center;justify-content:center;padding:20px}
 .auth-box{width:100%;max-width:440px;background:var(--white);border-radius:24px;box-shadow:var(--shl);overflow:hidden}
-.auth-hero{background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);padding:36px 36px 28px;text-align:center;position:relative;overflow:hidden}
+.auth-hero{background:linear-gradient(135deg,var(--ink),var(--ink2));padding:36px 36px 28px;text-align:center;position:relative;overflow:hidden}
 .auth-hero::before{content:'✦';position:absolute;font-size:12rem;color:rgba(255,217,61,.05);top:-30px;right:-20px;line-height:1;pointer-events:none}
-.auth-logo{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);letter-spacing:-0.5px;margin-bottom:4px}
+.auth-logo{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);letter-spacing:-.5px;margin-bottom:4px}
 .auth-logo span{color:var(--mint)}
 .auth-tagline{font-size:.82rem;color:rgba(255,255,255,.55);font-style:italic}
 .auth-tabs{display:flex;background:rgba(255,255,255,.07);border-radius:10px;padding:3px;margin-top:20px}
@@ -47,8 +62,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .auth-body{padding:28px 32px 32px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:6px}
-.field input,.field select{width:100%;padding:11px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--paper);color:var(--ink);transition:border .2s;outline:none}
-.field input:focus,.field select:focus{border-color:var(--violet)}
+.field input{width:100%;padding:11px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--paper);color:var(--ink);transition:border .2s;outline:none}
+.field input:focus{border-color:var(--violet)}
 .role-toggle{display:flex;gap:8px;margin-bottom:16px}
 .role-btn{flex:1;padding:10px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
 .role-btn.active.student{background:#EDE9FE;border-color:var(--violet);color:var(--violet-d)}
@@ -62,18 +77,21 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .auth-divider{text-align:center;font-size:.75rem;color:var(--ink3);margin:12px 0;position:relative}
 .auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(26,26,46,.08)}
 .auth-divider span{background:var(--white);padding:0 10px;position:relative}
+
 /* ── STUDENT APP ── */
 #studentScreen{flex-direction:column}
-.s-wrap{max-width:900px;width:100%;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1}
-.s-header{display:flex;align-items:center;justify-content:space-between;background:var(--ink);border-radius:var(--r);padding:16px 22px;margin-bottom:18px;box-shadow:var(--shl)}
+.s-wrap{max-width:960px;width:100%;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1}
+.s-header{display:flex;align-items:center;justify-content:space-between;background:var(--ink);border-radius:var(--r);padding:16px 22px;margin-bottom:18px;box-shadow:var(--shl);flex-wrap:wrap;gap:10px}
 .s-logo{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;color:var(--sun)}
 .s-logo span{color:var(--mint)}
-.s-user{display:flex;align-items:center;gap:10px}
-.s-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:.85rem}
+.s-user{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.s-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:.85rem;flex-shrink:0}
 .s-name{font-size:.82rem;color:rgba(255,255,255,.7);font-weight:500}
 .s-xp{background:var(--sun);color:var(--ink);border-radius:99px;padding:3px 10px;font-size:.72rem;font-weight:700}
 .logout-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);border-radius:var(--rs);padding:5px 10px;font-size:.7rem;cursor:pointer;transition:all .2s}
 .logout-btn:hover{background:rgba(255,255,255,.18);color:white}
+
+/* Timer */
 .timer-bar{display:flex;align-items:center;gap:12px;background:var(--ink2);border-radius:var(--r);padding:13px 20px;margin-bottom:16px;box-shadow:var(--sh)}
 .t-label{font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
 .t-track{flex:1;height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
@@ -82,6 +100,127 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .t-clock{font-family:'Fira Mono',monospace;font-size:1.1rem;color:var(--sun);min-width:55px;text-align:right}
 .t-btn{background:var(--sun);color:var(--ink);border:none;border-radius:var(--rs);padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
 .t-btn:hover{background:var(--sun-d);transform:scale(1.04)}
+
+/* Panel tabs */
+.panel-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--white);border-radius:var(--rs);padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.05);flex-wrap:wrap}
+.ptab{flex:1;padding:9px 6px;text-align:center;cursor:pointer;border-radius:7px;font-size:.7rem;font-weight:600;color:var(--ink3);transition:all .2s;border:none;background:none;white-space:nowrap;min-width:80px}
+.ptab.active{background:var(--ink);color:white}
+.ptab:hover:not(.active){background:rgba(26,26,46,.05)}
+
+/* ── WORD SEARCH PANEL (NEW v1.1.0) ── */
+.search-hero{background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--r);padding:28px 28px 24px;margin-bottom:16px;box-shadow:var(--shl);position:relative;overflow:hidden}
+.search-hero::before{content:'🔍';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.08;pointer-events:none}
+.search-hero-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--sun);margin-bottom:4px}
+.search-hero-sub{font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:18px}
+.search-input-row{display:flex;gap:10px;align-items:stretch}
+.search-input-wrap{flex:1;position:relative}
+.search-input{width:100%;padding:14px 18px;border-radius:var(--rs);border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:600;color:white;outline:none;transition:all .2s;-webkit-appearance:none}
+.search-input::placeholder{color:rgba(255,255,255,.35);font-weight:400}
+.search-input:focus{border-color:var(--sun);background:rgba(255,255,255,.12)}
+.search-btn{background:var(--sun);color:var(--ink);border:none;border-radius:var(--rs);padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;-webkit-appearance:none}
+.search-btn:hover{background:var(--sun-d);transform:scale(1.03)}
+.search-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.accent-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.accent-label{font-size:.68rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+.accent-select{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);border-radius:var(--rs);padding:5px 10px;font-size:.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;padding-right:24px}
+.accent-select-wrap{position:relative;display:inline-block}
+.accent-select-wrap::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.5);pointer-events:none;font-size:.7rem}
+.sentence-warning{background:linear-gradient(135deg,rgba(255,107,107,.15),rgba(255,107,107,.08));border:1px solid rgba(255,107,107,.3);border-radius:var(--rs);padding:12px 16px;margin-top:10px;display:none;animation:slideUp .3s ease}
+.sentence-warning-text{font-size:.85rem;color:#FF6B6B;font-weight:600}
+.sentence-warning-sub{font-size:.75rem;color:rgba(255,107,107,.7);margin-top:3px}
+
+/* Word result card */
+.word-result{background:var(--white);border-radius:var(--r);box-shadow:var(--shl);overflow:hidden;margin-bottom:16px;border:2px solid rgba(26,26,46,.05);animation:slideUp .4s ease}
+.wr-header{background:linear-gradient(135deg,var(--ink),var(--ink2));padding:22px 26px 18px;position:relative;overflow:hidden}
+.wr-header::after{content:attr(data-emoji);position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:4rem;opacity:.12;pointer-events:none}
+.wr-word-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.wr-word{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:900;color:white;letter-spacing:-1px;line-height:1}
+.wr-pron{font-family:'Fira Mono',monospace;font-size:.85rem;color:rgba(255,255,255,.55)}
+.speak-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;font-size:1rem}
+.speak-btn:hover{background:rgba(255,255,255,.2);transform:scale(1.1)}
+.speak-btn.speaking{background:var(--mint);border-color:var(--mint);animation:pulse .8s ease infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.wr-pos-row{display:flex;gap:6px;flex-wrap:wrap}
+.pos-badge{padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:700;text-transform:uppercase;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+
+/* Result sections */
+.wr-body{padding:0}
+.wr-section{padding:18px 24px;border-bottom:1px solid rgba(26,26,46,.06)}
+.wr-section:last-child{border-bottom:none}
+.wr-sec-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.wr-sec-icon{font-size:.9rem}
+
+/* Root cards */
+.root-cards{display:flex;flex-wrap:wrap;gap:10px}
+.root-chip{background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--rs);padding:12px 16px;cursor:pointer;transition:all .2s;min-width:120px}
+.root-chip:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+.rc-root{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:900;color:var(--sun);line-height:1;margin-bottom:3px}
+.rc-meaning{font-size:.7rem;color:rgba(255,255,255,.6)}
+.rc-origin{font-size:.62rem;color:var(--mint);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.root-expand{background:var(--paper2);border-radius:var(--rs);padding:16px;margin-top:12px;border:2px solid rgba(26,26,46,.07);animation:slideUp .3s ease;display:none}
+.root-expand.open{display:block}
+
+/* Etymology */
+.etym-story{font-size:.9rem;color:var(--ink);line-height:1.7;background:var(--paper2);border-radius:var(--rs);padding:14px 16px;border-left:4px solid var(--sun)}
+.etym-timeline{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.etym-step{background:var(--white);border:1px solid rgba(26,26,46,.1);border-radius:var(--rs);padding:8px 12px;font-size:.75rem}
+.etym-step-lang{font-weight:700;color:var(--violet);font-size:.65rem;text-transform:uppercase;display:block;margin-bottom:2px}
+.etym-step-word{font-family:'Fira Mono',monospace;color:var(--ink)}
+.etym-step-mean{color:var(--ink3);font-style:italic}
+
+/* Synonyms / Antonyms */
+.syn-ant-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sa-box{background:var(--paper2);border-radius:var(--rs);padding:12px 14px}
+.sa-box-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.sa-box-title.syn{color:var(--mint-d)}
+.sa-box-title.ant{color:var(--coral-d)}
+.word-pills{display:flex;flex-wrap:wrap;gap:5px}
+.word-pill{padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:500;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.word-pill.syn-pill{background:#DCFCE7;color:#166534;border-color:#BBF7D0}
+.word-pill.syn-pill:hover{background:#16a34a;color:white}
+.word-pill.ant-pill{background:#FEE2E2;color:#991B1B;border-color:#FECACA}
+.word-pill.ant-pill:hover{background:#dc2626;color:white}
+
+/* Idioms & Phrases */
+.idiom-card{background:var(--paper2);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--violet)}
+.idiom-card:last-child{margin-bottom:0}
+.idiom-phrase{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px}
+.idiom-meaning{font-size:.82rem;color:var(--ink3);line-height:1.5}
+.idiom-example{font-size:.78rem;color:var(--ink);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(26,26,46,.07)}
+
+/* Images grid */
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.img-card{border-radius:var(--rs);overflow:hidden;position:relative;background:rgba(26,26,46,.06);padding-top:75%}
+.img-card img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
+.img-card .img-loading{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.img-card:hover img{transform:scale(1.05)}
+.img-credit{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:6px 8px;font-size:.58rem;color:rgba(255,255,255,.7);text-decoration:none}
+.img-loading{display:flex;align-items:center;justify-content:center;height:100px;color:var(--ink3);font-size:.78rem}
+
+/* Related roots from branches */
+.branch-pills{display:flex;flex-wrap:wrap;gap:7px}
+.branch-pill{padding:6px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);cursor:pointer;transition:all .2s;font-size:.78rem;font-weight:600}
+.branch-pill:hover{border-color:var(--violet);background:rgba(155,93,229,.06);transform:translateY(-1px)}
+.branch-pill .bp-word{color:var(--ink)}
+.branch-pill .bp-pos{color:var(--ink3);font-weight:400;font-size:.65rem;margin-left:4px}
+.branch-pill .bp-c{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.bp-c.beginner{background:#22c55e}
+.bp-c.intermediate{background:#f59e0b}
+.bp-c.advanced{background:#8b5cf6}
+
+/* Loading */
+.search-loading{text-align:center;padding:40px 20px}
+.search-spinner{width:40px;height:40px;border:3px solid rgba(26,26,46,.1);border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-loading-text{font-family:'Fraunces',serif;font-style:italic;color:var(--ink3)}
+
+/* Empty state */
+.search-empty{text-align:center;padding:48px 20px}
+.search-empty-icon{font-size:3rem;margin-bottom:12px}
+.search-empty-title{font-family:'Fraunces',serif;font-size:1.2rem;color:var(--ink);margin-bottom:6px}
+.search-empty-sub{font-size:.82rem;color:var(--ink3)}
+
+/* ── LEARN PANEL (root-of-the-day flow) ── */
 .fam-tabs{display:flex;gap:7px;margin-bottom:15px;flex-wrap:wrap}
 .ftab{padding:6px 14px;border-radius:99px;border:2px solid transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;background:var(--white);color:var(--ink3)}
 .ftab.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
@@ -93,7 +232,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .prog-icon{font-size:1.1rem;margin-bottom:3px}
 .prog-name{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
 .main-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shl);overflow:hidden;margin-bottom:16px;border:2px solid rgba(26,26,46,.05)}
-.card-top{padding:24px 28px 18px;background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);position:relative;overflow:hidden}
+.card-top{padding:24px 28px 18px;background:linear-gradient(135deg,var(--ink),var(--ink2));position:relative;overflow:hidden}
 .card-top::after{content:attr(data-emoji);position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:.12;pointer-events:none}
 .origin-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border-radius:99px;padding:3px 10px;margin-bottom:8px}
 .origin-tag span{font-size:.68rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.5px}
@@ -116,7 +255,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .step-content{padding:20px 24px;min-height:360px}
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px}
 .spinner{width:36px;height:36px;border:3px solid rgba(26,26,46,.1);border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-family:'Fraunces',serif;font-style:italic;color:var(--ink3);font-size:.95rem}
 .memory-box{background:linear-gradient(135deg,rgba(255,217,61,.12),rgba(255,107,107,.08));border-radius:var(--rs);border-left:4px solid var(--sun);padding:12px 14px;margin-bottom:14px}
 .mem-label{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:3px;font-weight:700}
@@ -164,7 +302,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .quiz-wrap{background:var(--paper2);border-radius:var(--r);padding:20px;border:2px solid rgba(26,26,46,.06)}
 .quiz-q{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--ink);margin-bottom:16px;line-height:1.5}
 .quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.qopt{padding:12px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif}
+.qopt{padding:12px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif;-webkit-appearance:none}
 .qopt:hover:not(.sel){border-color:var(--violet);background:rgba(155,93,229,.05)}
 .qopt.correct{background:#DCFCE7;border-color:var(--mint);color:#166534}
 .qopt.wrong{background:#FEE2E2;border-color:var(--coral);color:#991B1B}
@@ -179,18 +317,16 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .cs-item{text-align:center}
 .cs-val{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;line-height:1}
 .cs-lab{font-size:.65rem;text-transform:uppercase;color:var(--ink3);letter-spacing:.5px}
-.action-bar{display:flex;gap:8px;justify-content:space-between;align-items:center}
-.btn{padding:10px 20px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;border:none}
+.action-bar{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;border:none;-webkit-appearance:none}
 .btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .btn-primary{background:var(--ink);color:white}
 .btn-secondary{background:var(--white);color:var(--ink);border:2px solid rgba(26,26,46,.1)}
 .btn-accent{background:var(--sun);color:var(--ink)}
 .btn-skip{background:transparent;color:var(--ink3);border:2px solid rgba(26,26,46,.08)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.panel-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--white);border-radius:var(--rs);padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.ptab{flex:1;padding:8px 8px;text-align:center;cursor:pointer;border-radius:7px;font-size:.72rem;font-weight:600;color:var(--ink3);transition:all .2s;border:none;background:none}
-.ptab.active{background:var(--ink);color:white}
-.ptab:hover:not(.active){background:rgba(26,26,46,.05)}
+
+/* History panel */
 .hist-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.06);margin-bottom:7px;background:var(--white);transition:all .2s}
 .hist-item:hover{border-color:var(--ink);transform:translateX(4px)}
 .hi-root{font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;flex:1}
@@ -198,6 +334,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .hi-b{font-size:.62rem;padding:2px 7px;border-radius:99px;font-weight:700;text-transform:uppercase}
 .hi-b.done{background:#DCFCE7;color:#166534}
 .hi-b.skip{background:#FEF3C7;color:#92400E}
+.hi-b.searched{background:#EDE9FE;color:#5B21B6}
+
+/* Stats */
 .stats-g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .stat-c{background:var(--white);border-radius:var(--rs);padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:center}
 .stat-icon{font-size:1.3rem;margin-bottom:3px}
@@ -207,6 +346,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .mb-label{display:flex;justify-content:space-between;font-size:.78rem;font-weight:600;margin-bottom:7px}
 .mb-track{height:10px;background:rgba(26,26,46,.08);border-radius:99px;overflow:hidden}
 .mb-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--sky));transition:width .6s ease}
+
+/* Session complete */
 .session-complete{background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--r);padding:32px;text-align:center;color:white;box-shadow:var(--shl)}
 .sc-emoji{font-size:3.5rem;display:block;margin-bottom:10px}
 .sc-title{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);margin-bottom:5px}
@@ -215,10 +356,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .sc-stat{background:rgba(255,255,255,.07);border-radius:var(--rs);padding:12px}
 .sc-val{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;color:var(--sun)}
 .sc-lab{font-size:.62rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px}
+
 /* ── PARENT DASHBOARD ── */
 #parentScreen{flex-direction:column;background:#0F0F1A}
 .pd-wrap{max-width:1000px;width:100%;margin:0 auto;padding:20px 16px 60px;position:relative;z-index:1}
-.pd-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,#1A1A2E,#2D2D4E);border-radius:var(--r);margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.pd-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,#1A1A2E,#2D2D4E);border-radius:var(--r);margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,.3);flex-wrap:wrap;gap:10px}
 .pd-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--sun)}
 .pd-sub{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px}
 .pd-logout{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:var(--rs);padding:6px 14px;font-size:.72rem;cursor:pointer;transition:all .2s}
@@ -263,7 +405,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .chart-bar-label{font-size:.58rem;color:rgba(255,255,255,.35);text-align:center}
 .chart-bar-val{font-size:.6rem;color:rgba(255,255,255,.5);text-align:center}
 .goal-bar{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:20px}
-.goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px}
 .goal-title{font-family:'Fraunces',serif;color:rgba(255,255,255,.8);font-size:.95rem;font-weight:700}
 .goal-count{font-family:'Fira Mono',monospace;color:var(--sun);font-size:.9rem}
 .goal-track{height:14px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
@@ -279,18 +421,32 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .acc-fill.mid{background:var(--sun)}
 .acc-fill.low{background:var(--coral)}
 .acc-pct{font-size:.72rem;color:rgba(255,255,255,.4);min-width:36px;text-align:right}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:white;padding:10px 22px;border-radius:99px;font-weight:600;font-size:.83rem;z-index:200;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
+
+/* Toast */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:white;padding:10px 22px;border-radius:99px;font-weight:600;font-size:.83rem;z-index:200;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .version-badge{position:fixed;bottom:8px;right:12px;font-size:.6rem;color:rgba(26,26,46,.3);font-family:'Fira Mono',monospace;z-index:100}
+
+/* Responsive */
 @media(max-width:640px){
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .word-list-grid{grid-template-columns:repeat(2,1fr)}
   .sl-header,.sl-row{grid-template-columns:2fr 1fr 1fr}
-  .sl-header .sl-th:nth-child(4),.sl-header .sl-th:nth-child(5),.sl-row .sl-td:nth-child(4),.sl-row .sl-td:nth-child(5){display:none}
+  .sl-header .sl-th:nth-child(4),.sl-header .sl-th:nth-child(5),
+  .sl-row .sl-td:nth-child(4),.sl-row .sl-td:nth-child(5){display:none}
   .combo-grid,.quiz-opts{grid-template-columns:1fr}
   .sc-grid{grid-template-columns:1fr 1fr}
   .root-title{font-size:2rem}
+  .wr-word{font-size:1.8rem}
+  .syn-ant-grid{grid-template-columns:1fr}
+  .img-grid{grid-template-columns:repeat(2,1fr)}
   .auth-body{padding:20px 20px 24px}
+  .search-input-row{flex-direction:column}
+  .action-bar{justify-content:center}
+}
+@media(max-width:400px){
+  .ptab{font-size:.62rem;padding:8px 4px}
+  .img-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -301,7 +457,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   <div class="auth-box">
     <div class="auth-hero">
       <div class="auth-logo">Word<span>Root</span> Academy</div>
-      <div class="auth-tagline">Master etymology, unlock vocabulary, think deeply</div>
+      <div class="auth-tagline">Search any word · Discover its roots · Master vocabulary</div>
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
         <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
@@ -317,18 +473,18 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         </div>
       </div>
       <div id="loginForm">
-        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"/></div>
-        <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"/></div>
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/></div>
         <button class="auth-btn student-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
         <div class="auth-divider"><span>or</span></div>
         <div style="text-align:center;font-size:.78rem;color:var(--ink3)">No account? <a href="#" onclick="switchAuthTab('register');return false" style="color:var(--violet);font-weight:600">Register here</a></div>
       </div>
       <div id="registerForm" style="display:none">
-        <div class="field"><label>Full Name</label><input type="text" id="regName" placeholder="Your name"/></div>
-        <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"/></div>
-        <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="Min 6 characters"/></div>
+        <div class="field"><label>Full Name</label><input type="text" id="regName" placeholder="Your name" autocomplete="name"/></div>
+        <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="Min 6 characters" autocomplete="new-password"/></div>
         <div id="parentLinkField" class="field" style="display:none">
-          <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional — link to your child's account)</span></label>
+          <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional)</span></label>
           <input type="email" id="regLinkedStudent" placeholder="student@example.com"/>
         </div>
         <button class="auth-btn student-btn" id="regBtn" onclick="doRegister()">Create Account →</button>
@@ -342,6 +498,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 <!-- ═══════════ STUDENT SCREEN ═══════════ -->
 <div id="studentScreen" class="screen">
   <div class="s-wrap">
+
+    <!-- Header -->
     <div class="s-header">
       <div class="s-logo">Word<span>Root</span></div>
       <div class="s-user">
@@ -350,18 +508,71 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <button class="logout-btn" onclick="doLogout()">Sign out</button>
       </div>
     </div>
+
+    <!-- Timer -->
     <div class="timer-bar">
       <div class="t-label">📅 Session</div>
       <div class="t-track"><div class="t-fill" id="tFill" style="width:100%"></div></div>
       <div class="t-clock" id="tClock">30:00</div>
       <button class="t-btn" id="tBtn" onclick="toggleTimer()">Start</button>
     </div>
+
+    <!-- Panel tabs -->
     <div class="panel-tabs">
-      <button class="ptab active" onclick="showPanel('learn')">📚 Learn</button>
+      <button class="ptab active" onclick="showPanel('search')">🔍 Word Search</button>
+      <button class="ptab" onclick="showPanel('learn')">📚 Root Learn</button>
       <button class="ptab" onclick="showPanel('history')">📖 History</button>
-      <button class="ptab" onclick="showPanel('stats')">📊 My Stats</button>
+      <button class="ptab" onclick="showPanel('stats')">📊 Stats</button>
     </div>
-    <div id="panel-learn">
+
+    <!-- ══ SEARCH PANEL (NEW v1.1.0) ══ -->
+    <div id="panel-search">
+      <div class="search-hero">
+        <div class="search-hero-title">Search Any Word</div>
+        <div class="search-hero-sub">Discover root words, etymology, pronunciation, synonyms, antonyms, idioms & images instantly</div>
+        <div class="search-input-row">
+          <div class="search-input-wrap">
+            <input type="text" class="search-input" id="searchInput"
+              placeholder="Type a word, e.g. 'benevolent'…"
+              oninput="onSearchInput(this.value)"
+              onkeydown="if(event.key==='Enter')doSearch()"
+              autocomplete="off" autocorrect="off" spellcheck="false"/>
+          </div>
+          <button class="search-btn" id="searchBtn" onclick="doSearch()">Search →</button>
+        </div>
+        <div class="sentence-warning" id="sentenceWarning">
+          <div class="sentence-warning-text">⚠️ Please enter a single word only</div>
+          <div class="sentence-warning-sub">This tool analyses individual words. Try removing extra words and searching for just one.</div>
+        </div>
+        <div class="accent-row">
+          <span class="accent-label">🔊 Accent:</span>
+          <div class="accent-select-wrap">
+            <select class="accent-select" id="accentSelect">
+              <option value="en-GB">🇬🇧 British English</option>
+              <option value="en-US">🇺🇸 American English</option>
+              <option value="en-AU">🇦🇺 Australian English</option>
+              <option value="en-IN">🇮🇳 Indian English</option>
+              <option value="en-IE">🇮🇪 Irish English</option>
+              <option value="en-ZA">🇿🇦 South African English</option>
+              <option value="en-CA">🇨🇦 Canadian English</option>
+              <option value="en-NZ">🇳🇿 New Zealand English</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search result area -->
+      <div id="searchResult">
+        <div class="search-empty">
+          <div class="search-empty-icon">📖</div>
+          <div class="search-empty-title">Enter any English word above</div>
+          <div class="search-empty-sub">Discover its roots, origins, pronunciations, synonyms, antonyms, idioms and contextual images</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LEARN PANEL ══ -->
+    <div id="panel-learn" style="display:none">
       <div class="fam-tabs">
         <button class="ftab active" onclick="setFamily('all',this)">🌍 All</button>
         <button class="ftab" onclick="setFamily('Latin',this)">🏛 Latin</button>
@@ -397,23 +608,27 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <button class="btn btn-accent" onclick="newRoot()">🎲 New Root</button>
       </div>
     </div>
+
+    <!-- ══ HISTORY PANEL ══ -->
     <div id="panel-history" style="display:none">
       <div class="main-card"><div style="padding:18px 22px">
-        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:12px">📖 Roots Studied This Session</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:12px">📖 Activity This Session</div>
         <div id="historyList" style="max-height:400px;overflow-y:auto">
-          <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No roots yet — start learning!</div>
+          <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No activity yet — start learning!</div>
         </div>
       </div></div>
     </div>
+
+    <!-- ══ STATS PANEL ══ -->
     <div id="panel-stats" style="display:none">
       <div class="stats-g">
         <div class="stat-c"><div class="stat-icon">📚</div><div class="stat-val" id="ss-roots">0</div><div class="stat-lab">Roots Done</div></div>
-        <div class="stat-c"><div class="stat-icon">🔤</div><div class="stat-val" id="ss-words">0</div><div class="stat-lab">Words Explored</div></div>
+        <div class="stat-c"><div class="stat-icon">🔍</div><div class="stat-val" id="ss-searches">0</div><div class="stat-lab">Words Searched</div></div>
         <div class="stat-c"><div class="stat-icon">🎯</div><div class="stat-val" id="ss-acc">0%</div><div class="stat-lab">Quiz Accuracy</div></div>
         <div class="stat-c"><div class="stat-icon">🔥</div><div class="stat-val" id="ss-streak">1</div><div class="stat-lab">Day Streak</div></div>
       </div>
       <div class="month-bar-wrap">
-        <div class="mb-label"><span>Monthly Goal</span><span id="ss-month">0 / 1000 roots</span></div>
+        <div class="mb-label"><span>Monthly Root Goal</span><span id="ss-month">0 / 1000 roots</span></div>
         <div class="mb-track"><div class="mb-fill" id="ss-mbar" style="width:0%"></div></div>
       </div>
     </div>
@@ -428,54 +643,39 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       <button class="pd-logout" onclick="doLogout()">Sign Out</button>
     </div>
     <div id="pdStudentSelector"></div>
-    <div id="pdContent">
-      <div class="pd-no-data"><div>📊</div><p>Select a student above to view their progress.</p></div>
-    </div>
+    <div id="pdContent"><div class="pd-no-data"><div>📊</div><p>Select a student above to view their progress.</p></div></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="version-badge" id="versionBadge">v1.0.0</div>
+<div class="version-badge">v1.1.0</div>
 
 <script>
 /* ═══════════════════════════════════════════════════
-   WordRoot Academy — Main Application
-   Version: 1.0.0
-   Storage: localStorage (same-device persistence)
-   API: Anthropic Claude claude-sonnet-4-20250514
+   WordRoot Academy v1.1.0
+   Build: 2025-03-15
+   New: Word Search, Etymology, Pronunciation + Dialects,
+        Synonyms/Antonyms, Idioms/Phrases, Images
 ═══════════════════════════════════════════════════ */
-const APP_VERSION = '1.0.0';
-const APP_BUILD   = '2025-01-01';
-document.getElementById('versionBadge').textContent = 'v' + APP_VERSION;
+const APP_VERSION='1.1.0';
+const APP_BUILD='2025-03-15';
 
-// ── STORAGE (localStorage — works on any deployed host) ──────────────
-function storeGet(key){
-  try{const v=localStorage.getItem('wra:'+key);return v?JSON.parse(v):null}catch{return null}
-}
-function storeSet(key,val){
-  try{localStorage.setItem('wra:'+key,JSON.stringify(val))}catch(e){console.warn('store:',e)}
-}
-function storeList(prefix){
-  try{
-    return Object.keys(localStorage)
-      .filter(k=>k.startsWith('wra:'+prefix))
-      .map(k=>k.replace('wra:',''));
-  }catch{return[]}
-}
-function storeDel(key){
-  try{localStorage.removeItem('wra:'+key)}catch{}
-}
+// ── STORAGE ───────────────────────────────────────
+function storeGet(k){try{const v=localStorage.getItem('wra:'+k);return v?JSON.parse(v):null}catch{return null}}
+function storeSet(k,v){try{localStorage.setItem('wra:'+k,JSON.stringify(v))}catch(e){console.warn(e)}}
+function storeList(p){try{return Object.keys(localStorage).filter(k=>k.startsWith('wra:'+p)).map(k=>k.replace('wra:',''))}catch{return[]}}
 
-// ── APP STATE ─────────────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────
 const A={
   currentUser:null,currentRole:null,currentRoot:null,
   step:1,family:'all',timeLeft:1800,timerOn:false,timerInt:null,
-  sessionData:{roots:[],words:[],quizC:0,quizT:0,startTime:null,xp:0},
+  sessionData:{roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:null,xp:0},
   selectedWord:null,quizAnswered:false,usedRoots:[],
-  selectedStudentEmail:null,authTab:'login',authRole:'student'
+  selectedStudentEmail:null,authTab:'login',authRole:'student',
+  currentAccent:'en-GB',speaking:false,speechSynth:window.speechSynthesis||null
 };
 
-// ── AUTH UI ───────────────────────────────────────────────────────────
+// ── AUTH UI ───────────────────────────────────────
 function switchAuthTab(t){
   A.authTab=t;
   document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',['login','register'][i]===t));
@@ -503,54 +703,64 @@ function doRegister(){
   if(pass.length<6){showErr('Password must be at least 6 characters.');return}
   if(storeGet('user:'+email)){showErr('An account with this email already exists.');return}
   const user={name,email,role:A.authRole,createdAt:Date.now(),linkedStudent:linked||null,appVersion:APP_VERSION};
-  storeSet('user:'+email,user);
-  storeSet('pass:'+email,btoa(pass));
-  showToast('Account created! Signing you in...');
-  clearErr();
-  setTimeout(()=>signIn(user),600);
+  storeSet('user:'+email,user);storeSet('pass:'+email,btoa(pass));
+  showToast('Account created!');clearErr();setTimeout(()=>signIn(user),600);
 }
-
 function doLogin(){
   const email=document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass=document.getElementById('loginPassword').value;
   if(!email||!pass){showErr('Please enter email and password.');return}
-  const user=storeGet('user:'+email);
-  const stored=storeGet('pass:'+email);
+  const user=storeGet('user:'+email);const stored=storeGet('pass:'+email);
   if(!user||!stored||stored!==btoa(pass)){showErr('Incorrect email or password.');return}
-  if(user.role!==A.authRole){showErr(`This is a "${user.role}" account. Please select the correct role above.`);return}
+  if(user.role!==A.authRole){showErr(`This is a "${user.role}" account. Please select the correct role.`);return}
   clearErr();signIn(user);
 }
-
 function signIn(user){
   A.currentUser=user;A.currentRole=user.role;
   document.getElementById('authScreen').classList.remove('active');
-  if(user.role==='parent'){
-    document.getElementById('parentScreen').classList.add('active');
-    initParentDashboard();
-  }else{
-    document.getElementById('studentScreen').classList.add('active');
-    initStudentApp();
-  }
+  if(user.role==='parent'){document.getElementById('parentScreen').classList.add('active');initParentDashboard();}
+  else{document.getElementById('studentScreen').classList.add('active');initStudentApp();}
 }
-
 function doLogout(){
-  A.currentUser=null;A.currentRole=null;
-  clearInterval(A.timerInt);A.timerOn=false;
+  A.currentUser=null;A.currentRole=null;clearInterval(A.timerInt);A.timerOn=false;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('authScreen').classList.add('active');
   switchAuthTab('login');
 }
 
-// ── STUDENT APP ───────────────────────────────────────────────────────
+// ── STUDENT APP ───────────────────────────────────
 function initStudentApp(){
   const u=A.currentUser;
   document.getElementById('sAvatar').textContent=u.name[0].toUpperCase();
   document.getElementById('sName').textContent=u.name;
-  A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
+  A.sessionData={roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
   A.usedRoots=[];A.timeLeft=1800;
-  updateTimerUI();newRoot();
+  updateTimerUI();
+  // Detect user location for default accent
+  detectAccent();
+  // Start on search panel, load first root in background
+  showPanel('search');
+  newRoot();
 }
 
+function detectAccent(){
+  try{
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';
+    const lang=navigator.language||'en-GB';
+    const sel=document.getElementById('accentSelect');
+    if(lang.startsWith('en-IN')||tz.includes('Kolkata')||tz.includes('Mumbai'))sel.value='en-IN';
+    else if(lang.startsWith('en-AU')||tz.includes('Sydney')||tz.includes('Melbourne'))sel.value='en-AU';
+    else if(lang.startsWith('en-US')||tz.includes('America'))sel.value='en-US';
+    else if(lang.startsWith('en-CA')||tz.includes('Toronto'))sel.value='en-CA';
+    else if(lang.startsWith('en-ZA'))sel.value='en-ZA';
+    else if(lang.startsWith('en-IE'))sel.value='en-IE';
+    else if(lang.startsWith('en-NZ'))sel.value='en-NZ';
+    else sel.value='en-GB';
+    A.currentAccent=sel.value;
+  }catch{}
+}
+
+// ── TIMER ─────────────────────────────────────────
 function toggleTimer(){
   if(A.timerOn){clearInterval(A.timerInt);A.timerOn=false;document.getElementById('tBtn').textContent='Resume';}
   else{
@@ -566,18 +776,345 @@ function updateTimerUI(){
   f.style.width=pct+'%';f.className='t-fill'+(pct<25?' warn':'');
 }
 
+// ── PANELS ────────────────────────────────────────
 function showPanel(p){
-  ['learn','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
-  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['learn','history','stats'][i]===p));
+  ['search','learn','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['search','learn','history','stats'][i]===p));
   if(p==='stats')updateStudentStats();
   if(p==='history')renderHistory();
 }
+
+// ══════════════════════════════════════════════════
+//  WORD SEARCH — NEW v1.1.0
+// ══════════════════════════════════════════════════
+
+function onSearchInput(val){
+  const trimmed=val.trim();
+  const words=trimmed.split(/\s+/).filter(w=>w.length>0);
+  const warn=document.getElementById('sentenceWarning');
+  const btn=document.getElementById('searchBtn');
+  // Block if more than 2 space-separated tokens (allows "well-being", "ice cream" etc)
+  // Also block if it looks like a sentence (contains common sentence words)
+  const sentencePattern=/\b(is|are|was|were|the|a|an|and|but|or|if|that|this|how|why|what|when|where|who|do|does|did|has|have|had|will|would|can|could|should|please|tell|give|me|my|i|you|we|they)\b/i;
+  const isSentence=words.length>2||(words.length>1&&sentencePattern.test(trimmed));
+  if(isSentence){
+    warn.style.display='block';
+    btn.disabled=true;
+  }else{
+    warn.style.display='none';
+    btn.disabled=false;
+  }
+}
+
+async function doSearch(){
+  const raw=document.getElementById('searchInput').value.trim();
+  if(!raw){showToast('Please type a word first');return}
+  const words=raw.split(/\s+/).filter(w=>w.length>0);
+  if(words.length>2){
+    document.getElementById('sentenceWarning').style.display='block';
+    showToast('⚠️ Please enter a single word only');return;
+  }
+  const word=raw.toLowerCase().replace(/[^a-z\-]/g,'');
+  if(!word){showToast('Please enter a valid English word');return}
+
+  // Track search
+  A.sessionData.searches.push({word,searchedAt:Date.now()});
+  A.sessionData.xp+=2;
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  saveSession();
+
+  // Show loading
+  document.getElementById('searchResult').innerHTML=`
+    <div class="search-loading">
+      <div class="search-spinner"></div>
+      <div class="search-loading-text">Analysing "${word}"…</div>
+    </div>`;
+
+  A.currentAccent=document.getElementById('accentSelect').value;
+
+  try{
+    // Parallel: fetch dictionary data + AI analysis
+    const [dictData, synonymData, aiData] = await Promise.all([
+      fetchDictionaryData(word),
+      fetchSynonyms(word),
+      fetchAIAnalysis(word)
+    ]);
+    renderWordResult(word, dictData, synonymData, aiData);
+  }catch(e){
+    console.error(e);
+    // Fallback: try AI only
+    try{
+      const aiData=await fetchAIAnalysis(word);
+      renderWordResult(word,null,null,aiData);
+    }catch(e2){
+      document.getElementById('searchResult').innerHTML=`
+        <div class="search-empty">
+          <div class="search-empty-icon">😕</div>
+          <div class="search-empty-title">Could not analyse "${word}"</div>
+          <div class="search-empty-sub">Check your internet connection and try again.</div>
+        </div>`;
+    }
+  }
+}
+
+async function fetchDictionaryData(word){
+  try{
+    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    return Array.isArray(d)?d[0]:null;
+  }catch{return null}
+}
+
+async function fetchSynonyms(word){
+  try{
+    const [synR,antR]=await Promise.all([
+      fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=12`),
+      fetch(`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(word)}&max=12`)
+    ]);
+    const syns=synR.ok?(await synR.json()).map(w=>w.word):[];
+    const ants=antR.ok?(await antR.json()).map(w=>w.word):[];
+    return{synonyms:syns,antonyms:ants};
+  }catch{return{synonyms:[],antonyms:[]}}
+}
+
+async function fetchAIAnalysis(word){
+  const prompt=`Analyse the English word "${word}" for an advanced 17-year-old vocabulary learner.
+Respond ONLY with valid JSON, no markdown fences:
+{
+  "word": "${word}",
+  "emoji": "single most relevant emoji",
+  "partOfSpeech": ["noun","verb","adjective"],
+  "pronunciation": "/IPA/",
+  "definition": "clear concise definition",
+  "roots": [
+    {
+      "root": "ROOT",
+      "meaning": "core meaning",
+      "origin": "Latin|Greek|Anglo-Saxon|Old French|Old English",
+      "originFull": "original word in source language",
+      "partInWord": "which letters in ${word} ARE this root",
+      "otherWords": ["word1","word2","word3","word4","word5"]
+    }
+  ],
+  "etymologyStory": "A vivid 2-3 sentence story tracing this word's journey through history to modern English",
+  "etymologyTimeline": [
+    {"language":"Proto-Indo-European","word":"*root","meaning":"original meaning"},
+    {"language":"Latin","word":"latin form","meaning":"latin meaning"},
+    {"language":"Old English","word":"OE form","meaning":"OE meaning"},
+    {"language":"Modern English","word":"${word}","meaning":"current meaning"}
+  ],
+  "idioms": [
+    {
+      "phrase": "idiom or phrase containing the root",
+      "meaning": "what it means",
+      "example": "example sentence using it naturally"
+    }
+  ],
+  "imageKeywords": ["keyword1","keyword2","keyword3"]
+}
+Rules:
+- Include 1-3 roots (the word may have multiple)
+- Timeline: only include historically accurate steps, 3-5 steps
+- Include 3-5 idioms/phrases that use this root or closely related words
+- imageKeywords: 3 concrete visual keywords suitable for Unsplash image search
+- etymologyStory: make it genuinely fascinating and memorable`;
+
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const d=await resp.json();
+  const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+  return JSON.parse(txt);
+}
+
+function renderWordResult(word, dict, synData, ai){
+  const pos=(ai.partOfSpeech||[]).join(', ') || (dict?.meanings?.[0]?.partOfSpeech||'');
+  const pron=ai.pronunciation||(dict?.phonetics?.[0]?.text||'');
+  const def=ai.definition||(dict?.meanings?.[0]?.definitions?.[0]?.definition||'');
+  const syns=synData?.synonyms||[];
+  const ants=synData?.antonyms||[];
+
+  // Root cards HTML
+  const rootsHTML=(ai.roots||[]).map((r,i)=>`
+    <div class="root-chip" onclick="toggleRootExpand(${i})">
+      <div class="rc-root">${r.root}</div>
+      <div class="rc-meaning">${r.meaning}</div>
+      <div class="rc-origin">${r.origin}</div>
+    </div>
+    <div class="root-expand" id="re${i}">
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:8px">
+        Found in: <span style="color:var(--coral);font-family:'Fira Mono',monospace">${r.partInWord||r.root}</span> inside "${word.toUpperCase()}"
+      </div>
+      <div style="font-size:.82rem;color:var(--ink3);margin-bottom:10px">Original: <em>${r.originFull||r.root}</em></div>
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:6px">Other words with this root:</div>
+      <div class="branch-pills">
+        ${(r.otherWords||[]).map(w=>`<div class="branch-pill" onclick="searchWord('${w}')"><span class="bp-word">${w}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // Etymology timeline
+  const timelineHTML=(ai.etymologyTimeline||[]).map(t=>`
+    <div class="etym-step">
+      <span class="etym-step-lang">${t.language}</span>
+      <span class="etym-step-word">${t.word}</span>
+      ${t.meaning?`<span class="etym-step-mean"> — ${t.meaning}</span>`:''}
+    </div>`).join('<div style="color:var(--ink3);font-size:.8rem;align-self:center">→</div>');
+
+  // Synonyms / Antonyms
+  const synAntHTML=`
+    <div class="syn-ant-grid">
+      <div class="sa-box">
+        <div class="sa-box-title syn">✓ Synonyms</div>
+        <div class="word-pills">${syns.length?syns.map(w=>`<span class="word-pill syn-pill" onclick="searchWord('${w}')">${w}</span>`).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>'}</div>
+      </div>
+      <div class="sa-box">
+        <div class="sa-box-title ant">✗ Antonyms</div>
+        <div class="word-pills">${ants.length?ants.map(w=>`<span class="word-pill ant-pill" onclick="searchWord('${w}')">${w}</span>`).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>'}</div>
+      </div>
+    </div>`;
+
+  // Idioms
+  const idiomsHTML=(ai.idioms||[]).map(id=>`
+    <div class="idiom-card">
+      <div class="idiom-phrase">"${id.phrase}"</div>
+      <div class="idiom-meaning">${id.meaning}</div>
+      ${id.example?`<div class="idiom-example">${id.example}</div>`:''}
+    </div>`).join('');
+
+  // Images
+  const imgKeywords=(ai.imageKeywords||[word]).join(',');
+  const imgHTML=`<div class="img-grid" id="imgGrid">
+    ${[0,1,2].map(i=>`<div class="img-card" id="imgCard${i}"><div class="img-loading">Loading image…</div></div>`).join('')}
+  </div>`;
+
+  document.getElementById('searchResult').innerHTML=`
+    <div class="word-result">
+      <div class="wr-header" data-emoji="${ai.emoji||'📖'}">
+        <div class="wr-word-row">
+          <div class="wr-word">${word.charAt(0).toUpperCase()+word.slice(1)}</div>
+          <div class="wr-pron">${pron}</div>
+          <button class="speak-btn" id="speakBtn" onclick="speakWord('${word}')" title="Hear pronunciation">🔊</button>
+        </div>
+        <div class="wr-pos-row">
+          ${pos.split(', ').filter(Boolean).map(p=>`<span class="pos-badge">${p}</span>`).join('')}
+        </div>
+        ${def?`<div style="font-size:.88rem;color:rgba(255,255,255,.65);margin-top:8px;line-height:1.55">${def}</div>`:''}
+      </div>
+      <div class="wr-body">
+
+        <!-- ROOT WORDS -->
+        <div class="wr-section">
+          <div class="wr-sec-title"><span class="wr-sec-icon">🌳</span> Root Words Found</div>
+          <div class="root-cards">${rootsHTML||'<span style="font-size:.82rem;color:var(--ink3)">No root data available</span>'}</div>
+        </div>
+
+        <!-- ETYMOLOGY -->
+        <div class="wr-section">
+          <div class="wr-sec-title"><span class="wr-sec-icon">📜</span> Etymology — Origin Story</div>
+          <div class="etym-story">${ai.etymologyStory||'Etymology not available.'}</div>
+          ${timelineHTML?`<div class="etym-timeline" style="align-items:center">${timelineHTML}</div>`:''}
+        </div>
+
+        <!-- SYNONYMS & ANTONYMS -->
+        <div class="wr-section">
+          <div class="wr-sec-title"><span class="wr-sec-icon">🔄</span> Synonyms & Antonyms</div>
+          ${synAntHTML}
+        </div>
+
+        <!-- IDIOMS & PHRASES -->
+        ${(ai.idioms||[]).length?`
+        <div class="wr-section">
+          <div class="wr-sec-title"><span class="wr-sec-icon">💬</span> Idioms & Phrases</div>
+          ${idiomsHTML}
+        </div>`:''}
+
+        <!-- IMAGES -->
+        <div class="wr-section">
+          <div class="wr-sec-title"><span class="wr-sec-icon">🖼️</span> Visual Context</div>
+          ${imgHTML}
+        </div>
+
+      </div>
+    </div>`;
+
+  // Load images after render
+  loadImages(ai.imageKeywords||[word,'language','vocabulary']);
+
+  // Award XP
+  A.sessionData.xp+=10;
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  saveSession();
+  showToast(`✨ "${word}" analysed! +10 XP`);
+}
+
+function toggleRootExpand(i){
+  const el=document.getElementById('re'+i);
+  if(el)el.classList.toggle('open');
+}
+
+function searchWord(w){
+  document.getElementById('searchInput').value=w;
+  document.getElementById('sentenceWarning').style.display='none';
+  document.getElementById('searchBtn').disabled=false;
+  doSearch();
+}
+
+// ── PRONUNCIATION ─────────────────────────────────
+function speakWord(word){
+  if(!A.speechSynth){showToast('Speech not supported in this browser');return}
+  if(A.speaking){A.speechSynth.cancel();A.speaking=false;const b=document.getElementById('speakBtn');if(b){b.classList.remove('speaking');b.textContent='🔊';}return}
+  const accent=document.getElementById('accentSelect').value;
+  const doSpeak=()=>{
+    const utt=new SpeechSynthesisUtterance(word);
+    utt.lang=accent;utt.rate=0.85;utt.pitch=1;
+    const voices=A.speechSynth.getVoices();
+    const match=voices.find(v=>v.lang===accent)||voices.find(v=>v.lang.startsWith(accent.split('-')[0]))||null;
+    if(match)utt.voice=match;
+    utt.onstart=()=>{A.speaking=true;const b=document.getElementById('speakBtn');if(b){b.classList.add('speaking');b.textContent='🔉';}};
+    utt.onend=utt.onerror=()=>{A.speaking=false;const b=document.getElementById('speakBtn');if(b){b.classList.remove('speaking');b.textContent='🔊';}};
+    A.speechSynth.speak(utt);
+  };
+  // iOS Safari loads voices async — wait if not ready
+  const voices=A.speechSynth.getVoices();
+  if(voices.length>0){doSpeak();}
+  else{A.speechSynth.onvoiceschanged=()=>{A.speechSynth.onvoiceschanged=null;doSpeak();};}
+}
+
+// ── IMAGES (Unsplash Source — free, no API key) ───
+function loadImages(keywords){
+  const queries=[
+    (keywords[0]||'language').replace(/\s+/g,'+'),
+    (keywords[1]||'book').replace(/\s+/g,'+'),
+    (keywords[2]||'education').replace(/\s+/g,'+')
+  ];
+  queries.forEach((q,i)=>{
+    const card=document.getElementById('imgCard'+i);
+    if(!card)return;
+    const img=new Image();
+    // Picsum Photos — free, no API key, actively maintained
+    const seed=encodeURIComponent((keywords[i]||'word')+Date.now());
+    img.src=`https://picsum.photos/seed/${seed}/400/300`;
+    img.alt=q;
+    img.onload=()=>{
+      card.innerHTML=`<img src="${img.src}" alt="${q}" loading="lazy"/>
+        <a class="img-credit" href="https://picsum.photos" target="_blank" rel="noopener">Photo: Picsum</a>`;
+    };
+    img.onerror=()=>{
+      card.innerHTML=`<div class="img-loading" style="height:120px">📷 Image unavailable</div>`;
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  ROOT LEARNING FLOW (unchanged from v1.0.0)
+// ══════════════════════════════════════════════════
 function setFamily(f,el){
   A.family=f;
   document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
   if(el)el.classList.add('active');
 }
-
 function goStep(n){if(!A.currentRoot)return;A.step=n;renderStep();updateStepUI();}
 function nextStep(){A.step<4?goStep(A.step+1):completeRoot();}
 function prevStep(){if(A.step>1)goStep(A.step-1);}
@@ -592,7 +1129,7 @@ function updateStepUI(){
 
 async function newRoot(){
   A.step=1;A.selectedWord=null;A.quizAnswered=false;
-  showLoading();
+  showRootLoading();
   try{
     const fam=A.family==='all'?['Latin','Greek','Anglo-Saxon'][Math.floor(Math.random()*3)]:A.family;
     const root=await generateRoot(fam);
@@ -600,28 +1137,33 @@ async function newRoot(){
     setCardHeader(root);renderStep();updateStepUI();
   }catch(e){console.error(e);useFallback();}
 }
-
-function showLoading(){
-  document.getElementById('rTitle').textContent='...';
-  document.getElementById('rMeaning').textContent='Loading';
-  document.getElementById('rOrigin').textContent='...';
-  document.getElementById('rOriginFull').textContent='';
-  document.getElementById('stepContent').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-text">Generating root word ✨</div></div>`;
+function showRootLoading(){
+  const card=document.getElementById('mainCard');
+  if(!card)return;
+  try{
+    document.getElementById('rTitle').textContent='...';
+    document.getElementById('rMeaning').textContent='Loading';
+    document.getElementById('rOrigin').textContent='...';
+    document.getElementById('rOriginFull').textContent='';
+    document.getElementById('stepContent').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-text">Generating root word ✨</div></div>`;
+  }catch{}
 }
 function setCardHeader(r){
-  document.getElementById('rTitle').textContent=r.root;
-  document.getElementById('rMeaning').textContent=r.meaning;
-  document.getElementById('rOrigin').textContent=r.origin;
-  document.getElementById('rOriginFull').textContent=r.originFull||'';
-  document.getElementById('cardTop').setAttribute('data-emoji',r.emoji||'📖');
+  try{
+    document.getElementById('rTitle').textContent=r.root;
+    document.getElementById('rMeaning').textContent=r.meaning;
+    document.getElementById('rOrigin').textContent=r.origin;
+    document.getElementById('rOriginFull').textContent=r.originFull||'';
+    document.getElementById('cardTop').setAttribute('data-emoji',r.emoji||'📖');
+  }catch{}
 }
 
 async function generateRoot(fam){
   const used=A.usedRoots.slice(-50).join(', ');
-  const prompt=`You are an expert etymologist. Generate ONE root word from ${fam} origin for a 17-year-old advanced learner. Do NOT use: ${used||'none'}.
-Respond ONLY with valid JSON, no markdown:
-{"root":"WORD","meaning":"1-3 words","origin":"${fam}","originFull":"original + transliteration","emoji":"1 emoji","memoryHook":"vivid mnemonic","branches":[{"word":"UPPERCASE","pos":"noun/verb/adj/adv","pronunciation":"/IPA/","meaning":"clear definition","complexity":"beginner|intermediate|advanced","rootHighlight":"part that IS the root"}],"sentences":[{"word":"WORD","sentence":"literary quality sentence","author":"Author or Original"}],"literaryQuotes":[{"quote":"real or inspired quote","author":"Author","book":"Work"}],"combinations":[{"combo":"PREFIX + ROOT","result":"WORD","meaning":"what it means","prefixMeaning":"prefix/suffix meaning"}]}
-Include: 6-8 branches, 4-5 sentences, 2 literary quotes, 4-5 combinations. Rich, memorable, sophisticated content.`;
+  const prompt=`Expert etymologist. ONE root word from ${fam} origin for 17-year-old. Do NOT use: ${used||'none'}.
+ONLY valid JSON, no markdown:
+{"root":"WORD","meaning":"1-3 words","origin":"${fam}","originFull":"original word","emoji":"emoji","memoryHook":"mnemonic","branches":[{"word":"UPPER","pos":"noun/verb/adj/adv","pronunciation":"/IPA/","meaning":"definition","complexity":"beginner|intermediate|advanced","rootHighlight":"root part"}],"sentences":[{"word":"WORD","sentence":"literary sentence","author":"Author"}],"literaryQuotes":[{"quote":"quote","author":"Author","book":"Work"}],"combinations":[{"combo":"PREFIX + ROOT","result":"WORD","meaning":"meaning","prefixMeaning":"prefix meaning"}]}
+Include: 6-8 branches, 4-5 sentences, 2 quotes, 4-5 combinations.`;
   const resp=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
@@ -633,13 +1175,12 @@ Include: 6-8 branches, 4-5 sentences, 2 literary quotes, 4-5 combinations. Rich,
 
 function renderStep(){
   const r=A.currentRoot,c=document.getElementById('stepContent');
-  if(!r)return;
+  if(!r||!c)return;
   if(A.step===1)renderStep1(r,c);
   else if(A.step===2)renderStep2(r,c);
   else if(A.step===3)renderStep3(r,c);
   else renderStep4(r,c);
 }
-
 function renderStep1(r,c){
   const bHTML=(r.branches||[]).map((b,i)=>`<div class="bw" onclick="showWordDetail(${i})" style="animation-delay:${i*.05}s"><div class="bw-word">${b.word}</div><div class="bw-pos">${b.pos}</div><div class="bw-badge ${b.complexity}">${b.complexity}</div></div>`).join('');
   const det=A.selectedWord!==null?buildWordDetail(r.branches[A.selectedWord]):'';
@@ -656,27 +1197,22 @@ function showWordDetail(i){
   const b=A.currentRoot.branches[i];
   if(b&&!A.sessionData.words.find(w=>w.word===b.word)){
     A.sessionData.words.push({word:b.word,root:A.currentRoot.root,meaning:b.meaning,complexity:b.complexity,learnedAt:Date.now()});
-    A.sessionData.xp+=5;
-    document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+    A.sessionData.xp+=5;document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   }
-  document.getElementById('wdArea').innerHTML=buildWordDetail(b);
+  const area=document.getElementById('wdArea');
+  if(area)area.innerHTML=buildWordDetail(b);
 }
-
 function renderStep2(r,c){
   const combos=(r.combinations||[]).map((cb,i)=>`<div class="combo-card" style="animation:popIn .3s ${i*.06}s ease backwards"><div class="combo-formula">${cb.combo.split('+').map(p=>`<span>${p.trim()}</span>`).join('<span class="combo-plus"> + </span>')} <span style="color:var(--mint)">→</span></div><div class="combo-result">${cb.result}</div><div class="combo-meaning">${cb.meaning}</div>${cb.prefixMeaning?`<div style="font-size:.68rem;color:var(--sun-d);margin-top:3px;font-weight:600">📌 ${cb.prefixMeaning}</div>`:''}</div>`).join('');
   const pfx=[{p:'PRE-',m:'before'},{p:'RE-',m:'again'},{p:'UN-',m:'not'},{p:'IN-',m:'not/into'},{p:'EX-',m:'out of'},{p:'COM-',m:'together'},{p:'DE-',m:'down/away'},{p:'SUB-',m:'under'},{p:'TRANS-',m:'across'},{p:'INTER-',m:'between'},{p:'CIRCUM-',m:'around'},{p:'DIS-',m:'apart'},{p:'-TION',m:'act/state'},{p:'-MENT',m:'result'},{p:'-IVE',m:'tending to'},{p:'-ABLE',m:'capable'},{p:'-ISM',m:'belief'},{p:'-IST',m:'one who'}];
   c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">🔗 "${r.root}" in combination</div><div class="combo-grid">${combos}</div><div style="margin-top:14px"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">🗝 Common prefixes & suffixes</div><div class="prefix-row">${pfx.map(p=>`<div class="pfx">${p.p} <span class="pfx-m">${p.m}</span></div>`).join('')}</div></div>`;
 }
-
 function renderStep3(r,c){
   const sents=(r.sentences||[]).map((s,i)=>`<div class="sent-card" style="animation-delay:${i*.07}s"><div class="sent-tag">${s.word}</div><div class="sent-text">${s.sentence}</div><div class="sent-auth">${s.author||'Original'}</div></div>`).join('');
   const quotes=(r.literaryQuotes||[]).map(q=>`<div class="lit-quote" style="margin-bottom:10px"><div class="lit-text">${q.quote}</div><div class="lit-credit">${q.author} <span class="lit-book">· ${q.book}</span></div></div>`).join('');
-  c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">✍️ Words from "${r.root}" in rich context</div>${sents}${quotes?`<div style="margin-top:12px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">📚 Literary References</div>${quotes}`:''}`;
+  c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">✍️ "${r.root}" in rich context</div>${sents}${quotes?`<div style="margin-top:12px"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">📚 Literary References</div>${quotes}</div>`:''}`;
 }
-
-function renderStep4(r,c){
-  if(!A.quizAnswered)buildQuiz(r,c);else buildComplete(r,c);
-}
+function renderStep4(r,c){if(!A.quizAnswered)buildQuiz(r,c);else buildComplete(r,c);}
 function buildQuiz(r,c){
   const bs=r.branches||[];if(!bs.length)return;
   const qi=Math.floor(Math.random()*Math.min(bs.length,5));
@@ -685,28 +1221,24 @@ function buildQuiz(r,c){
   c.innerHTML=`<div class="quiz-wrap"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B5DE5;margin-bottom:6px">🧪 Quick Recall</div><div class="quiz-q">What does <strong style="font-family:'Fraunces',serif;font-size:1.2rem;color:var(--coral)">${correct.word}</strong> mean?<br/><span style="font-family:'Fira Mono',monospace;font-size:.78rem;color:var(--ink3)">${correct.pronunciation||''}</span></div><div class="quiz-opts">${opts.map((o,i)=>`<button class="qopt" onclick="answerQuiz(this,'${encodeURIComponent(o)}','${encodeURIComponent(correct.meaning)}')">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div><div id="qFb"></div></div>`;
 }
 function answerQuiz(btn,chosenE,correctE){
-  if(A.quizAnswered)return;
-  A.quizAnswered=true;
+  if(A.quizAnswered)return;A.quizAnswered=true;
   const chosen=decodeURIComponent(chosenE),correct=decodeURIComponent(correctE);
   const ok=chosen===correct;
-  A.sessionData.quizT++;
-  if(ok){A.sessionData.quizC++;A.sessionData.xp+=20;showToast('✅ Correct! +20 XP');}
-  else{A.sessionData.xp+=5;showToast('❌ Not quite — +5 XP for trying');}
+  A.sessionData.quizT++;if(ok){A.sessionData.quizC++;A.sessionData.xp+=20;showToast('✅ Correct! +20 XP');}else{A.sessionData.xp+=5;showToast('❌ Not quite — +5 XP');}
   document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   btn.classList.add(ok?'correct':'wrong');
   if(!ok){document.querySelectorAll('.qopt').forEach(b=>{try{if(decodeURIComponent(b.getAttribute('onclick').match(/'([^']+)','[^']+'\)/)?.[1]||'')===correct)b.classList.add('correct');}catch{}});}
-  document.getElementById('qFb').innerHTML=`<div class="quiz-fb ${ok?'correct':'wrong'}">${ok?`🎉 <strong>${A._qt.word}</strong> = "${correct}". Root: <strong style="color:var(--coral)">${A.currentRoot.root}</strong> (${A.currentRoot.meaning})`:`Correct: "<strong>${correct}</strong>" — <strong style="color:var(--coral)">${A.currentRoot.root}</strong> = "${A.currentRoot.meaning}"`}</div>`;
+  const fb=document.getElementById('qFb');
+  if(fb)fb.innerHTML=`<div class="quiz-fb ${ok?'correct':'wrong'}">${ok?`🎉 <strong>${A._qt.word}</strong> = "${correct}". Root: <strong style="color:var(--coral)">${A.currentRoot.root}</strong> (${A.currentRoot.meaning})`:`Correct: "<strong>${correct}</strong>" — <strong style="color:var(--coral)">${A.currentRoot.root}</strong> = "${A.currentRoot.meaning}"`}</div>`;
 }
 function buildComplete(r,c){
   const acc=A.sessionData.quizT>0?Math.round((A.sessionData.quizC/A.sessionData.quizT)*100):0;
   c.innerHTML=`<div class="complete-banner"><span class="complete-emoji">${acc>=70?'🌟':acc>=40?'👍':'💪'}</span><div class="complete-title">Root "${r.root}" Complete!</div><div class="complete-sub">All 4 steps done. Keep going!</div><div class="comp-stats"><div class="cs-item"><div class="cs-val" style="color:var(--violet)">${acc}%</div><div class="cs-lab">Quiz</div></div><div class="cs-item"><div class="cs-val" style="color:var(--mint)">${(r.branches||[]).length}</div><div class="cs-lab">Words</div></div><div class="cs-item"><div class="cs-val" style="color:var(--sun)">${A.sessionData.xp||0}</div><div class="cs-lab">XP</div></div></div><button class="btn btn-accent" onclick="newRoot()">🎲 Next Root →</button></div>`;
 }
-
 function completeRoot(){
   const r=A.currentRoot;
   A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(b=>b.word)});
-  A.sessionData.xp+=50;
-  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  A.sessionData.xp+=50;document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   saveSession();showToast(`🎉 "${r.root}" mastered! +50 XP`);goStep(4);
 }
 function skipRoot(){
@@ -714,27 +1246,22 @@ function skipRoot(){
   saveSession();newRoot();
 }
 
-// ── SILENT SESSION SAVE ───────────────────────────────────────────────
+// ── SAVE SESSION ──────────────────────────────────
 function saveSession(){
   if(!A.currentUser)return;
   const email=A.currentUser.email;
   const key=`session:${email}:${A.sessionData.startTime}`;
-  const payload={
-    studentEmail:email,studentName:A.currentUser.name,
-    appVersion:APP_VERSION,
+  storeSet(key,{
+    studentEmail:email,studentName:A.currentUser.name,appVersion:APP_VERSION,
     startTime:A.sessionData.startTime,lastUpdated:Date.now(),
     durationMin:Math.round((Date.now()-A.sessionData.startTime)/60000),
     rootsCompleted:A.sessionData.roots.filter(r=>!r.skipped).length,
     rootsSkipped:A.sessionData.roots.filter(r=>r.skipped).length,
     rootsData:A.sessionData.roots,
-    wordsExplored:A.sessionData.words.length,
-    wordsData:A.sessionData.words,
-    quizCorrect:A.sessionData.quizC,
-    quizTotal:A.sessionData.quizT,
-    xpEarned:A.sessionData.xp||0,
-  };
-  storeSet(key,payload);
-  // Update student index
+    wordsExplored:A.sessionData.words.length,wordsData:A.sessionData.words,
+    searchesCount:A.sessionData.searches.length,searchesData:A.sessionData.searches,
+    quizCorrect:A.sessionData.quizC,quizTotal:A.sessionData.quizT,xpEarned:A.sessionData.xp
+  });
   const idx=storeGet(`index:${email}`)||{sessions:[],studentName:A.currentUser.name,lastActive:Date.now()};
   if(!idx.sessions.includes(A.sessionData.startTime))idx.sessions.push(A.sessionData.startTime);
   idx.lastActive=Date.now();idx.studentName=A.currentUser.name;
@@ -744,117 +1271,109 @@ function saveSession(){
 async function endSession(){
   saveSession();
   const acc=A.sessionData.quizT>0?Math.round((A.sessionData.quizC/A.sessionData.quizT)*100):0;
-  document.getElementById('mainCard').innerHTML=`<div class="session-complete"><span class="sc-emoji">🎓</span><div class="sc-title">Session Complete!</div><div class="sc-sub">Brilliant work — 30 minutes well spent!</div><div class="sc-grid"><div class="sc-stat"><div class="sc-val">${A.sessionData.roots.filter(r=>!r.skipped).length}</div><div class="sc-lab">Roots Done</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.words.length}</div><div class="sc-lab">Words</div></div><div class="sc-stat"><div class="sc-val">${acc}%</div><div class="sc-lab">Quiz Score</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.xp||0}</div><div class="sc-lab">XP Earned</div></div><div class="sc-stat"><div class="sc-val">${Math.round((Date.now()-A.sessionData.startTime)/60000)}m</div><div class="sc-lab">Time</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.roots.length}</div><div class="sc-lab">Total Roots</div></div></div><button class="btn btn-accent" onclick="restartSession()" style="font-size:.95rem;padding:12px 28px">🔁 New Session</button></div>`;
+  const mc=document.getElementById('mainCard');
+  if(mc)mc.innerHTML=`<div class="session-complete"><span class="sc-emoji">🎓</span><div class="sc-title">Session Complete!</div><div class="sc-sub">Brilliant work — 30 minutes well spent!</div><div class="sc-grid"><div class="sc-stat"><div class="sc-val">${A.sessionData.roots.filter(r=>!r.skipped).length}</div><div class="sc-lab">Roots Done</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.words.length}</div><div class="sc-lab">Words</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.searches.length}</div><div class="sc-lab">Searches</div></div><div class="sc-stat"><div class="sc-val">${acc}%</div><div class="sc-lab">Quiz</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.xp||0}</div><div class="sc-lab">XP Earned</div></div><div class="sc-stat"><div class="sc-val">30m</div><div class="sc-lab">Time</div></div></div><button class="btn btn-accent" onclick="restartSession()" style="font-size:.95rem;padding:12px 28px">🔁 New Session</button></div>`;
 }
 
 function restartSession(){
   A.timeLeft=1800;A.timerOn=false;clearInterval(A.timerInt);
   document.getElementById('tBtn').textContent='Start';updateTimerUI();
-  A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
-  document.getElementById('mainCard').innerHTML=`<div class="card-top" id="cardTop" data-emoji="📖"><div class="origin-tag"><span id="rOrigin">—</span><span class="origin-full" id="rOriginFull"></span></div><div class="root-title" id="rTitle">—</div><div class="root-meaning">means: <strong id="rMeaning">—</strong></div></div><div class="step-tabs"><button class="stab s1 on" id="stab1" onclick="goStep(1)"><div class="snum">1</div><br/>Explore</button><button class="stab s2" id="stab2" onclick="goStep(2)"><div class="snum">2</div><br/>Build</button><button class="stab s3" id="stab3" onclick="goStep(3)"><div class="snum">3</div><br/>Context</button><button class="stab s4" id="stab4" onclick="goStep(4)"><div class="snum">4</div><br/>Quiz</button></div><div class="step-content" id="stepContent"><div class="loading-state"><div class="spinner"></div><div class="loading-text">Ready!</div></div></div>`;
+  A.sessionData={roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
+  const mc=document.getElementById('mainCard');
+  if(mc)mc.innerHTML=`<div class="card-top" id="cardTop" data-emoji="📖"><div class="origin-tag"><span id="rOrigin">—</span><span class="origin-full" id="rOriginFull"></span></div><div class="root-title" id="rTitle">—</div><div class="root-meaning">means: <strong id="rMeaning">—</strong></div></div><div class="step-tabs"><button class="stab s1 on" id="stab1" onclick="goStep(1)"><div class="snum">1</div><br/>Explore</button><button class="stab s2" id="stab2" onclick="goStep(2)"><div class="snum">2</div><br/>Build</button><button class="stab s3" id="stab3" onclick="goStep(3)"><div class="snum">3</div><br/>Context</button><button class="stab s4" id="stab4" onclick="goStep(4)"><div class="snum">4</div><br/>Quiz</button></div><div class="step-content" id="stepContent"><div class="loading-state"><div class="spinner"></div><div class="loading-text">Ready!</div></div></div>`;
   newRoot();
 }
 
 function renderHistory(){
   const list=document.getElementById('historyList');
-  if(!A.sessionData.roots.length){list.innerHTML='<div style="text-align:center;color:var(--ink3);padding:30px;font-style:italic">No roots yet!</div>';return;}
-  list.innerHTML=[...A.sessionData.roots].reverse().map(r=>`<div class="hist-item"><div><div class="hi-root">${r.root}</div><div class="hi-m">${r.meaning} · ${r.origin}</div></div><span class="hi-b ${r.skipped?'skip':'done'}">${r.skipped?'Skipped':'✓ Done'}</span></div>`).join('');
+  const items=[
+    ...A.sessionData.roots.map(r=>({type:r.skipped?'skip':'done',label:r.root,sub:r.meaning+' · '+r.origin,t:r.completedAt})),
+    ...A.sessionData.searches.map(s=>({type:'searched',label:s.word,sub:'Word search',t:s.searchedAt}))
+  ].sort((a,b)=>b.t-a.t);
+  if(!items.length){list.innerHTML='<div style="text-align:center;color:var(--ink3);padding:30px;font-style:italic">No activity yet!</div>';return;}
+  list.innerHTML=items.map(i=>`<div class="hist-item"><div><div class="hi-root">${i.label}</div><div class="hi-m">${i.sub}</div></div><span class="hi-b ${i.type}">${i.type==='done'?'✓ Done':i.type==='skip'?'Skipped':'🔍 Searched'}</span></div>`).join('');
 }
+
 function updateStudentStats(){
   const r=A.sessionData;
   document.getElementById('ss-roots').textContent=r.roots.filter(x=>!x.skipped).length;
-  document.getElementById('ss-words').textContent=r.words.length;
+  document.getElementById('ss-searches').textContent=r.searches.length;
   const acc=r.quizT>0?Math.round((r.quizC/r.quizT)*100):0;
   document.getElementById('ss-acc').textContent=acc+'%';
   document.getElementById('ss-month').textContent=r.roots.filter(x=>!x.skipped).length+' / 1000 roots';
   document.getElementById('ss-mbar').style.width=Math.min((r.roots.filter(x=>!x.skipped).length/1000)*100,100)+'%';
+  // Calculate streak from localStorage across days
+  try{
+    const email=A.currentUser?.email;
+    if(email){
+      const keys=storeList(`session:${email}:`);
+      const days=new Set(keys.map(k=>{const s=storeGet(k);return s?new Date(s.startTime).toDateString():null}).filter(Boolean));
+      document.getElementById('ss-streak').textContent=days.size;
+    }
+  }catch{}
 }
 
-// ── PARENT DASHBOARD ──────────────────────────────────────────────────
+function useFallback(){
+  const f={root:'PORT',meaning:'carry',origin:'Latin',originFull:'portare',emoji:'🚢',memoryHook:"A porter carries bags — PORT = carry!",
+    branches:[{word:'TRANSPORT',pos:'verb',pronunciation:'/trænsˈpɔːt/',meaning:'to carry across from one place to another',complexity:'beginner',rootHighlight:'PORT'},{word:'IMPORT',pos:'noun/verb',pronunciation:'/ˈɪm.pɔːt/',meaning:'to carry goods into a country',complexity:'beginner',rootHighlight:'PORT'},{word:'EXPORT',pos:'noun/verb',pronunciation:'/ˈek.spɔːt/',meaning:'to carry goods out of a country',complexity:'beginner',rootHighlight:'PORT'},{word:'PORTFOLIO',pos:'noun',pronunciation:'/pɔːtˈfəʊ.li.əʊ/',meaning:'case for carrying papers; a collection of work',complexity:'intermediate',rootHighlight:'PORT'},{word:'DEPORTMENT',pos:'noun',pronunciation:'/dɪˈpɔːt.mənt/',meaning:'the way one carries oneself; bearing and manner',complexity:'advanced',rootHighlight:'PORT'}],
+    sentences:[{word:'TRANSPORT',sentence:'The Romans built roads specifically to transport legions across the empire with terrifying efficiency.',author:'Historical narrative'},{word:'DEPORTMENT',sentence:"The queen's deportment was so impeccable that even her stillness seemed to command the room.",author:'Historical fiction'}],
+    literaryQuotes:[{quote:'To transport the reader into another world entirely — that is the ambition of every serious novelist.',author:'Virginia Woolf',book:'The Common Reader'},{quote:"His deportment suggested a man carrying secrets heavier than any suitcase.",author:"John le Carré style",book:'Tinker Tailor Soldier Spy'}],
+    combinations:[{combo:'TRANS + PORT',result:'TRANSPORT',meaning:'carry across',prefixMeaning:'TRANS = across'},{combo:'IM + PORT',result:'IMPORT',meaning:'carry in',prefixMeaning:'IM = in, into'},{combo:'EX + PORT',result:'EXPORT',meaning:'carry out',prefixMeaning:'EX = out of'},{combo:'DE + PORT + MENT',result:'DEPORTMENT',meaning:'manner of carrying oneself',prefixMeaning:'DE = from; MENT = state'}]};
+  A.currentRoot=f;A.usedRoots.push('PORT');
+  setCardHeader(f);renderStep();updateStepUI();
+  showToast('📡 Offline mode — using sample root');
+}
+
+// ── PARENT DASHBOARD ──────────────────────────────
 function initParentDashboard(){
   const u=A.currentUser;
   document.getElementById('pdWelcome').textContent=`Welcome, ${u.name}`;
-  const linkedEmail=u.linkedStudent;
-  let students=[];
-  if(linkedEmail){
-    const su=storeGet('user:'+linkedEmail);
-    if(su&&su.role==='student')students.push(su);
-  }
-  // Scan all student indexes
-  const keys=storeList('index:');
-  keys.forEach(k=>{
-    const idx=storeGet(k);
-    if(idx&&idx.studentName){
-      const em=k.replace('index:','');
-      if(!students.find(s=>s.email===em))students.push({email:em,name:idx.studentName});
-    }
-  });
-  if(!students.length){
-    document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>👩‍🎓</div><p>No student data found yet.<br/>Ask your student to register and complete at least one root, then check back!</p></div>`;
-    return;
-  }
-  const sel=document.getElementById('pdStudentSelector');
-  sel.innerHTML=`<div class="pd-section-title">Select Student</div><div class="student-select">${students.map((s,i)=>`<button class="stu-btn${i===0?' active':''}" onclick="selectStudent('${s.email}',this)">${s.name}</button>`).join('')}</div>`;
-  A.selectedStudentEmail=students[0].email;
-  loadStudentDashboard(students[0].email);
+  const linkedEmail=u.linkedStudent;let students=[];
+  if(linkedEmail){const su=storeGet('user:'+linkedEmail);if(su&&su.role==='student')students.push(su);}
+  storeList('index:').forEach(k=>{const idx=storeGet(k);if(idx&&idx.studentName){const em=k.replace('index:','');if(!students.find(s=>s.email===em))students.push({email:em,name:idx.studentName});}});
+  if(!students.length){document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>👩‍🎓</div><p>No student data found yet.<br/>Ask your student to register and complete at least one root.</p></div>`;return;}
+  document.getElementById('pdStudentSelector').innerHTML=`<div class="pd-section-title">Select Student</div><div class="student-select">${students.map((s,i)=>`<button class="stu-btn${i===0?' active':''}" onclick="selectStudent('${s.email}',this)">${s.name}</button>`).join('')}</div>`;
+  A.selectedStudentEmail=students[0].email;loadStudentDashboard(students[0].email);
 }
-
 function selectStudent(email,btn){
   document.querySelectorAll('.stu-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');A.selectedStudentEmail=email;
-  loadStudentDashboard(email);
+  btn.classList.add('active');A.selectedStudentEmail=email;loadStudentDashboard(email);
 }
-
 function loadStudentDashboard(email){
-  document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div class="spinner" style="border-top-color:var(--sun)"></div><p style="margin-top:12px;color:rgba(255,255,255,.4)">Loading dashboard...</p></div>`;
+  document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div class="spinner" style="border-top-color:var(--sun)"></div><p style="margin-top:12px;color:rgba(255,255,255,.4)">Loading...</p></div>`;
   const keys=storeList(`session:${email}:`);
-  if(!keys.length){
-    document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>📭</div><p>No sessions recorded yet for this student.<br/>They need to complete at least one root to appear here.</p></div>`;
-    return;
-  }
+  if(!keys.length){document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>📭</div><p>No sessions recorded yet.</p></div>`;return;}
   const sessions=keys.map(k=>storeGet(k)).filter(Boolean).sort((a,b)=>b.startTime-a.startTime);
   renderParentDashboard(sessions);
 }
-
 function renderParentDashboard(sessions){
-  const totalSessions=sessions.length;
   const totalRoots=sessions.reduce((a,s)=>a+(s.rootsCompleted||0),0);
   const totalWords=sessions.reduce((a,s)=>a+(s.wordsExplored||0),0);
+  const totalSearches=sessions.reduce((a,s)=>a+(s.searchesCount||0),0);
   const totalXP=sessions.reduce((a,s)=>a+(s.xpEarned||0),0);
   const totalTime=sessions.reduce((a,s)=>a+(s.durationMin||0),0);
   const allQuizC=sessions.reduce((a,s)=>a+(s.quizCorrect||0),0);
   const allQuizT=sessions.reduce((a,s)=>a+(s.quizTotal||0),0);
   const accuracy=allQuizT>0?Math.round((allQuizC/allQuizT)*100):0;
   const lastSeen=sessions[0]?new Date(sessions[0].lastUpdated||sessions[0].startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'Never';
-  const allWords=[];
-  sessions.forEach(s=>(s.wordsData||[]).forEach(w=>{if(!allWords.find(x=>x.word===w.word))allWords.push(w);}));
-  const allRoots=[];
-  sessions.forEach(s=>(s.rootsData||[]).filter(r=>!r.skipped).forEach(r=>{if(!allRoots.find(x=>x.root===r.root))allRoots.push(r);}));
-  const recent=sessions.slice(0,7).reverse();
-  const maxR=Math.max(...recent.map(s=>s.rootsCompleted||0),1);
-  const chartBars=recent.map(s=>{
-    const h=Math.round(((s.rootsCompleted||0)/maxR)*70)+4;
-    const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-    return`<div class="chart-bar-wrap"><div class="chart-bar-val">${s.rootsCompleted||0}</div><div class="chart-bar" style="height:${h}px"></div><div class="chart-bar-label">${d}</div></div>`;
-  }).join('');
-  const sessionRows=sessions.slice(0,10).map(s=>{
-    const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
-    const t=new Date(s.startTime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    const acc2=s.quizTotal>0?Math.round((s.quizCorrect/s.quizTotal)*100):0;
-    const perf=acc2>=70?'great':acc2>=40?'good':'low';
-    return`<div class="sl-row"><div class="sl-td sl-date">${d} <span style="color:rgba(255,255,255,.3);margin-left:6px">${t}</span></div><div class="sl-td">${s.rootsCompleted||0} roots</div><div class="sl-td">${s.wordsExplored||0} words</div><div class="sl-td">${s.durationMin||0}m</div><div class="sl-td"><span class="sl-badge ${perf}">${perf==='great'?'Great':perf==='good'?'Good':'Low'} ${acc2}%</span></div></div>`;
-  }).join('');
+  const allWords=[];sessions.forEach(s=>(s.wordsData||[]).forEach(w=>{if(!allWords.find(x=>x.word===w.word))allWords.push(w);}));
+  const allRoots=[];sessions.forEach(s=>(s.rootsData||[]).filter(r=>!r.skipped).forEach(r=>{if(!allRoots.find(x=>x.root===r.root))allRoots.push(r);}));
+  const allSearches=[];sessions.forEach(s=>(s.searchesData||[]).forEach(w=>{if(!allSearches.find(x=>x.word===w.word))allSearches.push(w);}));
+  const recent=sessions.slice(0,7).reverse();const maxR=Math.max(...recent.map(s=>s.rootsCompleted||0),1);
+  const chartBars=recent.map(s=>{const h=Math.round(((s.rootsCompleted||0)/maxR)*70)+4;const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short'});return`<div class="chart-bar-wrap"><div class="chart-bar-val">${s.rootsCompleted||0}</div><div class="chart-bar" style="height:${h}px"></div><div class="chart-bar-label">${d}</div></div>`;}).join('');
+  const sessionRows=sessions.slice(0,10).map(s=>{const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});const t=new Date(s.startTime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const acc2=s.quizTotal>0?Math.round((s.quizCorrect/s.quizTotal)*100):0;const perf=acc2>=70?'great':acc2>=40?'good':'low';return`<div class="sl-row"><div class="sl-td sl-date">${d} <span style="color:rgba(255,255,255,.3);margin-left:6px">${t}</span></div><div class="sl-td">${s.rootsCompleted||0} roots</div><div class="sl-td">${s.wordsExplored||0} words</div><div class="sl-td">${s.durationMin||0}m</div><div class="sl-td"><span class="sl-badge ${perf}">${perf==='great'?'Great':perf==='good'?'Good':'Low'} ${acc2}%</span></div></div>`;}).join('');
   const wordCards=allWords.slice(0,18).map(w=>`<div class="wl-card"><div class="wl-root">${w.root||'—'}</div><div class="wl-word">${w.word}</div><div class="wl-meaning">${w.meaning||''}</div><div class="wl-date">${new Date(w.learnedAt||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div></div>`).join('');
-  const origins={Latin:0,Greek:0,'Anglo-Saxon':0};
-  allRoots.forEach(r=>{if(origins[r.origin]!==undefined)origins[r.origin]++;});
+  const origins={Latin:0,Greek:0,'Anglo-Saxon':0};allRoots.forEach(r=>{if(origins[r.origin]!==undefined)origins[r.origin]++;});
   const maxO=Math.max(...Object.values(origins),1);
   const originBars=Object.entries(origins).map(([k,v])=>`<div class="acc-bar"><div class="acc-root">${k==='Anglo-Saxon'?'A-Saxon':k}</div><div class="acc-track"><div class="acc-fill ${v/maxO>.66?'high':v/maxO>.33?'mid':'low'}" style="width:${Math.round((v/maxO)*100)}%"></div></div><div class="acc-pct">${v} roots</div></div>`).join('');
   const monthRoots=sessions.filter(s=>Date.now()-s.startTime<30*24*3600*1000).reduce((a,s)=>a+(s.rootsCompleted||0),0);
+  const searchChips=allSearches.slice(0,30).map(s=>`<div style="background:rgba(155,93,229,.15);border:1px solid rgba(155,93,229,.25);border-radius:7px;padding:4px 11px;font-size:.78rem;color:rgba(255,255,255,.8)">${s.word}</div>`).join('');
+
   document.getElementById('pdContent').innerHTML=`
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-icon">📚</div><div class="kpi-val">${totalRoots}</div><div class="kpi-lab">Total Roots</div></div>
-      <div class="kpi"><div class="kpi-icon">🔤</div><div class="kpi-val">${totalWords}</div><div class="kpi-lab">Words Explored</div></div>
-      <div class="kpi"><div class="kpi-icon">🗓</div><div class="kpi-val">${totalSessions}</div><div class="kpi-lab">Sessions</div></div>
+      <div class="kpi"><div class="kpi-icon">🔍</div><div class="kpi-val">${totalSearches}</div><div class="kpi-lab">Words Searched</div></div>
+      <div class="kpi"><div class="kpi-icon">🗓</div><div class="kpi-val">${sessions.length}</div><div class="kpi-lab">Sessions</div></div>
       <div class="kpi"><div class="kpi-icon">⏱</div><div class="kpi-val">${totalTime}m</div><div class="kpi-lab">Total Time</div></div>
       <div class="kpi"><div class="kpi-icon">🎯</div><div class="kpi-val">${accuracy}%</div><div class="kpi-lab">Quiz Accuracy</div></div>
       <div class="kpi"><div class="kpi-icon">⭐</div><div class="kpi-val">${totalXP}</div><div class="kpi-lab">XP Earned</div></div>
@@ -862,33 +1381,34 @@ function renderParentDashboard(sessions){
       <div class="kpi"><div class="kpi-icon">🏆</div><div class="kpi-val">${allRoots.length}</div><div class="kpi-lab">Unique Roots</div></div>
     </div>
     <div class="goal-bar"><div class="goal-row"><div class="goal-title">📈 Monthly Goal</div><div class="goal-count">${monthRoots} / 1000 roots</div></div><div class="goal-track"><div class="goal-fill" style="width:${Math.min((monthRoots/1000)*100,100)}%"></div></div><div class="goal-labels"><div class="goal-lab">0</div><div class="goal-lab">500</div><div class="goal-lab">1000</div></div></div>
-    <div class="progress-chart"><div class="pd-section-title" style="margin-top:0;margin-bottom:4px">📊 Roots per Session (recent)</div><div class="chart-bars">${chartBars||'<div style="color:rgba(255,255,255,.3);font-size:.8rem">No sessions yet</div>'}</div></div>
-    <div class="pd-section-title">🗒 Session History (last 10)</div>
+    <div class="progress-chart"><div class="pd-section-title" style="margin-top:0;margin-bottom:4px">📊 Roots per Session</div><div class="chart-bars">${chartBars||'<div style="color:rgba(255,255,255,.3);font-size:.8rem">No sessions yet</div>'}</div></div>
+    <div class="pd-section-title">🗒 Session History</div>
     <div class="session-list"><div class="sl-header"><div class="sl-th">Date & Time</div><div class="sl-th">Roots</div><div class="sl-th">Words</div><div class="sl-th">Duration</div><div class="sl-th">Quiz</div></div>${sessionRows||'<div class="sl-row"><div class="sl-td" style="grid-column:1/-1;color:rgba(255,255,255,.3)">No sessions yet</div></div>'}</div>
+    <div class="pd-section-title">🔍 Words Searched (${allSearches.length} total)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px">${searchChips||'<div style="color:rgba(255,255,255,.3)">No searches yet</div>'}</div>
     <div class="pd-section-title">🌍 Language Family Coverage</div>
     <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:20px">${originBars||'<div style="color:rgba(255,255,255,.3);font-size:.8rem">No roots yet</div>'}</div>
-    <div class="pd-section-title">🔤 All Words Explored (${allWords.length} total)</div>
+    <div class="pd-section-title">🔤 All Words Explored (${allWords.length})</div>
     <div class="word-list-grid">${wordCards||'<div style="color:rgba(255,255,255,.3)">No words yet</div>'}</div>
     <div class="pd-section-title">📚 All Unique Roots (${allRoots.length})</div>
     <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px">${allRoots.map(r=>`<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:5px 12px;font-family:'Fraunces',serif;font-size:.82rem;color:rgba(255,255,255,.8)"><span style="color:var(--sun);font-size:.65rem">${r.origin}</span><br/>${r.root} <span style="color:rgba(255,255,255,.35);font-size:.65rem">· ${r.meaning}</span></div>`).join('')||'<div style="color:rgba(255,255,255,.3)">None yet</div>'}</div>`;
 }
 
-// ── FALLBACK ──────────────────────────────────────────────────────────
-function useFallback(){
-  const f={root:'PORT',meaning:'carry',origin:'Latin',originFull:'portare',emoji:'🚢',memoryHook:"A 'porter' carries bags — PORT = carry!",branches:[{word:'TRANSPORT',pos:'verb',pronunciation:'/trænsˈpɔːt/',meaning:'to carry across from one place to another',complexity:'beginner',rootHighlight:'PORT'},{word:'IMPORT',pos:'verb/noun',pronunciation:'/ˈɪm.pɔːt/',meaning:'to carry goods into a country',complexity:'beginner',rootHighlight:'PORT'},{word:'EXPORT',pos:'verb/noun',pronunciation:'/ˈek.spɔːt/',meaning:'to carry goods out of a country',complexity:'beginner',rootHighlight:'PORT'},{word:'PORTFOLIO',pos:'noun',pronunciation:'/pɔːtˈfəʊ.li.əʊ/',meaning:'case for carrying papers; a collection of work',complexity:'intermediate',rootHighlight:'PORT'},{word:'DEPORTMENT',pos:'noun',pronunciation:'/dɪˈpɔːt.mənt/',meaning:'the way one carries oneself; bearing',complexity:'advanced',rootHighlight:'PORT'}],sentences:[{word:'TRANSPORT',sentence:'The ancient Romans built roads specifically to transport legions with terrifying efficiency.',author:'Historical narrative'},{word:'DEPORTMENT',sentence:"The queen's deportment was so impeccable that even her stillness seemed to command the room.",author:'Historical fiction'}],literaryQuotes:[{quote:'To transport the reader into another world entirely — that is the ambition of every serious novelist.',author:'Virginia Woolf',book:'The Common Reader'},{quote:"His deportment suggested a man carrying secrets heavier than any suitcase.",author:"John le Carré style",book:'Tinker Tailor Soldier Spy'}],combinations:[{combo:'TRANS + PORT',result:'TRANSPORT',meaning:'carry across',prefixMeaning:'TRANS = across'},{combo:'IM + PORT',result:'IMPORT',meaning:'carry in',prefixMeaning:'IM = in, into'},{combo:'EX + PORT',result:'EXPORT',meaning:'carry out',prefixMeaning:'EX = out of'},{combo:'DE + PORT + MENT',result:'DEPORTMENT',meaning:'manner of carrying oneself',prefixMeaning:'DE = from; MENT = state'}]};
-  A.currentRoot=f;A.usedRoots.push('PORT');
-  setCardHeader(f);renderStep();updateStepUI();
-  showToast('📡 Offline mode — using sample root');
-}
-
+// ── TOAST ─────────────────────────────────────────
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
+// ── INIT ──────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
   updateTimerUI();setRole('student');
+  // Load voices for speech synthesis
+  if(window.speechSynthesis){
+    window.speechSynthesis.onvoiceschanged=()=>{};
+    window.speechSynthesis.getVoices();
+  }
   console.log(`WordRoot Academy v${APP_VERSION} (${APP_BUILD}) loaded`);
 });
 </script>
