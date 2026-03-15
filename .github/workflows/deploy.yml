@@ -26,7 +26,7 @@ jobs:
 
       - name: Validate index.html exists
         run: |
-          if [ ! -f "index.html" ]; then
+          if [ ! -f "wordroot-academy/index.html" ]; then
             echo "ERROR: index.html not found!"
             exit 1
           fi
@@ -38,7 +38,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './wordroot-academy'
 
   deploy:
     needs: build
