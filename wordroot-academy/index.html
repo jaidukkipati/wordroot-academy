@@ -448,6 +448,58 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   .ptab{font-size:.62rem;padding:8px 4px}
   .img-grid{grid-template-columns:1fr}
 }
+
+/* ── IDIOMS PANEL ── */
+.era-btn{padding:5px 13px;border-radius:99px;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.era-btn.active{background:var(--sun);border-color:var(--sun);color:var(--ink)}
+.era-btn:hover:not(.active){border-color:rgba(255,255,255,.5);color:white}
+
+.idiom-card-row{background:var(--white);border-radius:var(--rs);padding:14px 18px;margin-bottom:10px;border:2px solid rgba(26,26,46,.06);cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:14px;animation:slideUp .3s ease}
+.idiom-card-row:hover{border-color:var(--violet);transform:translateX(4px);box-shadow:var(--sh)}
+.idiom-era-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.idiom-era-dot.Modern{background:var(--mint)}
+.idiom-era-dot.Victorian{background:var(--sun)}
+.idiom-era-dot.Pre-Victorian{background:var(--coral)}
+.idiom-era-dot.Biblical{background:var(--violet)}
+.idiom-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:3px}
+.idiom-meaning-preview{font-size:.8rem;color:var(--ink3);line-height:1.4;margin-bottom:5px}
+.idiom-meta-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.idiom-tag{padding:2px 8px;border-radius:99px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.idiom-tag.Modern{background:#DCFCE7;color:#166534}
+.idiom-tag.Victorian{background:#FEF3C7;color:#92400E}
+.idiom-tag.Pre-Victorian{background:#FEE2E2;color:#991B1B}
+.idiom-tag.Biblical{background:#EDE9FE;color:#5B21B6}
+.idiom-region-tag{padding:2px 7px;border-radius:99px;font-size:.6rem;background:rgba(26,26,46,.07);color:var(--ink3);font-weight:600}
+.idiom-author-line{font-size:.7rem;color:var(--violet-d);font-weight:600}
+
+/* Modal */
+.modal-header{background:linear-gradient(135deg,var(--ink),var(--ink2));padding:24px 26px 18px;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{background:rgba(255,255,255,.25)}
+.modal-idiom-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;color:var(--sun);line-height:1.2;margin-bottom:6px}
+.modal-meaning{font-size:.95rem;color:rgba(255,255,255,.75);line-height:1.6}
+.modal-body{padding:20px 26px}
+.modal-section{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(26,26,46,.07)}
+.modal-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.modal-sec-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.modal-sec-icon{font-size:.85rem}
+.modal-origin-text{font-size:.88rem;color:var(--ink);line-height:1.7;background:var(--paper2);border-left:4px solid var(--violet);padding:12px 14px;border-radius:0 var(--rs) var(--rs) 0}
+.modal-example{font-family:'Fraunces',serif;font-style:italic;font-size:1rem;color:var(--ink);line-height:1.65;background:var(--paper2);padding:12px 14px;border-radius:var(--rs);border-left:4px solid var(--mint)}
+.modal-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-info-box{background:var(--paper2);border-radius:var(--rs);padding:10px 12px}
+.modal-info-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);font-weight:700;margin-bottom:3px}
+.modal-info-value{font-size:.85rem;color:var(--ink);font-weight:600}
+.modal-regions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.modal-region-pill{padding:3px 10px;border-radius:99px;background:rgba(26,26,46,.07);font-size:.72rem;color:var(--ink3);font-weight:600}
+.modal-related{display:flex;flex-wrap:wrap;gap:6px}
+.modal-related-pill{padding:4px 11px;border-radius:99px;background:#EDE9FE;color:var(--violet-d);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s}
+.modal-related-pill:hover{background:var(--violet);color:white}
+.modal-tags{display:flex;flex-wrap:wrap;gap:5px}
+.modal-tag-chip{padding:3px 9px;border-radius:99px;background:rgba(26,26,46,.06);font-size:.65rem;color:var(--ink3);font-weight:600}
+
+.pagination-btn{padding:7px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.pagination-btn.active{background:var(--ink);color:white;border-color:var(--ink)}
+.pagination-btn:hover:not(.active){border-color:var(--ink);background:rgba(26,26,46,.04)}
 </style>
 </head>
 <body>
@@ -521,6 +573,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
     <div class="panel-tabs">
       <button class="ptab active" onclick="showPanel('search')">🔍 Word Search</button>
       <button class="ptab" onclick="showPanel('learn')">📚 Root Learn</button>
+      <button class="ptab" onclick="showPanel('idioms')">💬 Idioms</button>
       <button class="ptab" onclick="showPanel('history')">📖 History</button>
       <button class="ptab" onclick="showPanel('stats')">📊 Stats</button>
     </div>
@@ -609,6 +662,35 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       </div>
     </div>
 
+
+    <!-- ══ IDIOMS PANEL ══ -->
+    <div id="panel-idioms" style="display:none">
+      <!-- Search + Filter Bar -->
+      <div style="background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--r);padding:20px 24px;margin-bottom:16px;box-shadow:var(--shl)">
+        <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;color:var(--sun);margin-bottom:4px">💬 Famous English Idioms</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:16px">Origins, history, era and geography of 100 iconic expressions</div>
+        <input type="text" id="idiomSearch" placeholder="Search idioms…" oninput="filterIdioms()" autocomplete="off"
+          style="width:100%;padding:10px 14px;border-radius:var(--rs);border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:white;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;margin-bottom:12px"/>
+        <div style="display:flex;gap:7px;flex-wrap:wrap" id="eraFilters">
+          <button class="era-btn active" onclick="setEraFilter('all',this)">All Eras</button>
+          <button class="era-btn" onclick="setEraFilter('Modern',this)">🕐 Modern</button>
+          <button class="era-btn" onclick="setEraFilter('Victorian',this)">🎩 Victorian</button>
+          <button class="era-btn" onclick="setEraFilter('Pre-Victorian',this)">📜 Pre-Victorian</button>
+          <button class="era-btn" onclick="setEraFilter('Biblical',this)">✝️ Biblical / Ancient</button>
+        </div>
+      </div>
+      <!-- Results count -->
+      <div style="font-size:.75rem;color:var(--ink3);margin-bottom:10px;padding:0 4px" id="idiomCount">Loading idioms…</div>
+      <!-- Idiom list -->
+      <div id="idiomList"></div>
+      <!-- Pagination -->
+      <div id="idiomPagination" style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
+      <!-- Detail modal overlay -->
+      <div id="idiomModal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(26,26,46,.85);overflow-y:auto;padding:20px" onclick="closeIdiomModal(event)">
+        <div id="idiomModalContent" style="max-width:680px;margin:0 auto;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--shl)" onclick="event.stopPropagation()"></div>
+      </div>
+    </div>
+
     <!-- ══ HISTORY PANEL ══ -->
     <div id="panel-history" style="display:none">
       <div class="main-card"><div style="padding:18px 22px">
@@ -648,7 +730,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="version-badge">v1.2.0</div>
+<div class="version-badge">v1.2.1</div>
 
 <script>
 /* ═══════════════════════════════════════════════════
@@ -740,7 +822,7 @@ const ROOT_DATABASE=[
 ];
 
 
-const APP_VERSION='1.2.0';
+const APP_VERSION='1.2.1';
 const APP_BUILD='2025-03-15';
 
 // ── STORAGE ───────────────────────────────────────
@@ -986,10 +1068,11 @@ function updateTimerUI(){
 
 // ── PANELS ────────────────────────────────────────
 function showPanel(p){
-  ['search','learn','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
-  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['search','learn','history','stats'][i]===p));
+  ['search','learn','idioms','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['search','learn','idioms','history','stats'][i]===p));
   if(p==='stats')updateStudentStats();
   if(p==='history')renderHistory();
+  if(p==='idioms')initIdiomsPanel();
 }
 
 // ══════════════════════════════════════════════════
@@ -1455,6 +1538,204 @@ function renderParentDashboard(sessions){
 }
 
 // ── TOAST ─────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════════
+//  IDIOMS ENGINE v1.2.0
+//  Loads from idioms.json (same repo folder)
+//  100 idioms with full detail: era, origin, geography, author, book
+// ══════════════════════════════════════════════════════════════════
+const IDIOMS_STATE={data:[],filtered:[],page:1,perPage:15,eraFilter:'all',searchQuery:'',loaded:false};
+
+async function initIdiomsPanel(){
+  if(IDIOMS_STATE.loaded){renderIdiomList();return;}
+  document.getElementById('idiomList').innerHTML=`<div style="text-align:center;padding:40px;color:var(--ink3)"><div class="spinner"></div><div style="margin-top:12px;font-style:italic">Loading idioms…</div></div>`;
+  try{
+    const resp=await fetch('idioms.json');
+    if(!resp.ok)throw new Error('Could not load idioms.json');
+    IDIOMS_STATE.data=await resp.json();
+    // Sort: Modern first, then Victorian, then Pre-Victorian, then Biblical/Ancient
+    const eraOrder={Modern:0,Victorian:1,'Pre-Victorian':2,Biblical:3,Ancient:3,Classical:3};
+    IDIOMS_STATE.data.sort((a,b)=>(eraOrder[a.era]??9)-(eraOrder[b.era]??9));
+    IDIOMS_STATE.filtered=[...IDIOMS_STATE.data];
+    IDIOMS_STATE.loaded=true;
+    renderIdiomList();
+  }catch(e){
+    console.error(e);
+    document.getElementById('idiomList').innerHTML=`
+      <div style="text-align:center;padding:40px;background:var(--paper2);border-radius:var(--r)">
+        <div style="font-size:2rem;margin-bottom:8px">📭</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:var(--ink);margin-bottom:6px">Idioms file not found</div>
+        <div style="font-size:.82rem;color:var(--ink3)">Make sure <strong>idioms.json</strong> is in the same folder as index.html in your GitHub repo.</div>
+      </div>`;
+  }
+}
+
+function setEraFilter(era,btn){
+  IDIOMS_STATE.eraFilter=era;IDIOMS_STATE.page=1;
+  document.querySelectorAll('.era-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  applyIdiomFilters();
+}
+
+function filterIdioms(){
+  IDIOMS_STATE.searchQuery=document.getElementById('idiomSearch').value.toLowerCase().trim();
+  IDIOMS_STATE.page=1;
+  applyIdiomFilters();
+}
+
+function applyIdiomFilters(){
+  let d=IDIOMS_STATE.data;
+  if(IDIOMS_STATE.eraFilter!=='all'){
+    d=d.filter(i=>i.era===IDIOMS_STATE.eraFilter||
+      (IDIOMS_STATE.eraFilter==='Biblical'&&(i.era==='Biblical'||i.era==='Ancient'||i.era==='Classical')));
+  }
+  if(IDIOMS_STATE.searchQuery){
+    const q=IDIOMS_STATE.searchQuery;
+    d=d.filter(i=>i.idiom.toLowerCase().includes(q)||
+      i.meaning.toLowerCase().includes(q)||
+      (i.tags||[]).some(t=>t.toLowerCase().includes(q))||
+      (i.region||[]).some(r=>r.toLowerCase().includes(q)));
+  }
+  IDIOMS_STATE.filtered=d;
+  renderIdiomList();
+}
+
+function renderIdiomList(){
+  const {filtered,page,perPage}=IDIOMS_STATE;
+  const total=filtered.length;
+  const totalPages=Math.ceil(total/perPage);
+  const start=(page-1)*perPage;
+  const slice=filtered.slice(start,start+perPage);
+
+  document.getElementById('idiomCount').textContent=`Showing ${start+1}–${Math.min(start+perPage,total)} of ${total} idioms`;
+
+  if(!slice.length){
+    document.getElementById('idiomList').innerHTML=`<div style="text-align:center;padding:40px;color:var(--ink3);font-style:italic">No idioms match your search.</div>`;
+    document.getElementById('idiomPagination').innerHTML='';
+    return;
+  }
+
+  const eraClass={Modern:'Modern',Victorian:'Victorian','Pre-Victorian':'Pre-Victorian',Biblical:'Biblical',Ancient:'Biblical',Classical:'Biblical'};
+
+  document.getElementById('idiomList').innerHTML=slice.map(idiom=>{
+    const era=eraClass[idiom.era]||'Modern';
+    const regions=(idiom.region||[]).slice(0,3).join(' · ');
+    return`<div class="idiom-card-row" onclick="openIdiomModal(${idiom.id})">
+      <div class="idiom-era-dot ${era}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="idiom-title">${idiom.idiom}</div>
+        <div class="idiom-meaning-preview">${idiom.meaning}</div>
+        <div class="idiom-meta-row">
+          <span class="idiom-tag ${era}">${idiom.era}</span>
+          <span class="idiom-author-line">📚 ${idiom.author||'Unknown'}</span>
+          <span class="idiom-region-tag">📍 ${regions}</span>
+        </div>
+      </div>
+      <div style="color:var(--ink3);font-size:1.1rem;flex-shrink:0">›</div>
+    </div>`;
+  }).join('');
+
+  // Pagination
+  let pages='';
+  if(page>1)pages+=`<button class="pagination-btn" onclick="goIdiomPage(${page-1})">← Prev</button>`;
+  const pStart=Math.max(1,page-2),pEnd=Math.min(totalPages,page+2);
+  for(let p=pStart;p<=pEnd;p++)pages+=`<button class="pagination-btn${p===page?' active':''}" onclick="goIdiomPage(${p})">${p}</button>`;
+  if(page<totalPages)pages+=`<button class="pagination-btn" onclick="goIdiomPage(${page+1})">Next →</button>`;
+  document.getElementById('idiomPagination').innerHTML=pages;
+}
+
+function goIdiomPage(p){
+  IDIOMS_STATE.page=p;
+  renderIdiomList();
+  document.getElementById('panel-idioms').scrollIntoView({behavior:'smooth'});
+}
+
+function openIdiomModal(id){
+  const idiom=IDIOMS_STATE.data.find(i=>i.id===id);
+  if(!idiom)return;
+  const eraClass={Modern:'Modern',Victorian:'Victorian','Pre-Victorian':'Pre-Victorian',Biblical:'Biblical',Ancient:'Biblical',Classical:'Biblical'};
+  const era=eraClass[idiom.era]||'Modern';
+  const regionPills=(idiom.region||[]).map(r=>`<span class="modal-region-pill">${r}</span>`).join('');
+  const relatedPills=(idiom.related_idioms||[]).map(r=>`<span class="modal-related-pill" onclick="searchIdiomRelated('${r}')">${r}</span>`).join('');
+  const tagChips=(idiom.tags||[]).map(t=>`<span class="modal-tag-chip">${t}</span>`).join('');
+
+  document.getElementById('idiomModalContent').innerHTML=`
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeIdiomModal()">✕</button>
+      <div><span class="idiom-tag ${era}" style="margin-bottom:8px;display:inline-block">${idiom.era} · ${idiom.century||''} century</span></div>
+      <div class="modal-idiom-title">${idiom.idiom}</div>
+      <div class="modal-meaning">${idiom.meaning}</div>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-section">
+        <div class="modal-sec-title"><span class="modal-sec-icon">💬</span> Example in Use</div>
+        <div class="modal-example">"${idiom.example}"</div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-sec-title"><span class="modal-sec-icon">📜</span> Origin & History</div>
+        <div class="modal-origin-text">${idiom.origin_detail}</div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-info-grid">
+          <div class="modal-info-box">
+            <div class="modal-info-label">📅 First Recorded</div>
+            <div class="modal-info-value">${idiom.year_first_used||'Unknown'}</div>
+          </div>
+          <div class="modal-info-box">
+            <div class="modal-info-label">📚 Source</div>
+            <div class="modal-info-value">${idiom.author||'Unknown'}</div>
+            <div style="font-size:.75rem;color:var(--ink3);font-style:italic;margin-top:2px">${idiom.book||''}</div>
+          </div>
+          <div class="modal-info-box">
+            <div class="modal-info-label">🏷️ Origin Type</div>
+            <div class="modal-info-value">${idiom.origin_type||'Unknown'}</div>
+          </div>
+          <div class="modal-info-box">
+            <div class="modal-info-label">🎯 Used In</div>
+            <div class="modal-info-value">${idiom.usage_context||'General use'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-sec-title"><span class="modal-sec-icon">📍</span> Where It's Used</div>
+        <div class="modal-regions">${regionPills}</div>
+      </div>
+
+      ${relatedPills?`<div class="modal-section">
+        <div class="modal-sec-title"><span class="modal-sec-icon">🔗</span> Related Expressions</div>
+        <div class="modal-related">${relatedPills}</div>
+      </div>`:''}
+
+      <div class="modal-section">
+        <div class="modal-sec-title"><span class="modal-sec-icon">🏷️</span> Tags</div>
+        <div class="modal-tags">${tagChips}</div>
+      </div>
+
+    </div>`;
+
+  document.getElementById('idiomModal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+
+function closeIdiomModal(event){
+  if(!event||event.target===document.getElementById('idiomModal')){
+    document.getElementById('idiomModal').style.display='none';
+    document.body.style.overflow='';
+  }
+}
+
+function searchIdiomRelated(term){
+  closeIdiomModal();
+  document.getElementById('idiomSearch').value=term;
+  IDIOMS_STATE.searchQuery=term.toLowerCase();
+  IDIOMS_STATE.page=1;
+  applyIdiomFilters();
+}
+
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
