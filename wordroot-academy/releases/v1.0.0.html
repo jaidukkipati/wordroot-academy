@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WordRoot Academy — Etymology Workbook</title>
+<meta name="description" content="AI-powered etymology workbook for advanced vocabulary learning. Master Latin, Greek, and Anglo-Saxon root words with a 4-step learning system."/>
+<meta name="author" content="WordRoot Academy"/>
+<meta property="og:title" content="WordRoot Academy"/>
+<meta property="og:description" content="Master etymology and vocabulary through root words, combinations, literary context and revision quizzes."/>
+<meta property="og:type" content="website"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600;700&family=Fira+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════
+   WordRoot Academy v1.0.0
+   Build: 2025-01-01
+   Storage: localStorage (cross-device via Firebase optional)
+═══════════════════════════════════════════════════ */
+:root {
+  --sun:#FFD93D;--sun-d:#F4A300;--coral:#FF6B6B;--coral-d:#E63946;
+  --mint:#06D6A0;--mint-d:#05A77D;--sky:#4CC9F0;--sky-d:#0096C7;
+  --violet:#9B5DE5;--violet-d:#6A0DAD;--rose:#FF9EBB;
+  --ink:#1A1A2E;--ink2:#2D2D4E;--ink3:#4A4A6A;
+  --paper:#FFFDF5;--paper2:#FFF8EC;--white:#FFFFFF;
+  --r:18px;--rs:10px;--sh:0 8px 32px rgba(26,26,46,.12);--shl:0 16px 48px rgba(26,26,46,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:
+  radial-gradient(ellipse 700px 500px at 10% 20%,rgba(255,217,61,.10) 0%,transparent 60%),
+  radial-gradient(ellipse 600px 400px at 90% 80%,rgba(155,93,229,.08) 0%,transparent 60%),
+  radial-gradient(ellipse 500px 400px at 50% 50%,rgba(6,214,160,.06) 0%,transparent 70%);
+  pointer-events:none}
+.screen{position:relative;z-index:1;display:none;min-height:100vh}
+.screen.active{display:flex}
+/* ── AUTH ── */
+#authScreen{align-items:center;justify-content:center;padding:20px}
+.auth-box{width:100%;max-width:440px;background:var(--white);border-radius:24px;box-shadow:var(--shl);overflow:hidden}
+.auth-hero{background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);padding:36px 36px 28px;text-align:center;position:relative;overflow:hidden}
+.auth-hero::before{content:'✦';position:absolute;font-size:12rem;color:rgba(255,217,61,.05);top:-30px;right:-20px;line-height:1;pointer-events:none}
+.auth-logo{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);letter-spacing:-0.5px;margin-bottom:4px}
+.auth-logo span{color:var(--mint)}
+.auth-tagline{font-size:.82rem;color:rgba(255,255,255,.55);font-style:italic}
+.auth-tabs{display:flex;background:rgba(255,255,255,.07);border-radius:10px;padding:3px;margin-top:20px}
+.auth-tab{flex:1;padding:8px;text-align:center;cursor:pointer;border-radius:8px;font-size:.78rem;font-weight:600;color:rgba(255,255,255,.55);transition:all .2s;border:none;background:none}
+.auth-tab.active{background:var(--sun);color:var(--ink)}
+.auth-body{padding:28px 32px 32px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:6px}
+.field input,.field select{width:100%;padding:11px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--paper);color:var(--ink);transition:border .2s;outline:none}
+.field input:focus,.field select:focus{border-color:var(--violet)}
+.role-toggle{display:flex;gap:8px;margin-bottom:16px}
+.role-btn{flex:1;padding:10px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.role-btn.active.student{background:#EDE9FE;border-color:var(--violet);color:var(--violet-d)}
+.role-btn.active.parent{background:#FEF3C7;border-color:var(--sun-d);color:var(--sun-d)}
+.role-btn:hover:not(.active){border-color:var(--ink3)}
+.auth-btn{width:100%;padding:13px;border-radius:var(--rs);border:none;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px}
+.auth-btn.student-btn{background:linear-gradient(135deg,var(--violet),var(--sky));color:white}
+.auth-btn.parent-btn{background:linear-gradient(135deg,var(--sun),var(--coral));color:var(--ink)}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.auth-err{background:#FEE2E2;color:#991B1B;border-radius:var(--rs);padding:10px 14px;font-size:.82rem;margin-bottom:12px;display:none}
+.auth-divider{text-align:center;font-size:.75rem;color:var(--ink3);margin:12px 0;position:relative}
+.auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(26,26,46,.08)}
+.auth-divider span{background:var(--white);padding:0 10px;position:relative}
+/* ── STUDENT APP ── */
+#studentScreen{flex-direction:column}
+.s-wrap{max-width:900px;width:100%;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1}
+.s-header{display:flex;align-items:center;justify-content:space-between;background:var(--ink);border-radius:var(--r);padding:16px 22px;margin-bottom:18px;box-shadow:var(--shl)}
+.s-logo{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;color:var(--sun)}
+.s-logo span{color:var(--mint)}
+.s-user{display:flex;align-items:center;gap:10px}
+.s-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--sky));display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:.85rem}
+.s-name{font-size:.82rem;color:rgba(255,255,255,.7);font-weight:500}
+.s-xp{background:var(--sun);color:var(--ink);border-radius:99px;padding:3px 10px;font-size:.72rem;font-weight:700}
+.logout-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);border-radius:var(--rs);padding:5px 10px;font-size:.7rem;cursor:pointer;transition:all .2s}
+.logout-btn:hover{background:rgba(255,255,255,.18);color:white}
+.timer-bar{display:flex;align-items:center;gap:12px;background:var(--ink2);border-radius:var(--r);padding:13px 20px;margin-bottom:16px;box-shadow:var(--sh)}
+.t-label{font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.t-track{flex:1;height:8px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.t-fill{height:100%;border-radius:99px;transition:width 1s linear;background:linear-gradient(90deg,var(--mint),var(--sky))}
+.t-fill.warn{background:linear-gradient(90deg,var(--coral),var(--sun))}
+.t-clock{font-family:'Fira Mono',monospace;font-size:1.1rem;color:var(--sun);min-width:55px;text-align:right}
+.t-btn{background:var(--sun);color:var(--ink);border:none;border-radius:var(--rs);padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.t-btn:hover{background:var(--sun-d);transform:scale(1.04)}
+.fam-tabs{display:flex;gap:7px;margin-bottom:15px;flex-wrap:wrap}
+.ftab{padding:6px 14px;border-radius:99px;border:2px solid transparent;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;background:var(--white);color:var(--ink3)}
+.ftab.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.ftab:hover:not(.active){border-color:var(--ink3);color:var(--ink)}
+.prog-row{display:flex;gap:8px;margin-bottom:16px}
+.prog-card{flex:1;border-radius:var(--rs);padding:10px 12px;background:var(--white);border:2px solid transparent;box-shadow:0 2px 10px rgba(0,0,0,.05);cursor:pointer;transition:all .2s;text-align:center}
+.prog-card.active{border-color:var(--ink);transform:translateY(-2px);box-shadow:var(--sh)}
+.prog-card:hover{transform:translateY(-2px)}
+.prog-icon{font-size:1.1rem;margin-bottom:3px}
+.prog-name{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
+.main-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shl);overflow:hidden;margin-bottom:16px;border:2px solid rgba(26,26,46,.05)}
+.card-top{padding:24px 28px 18px;background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 100%);position:relative;overflow:hidden}
+.card-top::after{content:attr(data-emoji);position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:.12;pointer-events:none}
+.origin-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border-radius:99px;padding:3px 10px;margin-bottom:8px}
+.origin-tag span{font-size:.68rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.5px}
+.origin-full{font-family:'Fraunces',serif;font-style:italic;color:var(--sun);font-size:.82rem}
+.root-title{font-family:'Fraunces',serif;font-size:2.6rem;font-weight:900;color:var(--white);letter-spacing:-1px;line-height:1;margin-bottom:3px}
+.root-meaning{font-size:.95rem;color:rgba(255,255,255,.65)}
+.root-meaning strong{color:var(--sun);font-weight:700}
+.step-tabs{display:flex;border-bottom:2px solid rgba(26,26,46,.07)}
+.stab{flex:1;padding:11px 6px;text-align:center;cursor:pointer;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border:none;border-bottom:3px solid transparent;margin-bottom:-2px;background:none;transition:all .2s}
+.stab.s1.on{border-bottom-color:#FF6B6B;color:#FF6B6B}
+.stab.s2.on{border-bottom-color:#FFD93D;color:#D97706}
+.stab.s3.on{border-bottom-color:#06D6A0;color:#05A77D}
+.stab.s4.on{border-bottom-color:#9B5DE5;color:#6A0DAD}
+.stab:hover:not(.on){background:rgba(26,26,46,.03)}
+.snum{display:inline-block;width:18px;height:18px;border-radius:50%;font-size:.6rem;line-height:18px;text-align:center;background:rgba(26,26,46,.08);margin-bottom:3px}
+.stab.s1.on .snum{background:#FF6B6B;color:white}
+.stab.s2.on .snum{background:#FFD93D;color:var(--ink)}
+.stab.s3.on .snum{background:#06D6A0;color:white}
+.stab.s4.on .snum{background:#9B5DE5;color:white}
+.step-content{padding:20px 24px;min-height:360px}
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px}
+.spinner{width:36px;height:36px;border:3px solid rgba(26,26,46,.1);border-top-color:var(--violet);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Fraunces',serif;font-style:italic;color:var(--ink3);font-size:.95rem}
+.memory-box{background:linear-gradient(135deg,rgba(255,217,61,.12),rgba(255,107,107,.08));border-radius:var(--rs);border-left:4px solid var(--sun);padding:12px 14px;margin-bottom:14px}
+.mem-label{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:3px;font-weight:700}
+.mem-text{font-size:.88rem;color:var(--ink);font-style:italic}
+.branches-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bw{padding:7px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);cursor:pointer;transition:all .2s;text-align:center;animation:popIn .3s ease backwards}
+.bw:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.1);border-color:var(--coral)}
+.bw-word{font-weight:700;font-size:.82rem;color:var(--ink)}
+.bw-pos{font-size:.62rem;color:var(--ink3)}
+.bw-badge{display:inline-block;padding:2px 6px;border-radius:99px;font-size:.58rem;font-weight:700;text-transform:uppercase;margin-top:2px}
+.bw-badge.beginner{background:#DCFCE7;color:#166534}
+.bw-badge.intermediate{background:#FEF3C7;color:#92400E}
+.bw-badge.advanced{background:#EDE9FE;color:#5B21B6}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.word-detail{background:var(--paper2);border-radius:var(--r);padding:16px 18px;margin-top:14px;border:2px solid rgba(26,26,46,.07);animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.wd-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.wd-word{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;color:var(--ink)}
+.wd-pron{font-family:'Fira Mono',monospace;font-size:.82rem;color:var(--ink3)}
+.wd-pos{background:var(--ink);color:white;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:600}
+.wd-meaning{font-size:.92rem;color:var(--ink);line-height:1.6;margin-bottom:8px}
+.wd-root-note{font-size:.75rem;color:var(--ink3);background:rgba(26,26,46,.04);padding:7px 11px;border-radius:7px}
+.highlight{background:rgba(255,217,61,.35);padding:1px 3px;border-radius:3px;font-weight:700}
+.combo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.combo-card{background:var(--paper2);border-radius:var(--rs);padding:14px;border:2px solid rgba(26,26,46,.06);transition:all .2s}
+.combo-card:hover{border-color:var(--sun);transform:translateY(-2px);box-shadow:var(--sh)}
+.combo-formula{font-family:'Fira Mono',monospace;font-size:.72rem;color:var(--ink3);margin-bottom:5px}
+.combo-plus{color:var(--sun);font-weight:700}
+.combo-result{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:3px}
+.combo-meaning{font-size:.78rem;color:var(--ink3);line-height:1.4}
+.prefix-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.pfx{padding:5px 11px;border-radius:var(--rs);background:var(--white);border:2px solid rgba(26,26,46,.09);font-size:.72rem;font-weight:600;cursor:default;transition:all .2s}
+.pfx:hover{background:var(--sun);border-color:var(--sun);color:var(--ink);transform:scale(1.04)}
+.pfx-m{font-size:.6rem;color:var(--ink3);font-weight:400}
+.sent-card{background:var(--paper2);border-radius:var(--rs);padding:16px;margin-bottom:12px;border-left:4px solid var(--mint);animation:popIn .3s ease backwards}
+.sent-tag{display:inline-block;background:var(--mint);color:white;padding:2px 9px;border-radius:99px;font-size:.65rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.sent-text{font-family:'Fraunces',serif;font-size:.98rem;font-style:italic;color:var(--ink);line-height:1.65;margin-bottom:8px}
+.sent-auth{font-size:.72rem;color:var(--ink3)}
+.sent-auth::before{content:'— '}
+.lit-quote{background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--rs);padding:18px;margin-top:14px;color:white;position:relative;overflow:hidden}
+.lit-quote::before{content:'"';position:absolute;left:10px;top:-8px;font-size:5rem;color:rgba(255,217,61,.12);font-family:'Fraunces',serif;line-height:1;pointer-events:none}
+.lit-text{font-family:'Fraunces',serif;font-style:italic;font-size:.92rem;line-height:1.7;color:rgba(255,255,255,.9);margin-bottom:8px;position:relative;z-index:1}
+.lit-credit{font-size:.68rem;color:var(--sun);font-weight:600}
+.lit-book{color:rgba(255,255,255,.5);font-style:italic}
+.quiz-wrap{background:var(--paper2);border-radius:var(--r);padding:20px;border:2px solid rgba(26,26,46,.06)}
+.quiz-q{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--ink);margin-bottom:16px;line-height:1.5}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.qopt{padding:12px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);background:var(--white);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif}
+.qopt:hover:not(.sel){border-color:var(--violet);background:rgba(155,93,229,.05)}
+.qopt.correct{background:#DCFCE7;border-color:var(--mint);color:#166534}
+.qopt.wrong{background:#FEE2E2;border-color:var(--coral);color:#991B1B}
+.quiz-fb{padding:12px 16px;border-radius:var(--rs);font-size:.84rem;line-height:1.5;font-weight:500;animation:slideUp .3s ease;margin-top:4px}
+.quiz-fb.correct{background:#DCFCE7;color:#166534}
+.quiz-fb.wrong{background:#FEE2E2;color:#991B1B}
+.complete-banner{text-align:center;padding:20px}
+.complete-emoji{font-size:3rem;display:block;margin-bottom:6px}
+.complete-title{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:900;color:var(--ink);margin-bottom:4px}
+.complete-sub{color:var(--ink3);font-size:.85rem;margin-bottom:16px}
+.comp-stats{display:flex;justify-content:center;gap:20px;margin-bottom:16px}
+.cs-item{text-align:center}
+.cs-val{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;line-height:1}
+.cs-lab{font-size:.65rem;text-transform:uppercase;color:var(--ink3);letter-spacing:.5px}
+.action-bar{display:flex;gap:8px;justify-content:space-between;align-items:center}
+.btn{padding:10px 20px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;border:none}
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.btn-primary{background:var(--ink);color:white}
+.btn-secondary{background:var(--white);color:var(--ink);border:2px solid rgba(26,26,46,.1)}
+.btn-accent{background:var(--sun);color:var(--ink)}
+.btn-skip{background:transparent;color:var(--ink3);border:2px solid rgba(26,26,46,.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.panel-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--white);border-radius:var(--rs);padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.ptab{flex:1;padding:8px 8px;text-align:center;cursor:pointer;border-radius:7px;font-size:.72rem;font-weight:600;color:var(--ink3);transition:all .2s;border:none;background:none}
+.ptab.active{background:var(--ink);color:white}
+.ptab:hover:not(.active){background:rgba(26,26,46,.05)}
+.hist-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.06);margin-bottom:7px;background:var(--white);transition:all .2s}
+.hist-item:hover{border-color:var(--ink);transform:translateX(4px)}
+.hi-root{font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;flex:1}
+.hi-m{font-size:.72rem;color:var(--ink3)}
+.hi-b{font-size:.62rem;padding:2px 7px;border-radius:99px;font-weight:700;text-transform:uppercase}
+.hi-b.done{background:#DCFCE7;color:#166534}
+.hi-b.skip{background:#FEF3C7;color:#92400E}
+.stats-g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.stat-c{background:var(--white);border-radius:var(--rs);padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);text-align:center}
+.stat-icon{font-size:1.3rem;margin-bottom:3px}
+.stat-val{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:900;color:var(--ink);line-height:1}
+.stat-lab{font-size:.62rem;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-top:2px}
+.month-bar-wrap{background:var(--white);border-radius:var(--rs);padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.mb-label{display:flex;justify-content:space-between;font-size:.78rem;font-weight:600;margin-bottom:7px}
+.mb-track{height:10px;background:rgba(26,26,46,.08);border-radius:99px;overflow:hidden}
+.mb-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--sky));transition:width .6s ease}
+.session-complete{background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:var(--r);padding:32px;text-align:center;color:white;box-shadow:var(--shl)}
+.sc-emoji{font-size:3.5rem;display:block;margin-bottom:10px}
+.sc-title{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);margin-bottom:5px}
+.sc-sub{color:rgba(255,255,255,.6);font-size:.88rem;margin-bottom:20px}
+.sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.sc-stat{background:rgba(255,255,255,.07);border-radius:var(--rs);padding:12px}
+.sc-val{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;color:var(--sun)}
+.sc-lab{font-size:.62rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px}
+/* ── PARENT DASHBOARD ── */
+#parentScreen{flex-direction:column;background:#0F0F1A}
+.pd-wrap{max-width:1000px;width:100%;margin:0 auto;padding:20px 16px 60px;position:relative;z-index:1}
+.pd-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,#1A1A2E,#2D2D4E);border-radius:var(--r);margin-bottom:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.pd-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--sun)}
+.pd-sub{font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px}
+.pd-logout{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);border-radius:var(--rs);padding:6px 14px;font-size:.72rem;cursor:pointer;transition:all .2s}
+.pd-logout:hover{background:rgba(255,255,255,.12);color:white}
+.pd-no-data{text-align:center;padding:60px 20px;color:rgba(255,255,255,.3)}
+.pd-no-data div{font-size:3rem;margin-bottom:12px}
+.pd-no-data p{font-size:.9rem}
+.pd-section-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:12px;margin-top:20px;letter-spacing:.3px}
+.student-select{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.stu-btn{padding:8px 18px;border-radius:99px;border:2px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.6);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
+.stu-btn.active{background:var(--violet);border-color:var(--violet);color:white}
+.stu-btn:hover:not(.active){border-color:rgba(255,255,255,.3);color:white}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:18px;text-align:center;transition:all .2s}
+.kpi:hover{background:rgba(255,255,255,.08);transform:translateY(-2px)}
+.kpi-icon{font-size:1.6rem;margin-bottom:6px}
+.kpi-val{font-family:'Fraunces',serif;font-size:2rem;font-weight:900;color:var(--sun);line-height:1}
+.kpi-lab{font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.4);margin-top:3px}
+.session-list{background:rgba(255,255,255,.04);border-radius:var(--r);border:1px solid rgba(255,255,255,.07);overflow:hidden;margin-bottom:20px}
+.sl-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;padding:10px 16px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.06)}
+.sl-th{font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.35);font-weight:700}
+.sl-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
+.sl-row:hover{background:rgba(255,255,255,.04)}
+.sl-row:last-child{border-bottom:none}
+.sl-td{font-size:.78rem;color:rgba(255,255,255,.7);display:flex;align-items:center}
+.sl-date{font-weight:600;color:rgba(255,255,255,.9)}
+.sl-badge{padding:2px 8px;border-radius:99px;font-size:.62rem;font-weight:700;text-transform:uppercase}
+.sl-badge.great{background:rgba(6,214,160,.2);color:var(--mint)}
+.sl-badge.good{background:rgba(255,217,61,.15);color:var(--sun)}
+.sl-badge.low{background:rgba(255,107,107,.15);color:var(--coral)}
+.word-list-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.wl-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;transition:all .2s}
+.wl-card:hover{background:rgba(255,255,255,.07);transform:translateY(-2px)}
+.wl-word{font-family:'Fraunces',serif;font-weight:700;color:white;font-size:.92rem}
+.wl-root{font-size:.65rem;color:var(--sun);font-weight:600;margin-bottom:2px}
+.wl-meaning{font-size:.68rem;color:rgba(255,255,255,.45);line-height:1.4}
+.wl-date{font-size:.6rem;color:rgba(255,255,255,.25);margin-top:4px}
+.progress-chart{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:20px}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:10px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--violet),var(--sky));transition:height .5s ease;min-height:4px}
+.chart-bar-label{font-size:.58rem;color:rgba(255,255,255,.35);text-align:center}
+.chart-bar-val{font-size:.6rem;color:rgba(255,255,255,.5);text-align:center}
+.goal-bar{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:20px}
+.goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.goal-title{font-family:'Fraunces',serif;color:rgba(255,255,255,.8);font-size:.95rem;font-weight:700}
+.goal-count{font-family:'Fira Mono',monospace;color:var(--sun);font-size:.9rem}
+.goal-track{height:14px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--sky));transition:width .6s ease}
+.goal-labels{display:flex;justify-content:space-between;margin-top:6px}
+.goal-lab{font-size:.65rem;color:rgba(255,255,255,.3)}
+.acc-bar{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.acc-bar:last-child{border-bottom:none}
+.acc-root{font-family:'Fraunces',serif;font-size:.88rem;color:rgba(255,255,255,.8);width:80px;flex-shrink:0}
+.acc-track{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden}
+.acc-fill{height:100%;border-radius:99px;transition:width .5s ease}
+.acc-fill.high{background:var(--mint)}
+.acc-fill.mid{background:var(--sun)}
+.acc-fill.low{background:var(--coral)}
+.acc-pct{font-size:.72rem;color:rgba(255,255,255,.4);min-width:36px;text-align:right}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:white;padding:10px 22px;border-radius:99px;font-weight:600;font-size:.83rem;z-index:200;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.version-badge{position:fixed;bottom:8px;right:12px;font-size:.6rem;color:rgba(26,26,46,.3);font-family:'Fira Mono',monospace;z-index:100}
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .word-list-grid{grid-template-columns:repeat(2,1fr)}
+  .sl-header,.sl-row{grid-template-columns:2fr 1fr 1fr}
+  .sl-header .sl-th:nth-child(4),.sl-header .sl-th:nth-child(5),.sl-row .sl-td:nth-child(4),.sl-row .sl-td:nth-child(5){display:none}
+  .combo-grid,.quiz-opts{grid-template-columns:1fr}
+  .sc-grid{grid-template-columns:1fr 1fr}
+  .root-title{font-size:2rem}
+  .auth-body{padding:20px 20px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ AUTH SCREEN ═══════════ -->
+<div id="authScreen" class="screen active">
+  <div class="auth-box">
+    <div class="auth-hero">
+      <div class="auth-logo">Word<span>Root</span> Academy</div>
+      <div class="auth-tagline">Master etymology, unlock vocabulary, think deeply</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+    </div>
+    <div class="auth-body">
+      <div id="authErr" class="auth-err"></div>
+      <div id="roleSection">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:8px">I am a…</div>
+        <div class="role-toggle">
+          <button class="role-btn student active" id="roleStudent" onclick="setRole('student')">📚 Student</button>
+          <button class="role-btn parent" id="roleParent" onclick="setRole('parent')">👁 Parent / Monitor</button>
+        </div>
+      </div>
+      <div id="loginForm">
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"/></div>
+        <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"/></div>
+        <button class="auth-btn student-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+        <div class="auth-divider"><span>or</span></div>
+        <div style="text-align:center;font-size:.78rem;color:var(--ink3)">No account? <a href="#" onclick="switchAuthTab('register');return false" style="color:var(--violet);font-weight:600">Register here</a></div>
+      </div>
+      <div id="registerForm" style="display:none">
+        <div class="field"><label>Full Name</label><input type="text" id="regName" placeholder="Your name"/></div>
+        <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"/></div>
+        <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="Min 6 characters"/></div>
+        <div id="parentLinkField" class="field" style="display:none">
+          <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional — link to your child's account)</span></label>
+          <input type="email" id="regLinkedStudent" placeholder="student@example.com"/>
+        </div>
+        <button class="auth-btn student-btn" id="regBtn" onclick="doRegister()">Create Account →</button>
+        <div class="auth-divider"><span>or</span></div>
+        <div style="text-align:center;font-size:.78rem;color:var(--ink3)">Have an account? <a href="#" onclick="switchAuthTab('login');return false" style="color:var(--violet);font-weight:600">Sign in</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ STUDENT SCREEN ═══════════ -->
+<div id="studentScreen" class="screen">
+  <div class="s-wrap">
+    <div class="s-header">
+      <div class="s-logo">Word<span>Root</span></div>
+      <div class="s-user">
+        <div class="s-avatar" id="sAvatar">?</div>
+        <div><div class="s-name" id="sName">Student</div><div class="s-xp" id="sXp">0 XP</div></div>
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+      </div>
+    </div>
+    <div class="timer-bar">
+      <div class="t-label">📅 Session</div>
+      <div class="t-track"><div class="t-fill" id="tFill" style="width:100%"></div></div>
+      <div class="t-clock" id="tClock">30:00</div>
+      <button class="t-btn" id="tBtn" onclick="toggleTimer()">Start</button>
+    </div>
+    <div class="panel-tabs">
+      <button class="ptab active" onclick="showPanel('learn')">📚 Learn</button>
+      <button class="ptab" onclick="showPanel('history')">📖 History</button>
+      <button class="ptab" onclick="showPanel('stats')">📊 My Stats</button>
+    </div>
+    <div id="panel-learn">
+      <div class="fam-tabs">
+        <button class="ftab active" onclick="setFamily('all',this)">🌍 All</button>
+        <button class="ftab" onclick="setFamily('Latin',this)">🏛 Latin</button>
+        <button class="ftab" onclick="setFamily('Greek',this)">⚗️ Greek</button>
+        <button class="ftab" onclick="setFamily('Anglo-Saxon',this)">⚔️ Anglo-Saxon</button>
+      </div>
+      <div class="prog-row">
+        <div class="prog-card active" id="pc1" onclick="goStep(1)"><div class="prog-icon">📖</div><div class="prog-name">Root Learn</div></div>
+        <div class="prog-card" id="pc2" onclick="goStep(2)"><div class="prog-icon">🔗</div><div class="prog-name">Combine</div></div>
+        <div class="prog-card" id="pc3" onclick="goStep(3)"><div class="prog-icon">✍️</div><div class="prog-name">Sentences</div></div>
+        <div class="prog-card" id="pc4" onclick="goStep(4)"><div class="prog-icon">🧪</div><div class="prog-name">Quiz</div></div>
+      </div>
+      <div class="main-card" id="mainCard">
+        <div class="card-top" id="cardTop" data-emoji="📖">
+          <div class="origin-tag"><span id="rOrigin">—</span><span class="origin-full" id="rOriginFull"></span></div>
+          <div class="root-title" id="rTitle">—</div>
+          <div class="root-meaning">means: <strong id="rMeaning">—</strong></div>
+        </div>
+        <div class="step-tabs">
+          <button class="stab s1 on" id="stab1" onclick="goStep(1)"><div class="snum">1</div><br/>Explore</button>
+          <button class="stab s2" id="stab2" onclick="goStep(2)"><div class="snum">2</div><br/>Build</button>
+          <button class="stab s3" id="stab3" onclick="goStep(3)"><div class="snum">3</div><br/>Context</button>
+          <button class="stab s4" id="stab4" onclick="goStep(4)"><div class="snum">4</div><br/>Quiz</button>
+        </div>
+        <div class="step-content" id="stepContent">
+          <div class="loading-state"><div class="spinner"></div><div class="loading-text">Loading your first root...</div></div>
+        </div>
+      </div>
+      <div class="action-bar">
+        <button class="btn btn-skip" onclick="skipRoot()">⏭ Skip</button>
+        <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>← Prev</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next →</button>
+        <button class="btn btn-accent" onclick="newRoot()">🎲 New Root</button>
+      </div>
+    </div>
+    <div id="panel-history" style="display:none">
+      <div class="main-card"><div style="padding:18px 22px">
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:12px">📖 Roots Studied This Session</div>
+        <div id="historyList" style="max-height:400px;overflow-y:auto">
+          <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No roots yet — start learning!</div>
+        </div>
+      </div></div>
+    </div>
+    <div id="panel-stats" style="display:none">
+      <div class="stats-g">
+        <div class="stat-c"><div class="stat-icon">📚</div><div class="stat-val" id="ss-roots">0</div><div class="stat-lab">Roots Done</div></div>
+        <div class="stat-c"><div class="stat-icon">🔤</div><div class="stat-val" id="ss-words">0</div><div class="stat-lab">Words Explored</div></div>
+        <div class="stat-c"><div class="stat-icon">🎯</div><div class="stat-val" id="ss-acc">0%</div><div class="stat-lab">Quiz Accuracy</div></div>
+        <div class="stat-c"><div class="stat-icon">🔥</div><div class="stat-val" id="ss-streak">1</div><div class="stat-lab">Day Streak</div></div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="mb-label"><span>Monthly Goal</span><span id="ss-month">0 / 1000 roots</span></div>
+        <div class="mb-track"><div class="mb-fill" id="ss-mbar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PARENT DASHBOARD ═══════════ -->
+<div id="parentScreen" class="screen">
+  <div class="pd-wrap">
+    <div class="pd-header">
+      <div><div class="pd-title">👁 Parent Dashboard</div><div class="pd-sub" id="pdWelcome">Monitoring your learner's progress</div></div>
+      <button class="pd-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+    <div id="pdStudentSelector"></div>
+    <div id="pdContent">
+      <div class="pd-no-data"><div>📊</div><p>Select a student above to view their progress.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="version-badge" id="versionBadge">v1.0.0</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   WordRoot Academy — Main Application
+   Version: 1.0.0
+   Storage: localStorage (same-device persistence)
+   API: Anthropic Claude claude-sonnet-4-20250514
+═══════════════════════════════════════════════════ */
+const APP_VERSION = '1.0.0';
+const APP_BUILD   = '2025-01-01';
+document.getElementById('versionBadge').textContent = 'v' + APP_VERSION;
+
+// ── STORAGE (localStorage — works on any deployed host) ──────────────
+function storeGet(key){
+  try{const v=localStorage.getItem('wra:'+key);return v?JSON.parse(v):null}catch{return null}
+}
+function storeSet(key,val){
+  try{localStorage.setItem('wra:'+key,JSON.stringify(val))}catch(e){console.warn('store:',e)}
+}
+function storeList(prefix){
+  try{
+    return Object.keys(localStorage)
+      .filter(k=>k.startsWith('wra:'+prefix))
+      .map(k=>k.replace('wra:',''));
+  }catch{return[]}
+}
+function storeDel(key){
+  try{localStorage.removeItem('wra:'+key)}catch{}
+}
+
+// ── APP STATE ─────────────────────────────────────────────────────────
+const A={
+  currentUser:null,currentRole:null,currentRoot:null,
+  step:1,family:'all',timeLeft:1800,timerOn:false,timerInt:null,
+  sessionData:{roots:[],words:[],quizC:0,quizT:0,startTime:null,xp:0},
+  selectedWord:null,quizAnswered:false,usedRoots:[],
+  selectedStudentEmail:null,authTab:'login',authRole:'student'
+};
+
+// ── AUTH UI ───────────────────────────────────────────────────────────
+function switchAuthTab(t){
+  A.authTab=t;
+  document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',['login','register'][i]===t));
+  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
+  clearErr();
+}
+function setRole(r){
+  A.authRole=r;
+  document.getElementById('roleStudent').classList.toggle('active',r==='student');
+  document.getElementById('roleParent').classList.toggle('active',r==='parent');
+  document.getElementById('loginBtn').className='auth-btn '+(r==='student'?'student-btn':'parent-btn');
+  document.getElementById('regBtn').className='auth-btn '+(r==='student'?'student-btn':'parent-btn');
+  document.getElementById('parentLinkField').style.display=r==='parent'&&A.authTab==='register'?'block':'none';
+}
+function showErr(m){const e=document.getElementById('authErr');e.textContent=m;e.style.display='block'}
+function clearErr(){document.getElementById('authErr').style.display='none'}
+
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('regPassword').value;
+  const linked=document.getElementById('regLinkedStudent').value.trim().toLowerCase();
+  if(!name||!email||!pass){showErr('Please fill all required fields.');return}
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return}
+  if(storeGet('user:'+email)){showErr('An account with this email already exists.');return}
+  const user={name,email,role:A.authRole,createdAt:Date.now(),linkedStudent:linked||null,appVersion:APP_VERSION};
+  storeSet('user:'+email,user);
+  storeSet('pass:'+email,btoa(pass));
+  showToast('Account created! Signing you in...');
+  clearErr();
+  setTimeout(()=>signIn(user),600);
+}
+
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPassword').value;
+  if(!email||!pass){showErr('Please enter email and password.');return}
+  const user=storeGet('user:'+email);
+  const stored=storeGet('pass:'+email);
+  if(!user||!stored||stored!==btoa(pass)){showErr('Incorrect email or password.');return}
+  if(user.role!==A.authRole){showErr(`This is a "${user.role}" account. Please select the correct role above.`);return}
+  clearErr();signIn(user);
+}
+
+function signIn(user){
+  A.currentUser=user;A.currentRole=user.role;
+  document.getElementById('authScreen').classList.remove('active');
+  if(user.role==='parent'){
+    document.getElementById('parentScreen').classList.add('active');
+    initParentDashboard();
+  }else{
+    document.getElementById('studentScreen').classList.add('active');
+    initStudentApp();
+  }
+}
+
+function doLogout(){
+  A.currentUser=null;A.currentRole=null;
+  clearInterval(A.timerInt);A.timerOn=false;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('authScreen').classList.add('active');
+  switchAuthTab('login');
+}
+
+// ── STUDENT APP ───────────────────────────────────────────────────────
+function initStudentApp(){
+  const u=A.currentUser;
+  document.getElementById('sAvatar').textContent=u.name[0].toUpperCase();
+  document.getElementById('sName').textContent=u.name;
+  A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
+  A.usedRoots=[];A.timeLeft=1800;
+  updateTimerUI();newRoot();
+}
+
+function toggleTimer(){
+  if(A.timerOn){clearInterval(A.timerInt);A.timerOn=false;document.getElementById('tBtn').textContent='Resume';}
+  else{
+    A.timerOn=true;document.getElementById('tBtn').textContent='Pause';
+    A.timerInt=setInterval(()=>{A.timeLeft--;updateTimerUI();if(A.timeLeft<=0){clearInterval(A.timerInt);A.timerOn=false;endSession();}},1000);
+  }
+}
+function updateTimerUI(){
+  const m=String(Math.floor(A.timeLeft/60)).padStart(2,'0'),s=String(A.timeLeft%60).padStart(2,'0');
+  document.getElementById('tClock').textContent=`${m}:${s}`;
+  const pct=(A.timeLeft/1800)*100;
+  const f=document.getElementById('tFill');
+  f.style.width=pct+'%';f.className='t-fill'+(pct<25?' warn':'');
+}
+
+function showPanel(p){
+  ['learn','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['learn','history','stats'][i]===p));
+  if(p==='stats')updateStudentStats();
+  if(p==='history')renderHistory();
+}
+function setFamily(f,el){
+  A.family=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+function goStep(n){if(!A.currentRoot)return;A.step=n;renderStep();updateStepUI();}
+function nextStep(){A.step<4?goStep(A.step+1):completeRoot();}
+function prevStep(){if(A.step>1)goStep(A.step-1);}
+function updateStepUI(){
+  for(let i=1;i<=4;i++){
+    document.getElementById('stab'+i).className=`stab s${i}`+(i===A.step?' on':'');
+    const pc=document.getElementById('pc'+i);if(pc)pc.className='prog-card'+(i===A.step?' active':'');
+  }
+  document.getElementById('prevBtn').disabled=A.step===1;
+  document.getElementById('nextBtn').textContent=A.step===4?'✅ Complete':'Next →';
+}
+
+async function newRoot(){
+  A.step=1;A.selectedWord=null;A.quizAnswered=false;
+  showLoading();
+  try{
+    const fam=A.family==='all'?['Latin','Greek','Anglo-Saxon'][Math.floor(Math.random()*3)]:A.family;
+    const root=await generateRoot(fam);
+    A.currentRoot=root;A.usedRoots.push(root.root);
+    setCardHeader(root);renderStep();updateStepUI();
+  }catch(e){console.error(e);useFallback();}
+}
+
+function showLoading(){
+  document.getElementById('rTitle').textContent='...';
+  document.getElementById('rMeaning').textContent='Loading';
+  document.getElementById('rOrigin').textContent='...';
+  document.getElementById('rOriginFull').textContent='';
+  document.getElementById('stepContent').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-text">Generating root word ✨</div></div>`;
+}
+function setCardHeader(r){
+  document.getElementById('rTitle').textContent=r.root;
+  document.getElementById('rMeaning').textContent=r.meaning;
+  document.getElementById('rOrigin').textContent=r.origin;
+  document.getElementById('rOriginFull').textContent=r.originFull||'';
+  document.getElementById('cardTop').setAttribute('data-emoji',r.emoji||'📖');
+}
+
+async function generateRoot(fam){
+  const used=A.usedRoots.slice(-50).join(', ');
+  const prompt=`You are an expert etymologist. Generate ONE root word from ${fam} origin for a 17-year-old advanced learner. Do NOT use: ${used||'none'}.
+Respond ONLY with valid JSON, no markdown:
+{"root":"WORD","meaning":"1-3 words","origin":"${fam}","originFull":"original + transliteration","emoji":"1 emoji","memoryHook":"vivid mnemonic","branches":[{"word":"UPPERCASE","pos":"noun/verb/adj/adv","pronunciation":"/IPA/","meaning":"clear definition","complexity":"beginner|intermediate|advanced","rootHighlight":"part that IS the root"}],"sentences":[{"word":"WORD","sentence":"literary quality sentence","author":"Author or Original"}],"literaryQuotes":[{"quote":"real or inspired quote","author":"Author","book":"Work"}],"combinations":[{"combo":"PREFIX + ROOT","result":"WORD","meaning":"what it means","prefixMeaning":"prefix/suffix meaning"}]}
+Include: 6-8 branches, 4-5 sentences, 2 literary quotes, 4-5 combinations. Rich, memorable, sophisticated content.`;
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const d=await resp.json();
+  const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+  return JSON.parse(txt);
+}
+
+function renderStep(){
+  const r=A.currentRoot,c=document.getElementById('stepContent');
+  if(!r)return;
+  if(A.step===1)renderStep1(r,c);
+  else if(A.step===2)renderStep2(r,c);
+  else if(A.step===3)renderStep3(r,c);
+  else renderStep4(r,c);
+}
+
+function renderStep1(r,c){
+  const bHTML=(r.branches||[]).map((b,i)=>`<div class="bw" onclick="showWordDetail(${i})" style="animation-delay:${i*.05}s"><div class="bw-word">${b.word}</div><div class="bw-pos">${b.pos}</div><div class="bw-badge ${b.complexity}">${b.complexity}</div></div>`).join('');
+  const det=A.selectedWord!==null?buildWordDetail(r.branches[A.selectedWord]):'';
+  c.innerHTML=`<div class="memory-box"><div class="mem-label">🧠 Memory Hook</div><div class="mem-text">${r.memoryHook||''}</div></div>
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">${(r.branches||[]).length} words branch from this root — click any to explore</div>
+    <div class="branches-row">${bHTML}</div><div id="wdArea">${det}</div>`;
+}
+function buildWordDetail(b){
+  if(!b)return'';
+  return`<div class="word-detail"><div class="wd-head"><div class="wd-word">${b.word}</div><div class="wd-pron">${b.pronunciation||''}</div><div class="wd-pos">${b.pos||''}</div><div class="bw-badge ${b.complexity}">${b.complexity}</div></div><div class="wd-meaning">${b.meaning}</div><div class="wd-root-note">Root <span class="highlight">${A.currentRoot.root}</span> (${A.currentRoot.meaning}) lives inside this word.${b.rootHighlight?` Look for: <strong>${b.rootHighlight}</strong>`:''}</div></div>`;
+}
+function showWordDetail(i){
+  A.selectedWord=i;
+  const b=A.currentRoot.branches[i];
+  if(b&&!A.sessionData.words.find(w=>w.word===b.word)){
+    A.sessionData.words.push({word:b.word,root:A.currentRoot.root,meaning:b.meaning,complexity:b.complexity,learnedAt:Date.now()});
+    A.sessionData.xp+=5;
+    document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  }
+  document.getElementById('wdArea').innerHTML=buildWordDetail(b);
+}
+
+function renderStep2(r,c){
+  const combos=(r.combinations||[]).map((cb,i)=>`<div class="combo-card" style="animation:popIn .3s ${i*.06}s ease backwards"><div class="combo-formula">${cb.combo.split('+').map(p=>`<span>${p.trim()}</span>`).join('<span class="combo-plus"> + </span>')} <span style="color:var(--mint)">→</span></div><div class="combo-result">${cb.result}</div><div class="combo-meaning">${cb.meaning}</div>${cb.prefixMeaning?`<div style="font-size:.68rem;color:var(--sun-d);margin-top:3px;font-weight:600">📌 ${cb.prefixMeaning}</div>`:''}</div>`).join('');
+  const pfx=[{p:'PRE-',m:'before'},{p:'RE-',m:'again'},{p:'UN-',m:'not'},{p:'IN-',m:'not/into'},{p:'EX-',m:'out of'},{p:'COM-',m:'together'},{p:'DE-',m:'down/away'},{p:'SUB-',m:'under'},{p:'TRANS-',m:'across'},{p:'INTER-',m:'between'},{p:'CIRCUM-',m:'around'},{p:'DIS-',m:'apart'},{p:'-TION',m:'act/state'},{p:'-MENT',m:'result'},{p:'-IVE',m:'tending to'},{p:'-ABLE',m:'capable'},{p:'-ISM',m:'belief'},{p:'-IST',m:'one who'}];
+  c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">🔗 "${r.root}" in combination</div><div class="combo-grid">${combos}</div><div style="margin-top:14px"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">🗝 Common prefixes & suffixes</div><div class="prefix-row">${pfx.map(p=>`<div class="pfx">${p.p} <span class="pfx-m">${p.m}</span></div>`).join('')}</div></div>`;
+}
+
+function renderStep3(r,c){
+  const sents=(r.sentences||[]).map((s,i)=>`<div class="sent-card" style="animation-delay:${i*.07}s"><div class="sent-tag">${s.word}</div><div class="sent-text">${s.sentence}</div><div class="sent-auth">${s.author||'Original'}</div></div>`).join('');
+  const quotes=(r.literaryQuotes||[]).map(q=>`<div class="lit-quote" style="margin-bottom:10px"><div class="lit-text">${q.quote}</div><div class="lit-credit">${q.author} <span class="lit-book">· ${q.book}</span></div></div>`).join('');
+  c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">✍️ Words from "${r.root}" in rich context</div>${sents}${quotes?`<div style="margin-top:12px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">📚 Literary References</div>${quotes}`:''}`;
+}
+
+function renderStep4(r,c){
+  if(!A.quizAnswered)buildQuiz(r,c);else buildComplete(r,c);
+}
+function buildQuiz(r,c){
+  const bs=r.branches||[];if(!bs.length)return;
+  const qi=Math.floor(Math.random()*Math.min(bs.length,5));
+  const correct=bs[qi];A._qt=correct;
+  const opts=[correct.meaning,...bs.filter((_,i)=>i!==qi).slice(0,3).map(w=>w.meaning)].sort(()=>Math.random()-.5);
+  c.innerHTML=`<div class="quiz-wrap"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B5DE5;margin-bottom:6px">🧪 Quick Recall</div><div class="quiz-q">What does <strong style="font-family:'Fraunces',serif;font-size:1.2rem;color:var(--coral)">${correct.word}</strong> mean?<br/><span style="font-family:'Fira Mono',monospace;font-size:.78rem;color:var(--ink3)">${correct.pronunciation||''}</span></div><div class="quiz-opts">${opts.map((o,i)=>`<button class="qopt" onclick="answerQuiz(this,'${encodeURIComponent(o)}','${encodeURIComponent(correct.meaning)}')">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div><div id="qFb"></div></div>`;
+}
+function answerQuiz(btn,chosenE,correctE){
+  if(A.quizAnswered)return;
+  A.quizAnswered=true;
+  const chosen=decodeURIComponent(chosenE),correct=decodeURIComponent(correctE);
+  const ok=chosen===correct;
+  A.sessionData.quizT++;
+  if(ok){A.sessionData.quizC++;A.sessionData.xp+=20;showToast('✅ Correct! +20 XP');}
+  else{A.sessionData.xp+=5;showToast('❌ Not quite — +5 XP for trying');}
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok){document.querySelectorAll('.qopt').forEach(b=>{try{if(decodeURIComponent(b.getAttribute('onclick').match(/'([^']+)','[^']+'\)/)?.[1]||'')===correct)b.classList.add('correct');}catch{}});}
+  document.getElementById('qFb').innerHTML=`<div class="quiz-fb ${ok?'correct':'wrong'}">${ok?`🎉 <strong>${A._qt.word}</strong> = "${correct}". Root: <strong style="color:var(--coral)">${A.currentRoot.root}</strong> (${A.currentRoot.meaning})`:`Correct: "<strong>${correct}</strong>" — <strong style="color:var(--coral)">${A.currentRoot.root}</strong> = "${A.currentRoot.meaning}"`}</div>`;
+}
+function buildComplete(r,c){
+  const acc=A.sessionData.quizT>0?Math.round((A.sessionData.quizC/A.sessionData.quizT)*100):0;
+  c.innerHTML=`<div class="complete-banner"><span class="complete-emoji">${acc>=70?'🌟':acc>=40?'👍':'💪'}</span><div class="complete-title">Root "${r.root}" Complete!</div><div class="complete-sub">All 4 steps done. Keep going!</div><div class="comp-stats"><div class="cs-item"><div class="cs-val" style="color:var(--violet)">${acc}%</div><div class="cs-lab">Quiz</div></div><div class="cs-item"><div class="cs-val" style="color:var(--mint)">${(r.branches||[]).length}</div><div class="cs-lab">Words</div></div><div class="cs-item"><div class="cs-val" style="color:var(--sun)">${A.sessionData.xp||0}</div><div class="cs-lab">XP</div></div></div><button class="btn btn-accent" onclick="newRoot()">🎲 Next Root →</button></div>`;
+}
+
+function completeRoot(){
+  const r=A.currentRoot;
+  A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(b=>b.word)});
+  A.sessionData.xp+=50;
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  saveSession();showToast(`🎉 "${r.root}" mastered! +50 XP`);goStep(4);
+}
+function skipRoot(){
+  if(A.currentRoot)A.sessionData.roots.push({root:A.currentRoot.root,meaning:A.currentRoot.meaning,origin:A.currentRoot.origin,completedAt:Date.now(),skipped:true,words:[]});
+  saveSession();newRoot();
+}
+
+// ── SILENT SESSION SAVE ───────────────────────────────────────────────
+function saveSession(){
+  if(!A.currentUser)return;
+  const email=A.currentUser.email;
+  const key=`session:${email}:${A.sessionData.startTime}`;
+  const payload={
+    studentEmail:email,studentName:A.currentUser.name,
+    appVersion:APP_VERSION,
+    startTime:A.sessionData.startTime,lastUpdated:Date.now(),
+    durationMin:Math.round((Date.now()-A.sessionData.startTime)/60000),
+    rootsCompleted:A.sessionData.roots.filter(r=>!r.skipped).length,
+    rootsSkipped:A.sessionData.roots.filter(r=>r.skipped).length,
+    rootsData:A.sessionData.roots,
+    wordsExplored:A.sessionData.words.length,
+    wordsData:A.sessionData.words,
+    quizCorrect:A.sessionData.quizC,
+    quizTotal:A.sessionData.quizT,
+    xpEarned:A.sessionData.xp||0,
+  };
+  storeSet(key,payload);
+  // Update student index
+  const idx=storeGet(`index:${email}`)||{sessions:[],studentName:A.currentUser.name,lastActive:Date.now()};
+  if(!idx.sessions.includes(A.sessionData.startTime))idx.sessions.push(A.sessionData.startTime);
+  idx.lastActive=Date.now();idx.studentName=A.currentUser.name;
+  storeSet(`index:${email}`,idx);
+}
+
+async function endSession(){
+  saveSession();
+  const acc=A.sessionData.quizT>0?Math.round((A.sessionData.quizC/A.sessionData.quizT)*100):0;
+  document.getElementById('mainCard').innerHTML=`<div class="session-complete"><span class="sc-emoji">🎓</span><div class="sc-title">Session Complete!</div><div class="sc-sub">Brilliant work — 30 minutes well spent!</div><div class="sc-grid"><div class="sc-stat"><div class="sc-val">${A.sessionData.roots.filter(r=>!r.skipped).length}</div><div class="sc-lab">Roots Done</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.words.length}</div><div class="sc-lab">Words</div></div><div class="sc-stat"><div class="sc-val">${acc}%</div><div class="sc-lab">Quiz Score</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.xp||0}</div><div class="sc-lab">XP Earned</div></div><div class="sc-stat"><div class="sc-val">${Math.round((Date.now()-A.sessionData.startTime)/60000)}m</div><div class="sc-lab">Time</div></div><div class="sc-stat"><div class="sc-val">${A.sessionData.roots.length}</div><div class="sc-lab">Total Roots</div></div></div><button class="btn btn-accent" onclick="restartSession()" style="font-size:.95rem;padding:12px 28px">🔁 New Session</button></div>`;
+}
+
+function restartSession(){
+  A.timeLeft=1800;A.timerOn=false;clearInterval(A.timerInt);
+  document.getElementById('tBtn').textContent='Start';updateTimerUI();
+  A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
+  document.getElementById('mainCard').innerHTML=`<div class="card-top" id="cardTop" data-emoji="📖"><div class="origin-tag"><span id="rOrigin">—</span><span class="origin-full" id="rOriginFull"></span></div><div class="root-title" id="rTitle">—</div><div class="root-meaning">means: <strong id="rMeaning">—</strong></div></div><div class="step-tabs"><button class="stab s1 on" id="stab1" onclick="goStep(1)"><div class="snum">1</div><br/>Explore</button><button class="stab s2" id="stab2" onclick="goStep(2)"><div class="snum">2</div><br/>Build</button><button class="stab s3" id="stab3" onclick="goStep(3)"><div class="snum">3</div><br/>Context</button><button class="stab s4" id="stab4" onclick="goStep(4)"><div class="snum">4</div><br/>Quiz</button></div><div class="step-content" id="stepContent"><div class="loading-state"><div class="spinner"></div><div class="loading-text">Ready!</div></div></div>`;
+  newRoot();
+}
+
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  if(!A.sessionData.roots.length){list.innerHTML='<div style="text-align:center;color:var(--ink3);padding:30px;font-style:italic">No roots yet!</div>';return;}
+  list.innerHTML=[...A.sessionData.roots].reverse().map(r=>`<div class="hist-item"><div><div class="hi-root">${r.root}</div><div class="hi-m">${r.meaning} · ${r.origin}</div></div><span class="hi-b ${r.skipped?'skip':'done'}">${r.skipped?'Skipped':'✓ Done'}</span></div>`).join('');
+}
+function updateStudentStats(){
+  const r=A.sessionData;
+  document.getElementById('ss-roots').textContent=r.roots.filter(x=>!x.skipped).length;
+  document.getElementById('ss-words').textContent=r.words.length;
+  const acc=r.quizT>0?Math.round((r.quizC/r.quizT)*100):0;
+  document.getElementById('ss-acc').textContent=acc+'%';
+  document.getElementById('ss-month').textContent=r.roots.filter(x=>!x.skipped).length+' / 1000 roots';
+  document.getElementById('ss-mbar').style.width=Math.min((r.roots.filter(x=>!x.skipped).length/1000)*100,100)+'%';
+}
+
+// ── PARENT DASHBOARD ──────────────────────────────────────────────────
+function initParentDashboard(){
+  const u=A.currentUser;
+  document.getElementById('pdWelcome').textContent=`Welcome, ${u.name}`;
+  const linkedEmail=u.linkedStudent;
+  let students=[];
+  if(linkedEmail){
+    const su=storeGet('user:'+linkedEmail);
+    if(su&&su.role==='student')students.push(su);
+  }
+  // Scan all student indexes
+  const keys=storeList('index:');
+  keys.forEach(k=>{
+    const idx=storeGet(k);
+    if(idx&&idx.studentName){
+      const em=k.replace('index:','');
+      if(!students.find(s=>s.email===em))students.push({email:em,name:idx.studentName});
+    }
+  });
+  if(!students.length){
+    document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>👩‍🎓</div><p>No student data found yet.<br/>Ask your student to register and complete at least one root, then check back!</p></div>`;
+    return;
+  }
+  const sel=document.getElementById('pdStudentSelector');
+  sel.innerHTML=`<div class="pd-section-title">Select Student</div><div class="student-select">${students.map((s,i)=>`<button class="stu-btn${i===0?' active':''}" onclick="selectStudent('${s.email}',this)">${s.name}</button>`).join('')}</div>`;
+  A.selectedStudentEmail=students[0].email;
+  loadStudentDashboard(students[0].email);
+}
+
+function selectStudent(email,btn){
+  document.querySelectorAll('.stu-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');A.selectedStudentEmail=email;
+  loadStudentDashboard(email);
+}
+
+function loadStudentDashboard(email){
+  document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div class="spinner" style="border-top-color:var(--sun)"></div><p style="margin-top:12px;color:rgba(255,255,255,.4)">Loading dashboard...</p></div>`;
+  const keys=storeList(`session:${email}:`);
+  if(!keys.length){
+    document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>📭</div><p>No sessions recorded yet for this student.<br/>They need to complete at least one root to appear here.</p></div>`;
+    return;
+  }
+  const sessions=keys.map(k=>storeGet(k)).filter(Boolean).sort((a,b)=>b.startTime-a.startTime);
+  renderParentDashboard(sessions);
+}
+
+function renderParentDashboard(sessions){
+  const totalSessions=sessions.length;
+  const totalRoots=sessions.reduce((a,s)=>a+(s.rootsCompleted||0),0);
+  const totalWords=sessions.reduce((a,s)=>a+(s.wordsExplored||0),0);
+  const totalXP=sessions.reduce((a,s)=>a+(s.xpEarned||0),0);
+  const totalTime=sessions.reduce((a,s)=>a+(s.durationMin||0),0);
+  const allQuizC=sessions.reduce((a,s)=>a+(s.quizCorrect||0),0);
+  const allQuizT=sessions.reduce((a,s)=>a+(s.quizTotal||0),0);
+  const accuracy=allQuizT>0?Math.round((allQuizC/allQuizT)*100):0;
+  const lastSeen=sessions[0]?new Date(sessions[0].lastUpdated||sessions[0].startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'Never';
+  const allWords=[];
+  sessions.forEach(s=>(s.wordsData||[]).forEach(w=>{if(!allWords.find(x=>x.word===w.word))allWords.push(w);}));
+  const allRoots=[];
+  sessions.forEach(s=>(s.rootsData||[]).filter(r=>!r.skipped).forEach(r=>{if(!allRoots.find(x=>x.root===r.root))allRoots.push(r);}));
+  const recent=sessions.slice(0,7).reverse();
+  const maxR=Math.max(...recent.map(s=>s.rootsCompleted||0),1);
+  const chartBars=recent.map(s=>{
+    const h=Math.round(((s.rootsCompleted||0)/maxR)*70)+4;
+    const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    return`<div class="chart-bar-wrap"><div class="chart-bar-val">${s.rootsCompleted||0}</div><div class="chart-bar" style="height:${h}px"></div><div class="chart-bar-label">${d}</div></div>`;
+  }).join('');
+  const sessionRows=sessions.slice(0,10).map(s=>{
+    const d=new Date(s.startTime).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
+    const t=new Date(s.startTime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const acc2=s.quizTotal>0?Math.round((s.quizCorrect/s.quizTotal)*100):0;
+    const perf=acc2>=70?'great':acc2>=40?'good':'low';
+    return`<div class="sl-row"><div class="sl-td sl-date">${d} <span style="color:rgba(255,255,255,.3);margin-left:6px">${t}</span></div><div class="sl-td">${s.rootsCompleted||0} roots</div><div class="sl-td">${s.wordsExplored||0} words</div><div class="sl-td">${s.durationMin||0}m</div><div class="sl-td"><span class="sl-badge ${perf}">${perf==='great'?'Great':perf==='good'?'Good':'Low'} ${acc2}%</span></div></div>`;
+  }).join('');
+  const wordCards=allWords.slice(0,18).map(w=>`<div class="wl-card"><div class="wl-root">${w.root||'—'}</div><div class="wl-word">${w.word}</div><div class="wl-meaning">${w.meaning||''}</div><div class="wl-date">${new Date(w.learnedAt||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div></div>`).join('');
+  const origins={Latin:0,Greek:0,'Anglo-Saxon':0};
+  allRoots.forEach(r=>{if(origins[r.origin]!==undefined)origins[r.origin]++;});
+  const maxO=Math.max(...Object.values(origins),1);
+  const originBars=Object.entries(origins).map(([k,v])=>`<div class="acc-bar"><div class="acc-root">${k==='Anglo-Saxon'?'A-Saxon':k}</div><div class="acc-track"><div class="acc-fill ${v/maxO>.66?'high':v/maxO>.33?'mid':'low'}" style="width:${Math.round((v/maxO)*100)}%"></div></div><div class="acc-pct">${v} roots</div></div>`).join('');
+  const monthRoots=sessions.filter(s=>Date.now()-s.startTime<30*24*3600*1000).reduce((a,s)=>a+(s.rootsCompleted||0),0);
+  document.getElementById('pdContent').innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-icon">📚</div><div class="kpi-val">${totalRoots}</div><div class="kpi-lab">Total Roots</div></div>
+      <div class="kpi"><div class="kpi-icon">🔤</div><div class="kpi-val">${totalWords}</div><div class="kpi-lab">Words Explored</div></div>
+      <div class="kpi"><div class="kpi-icon">🗓</div><div class="kpi-val">${totalSessions}</div><div class="kpi-lab">Sessions</div></div>
+      <div class="kpi"><div class="kpi-icon">⏱</div><div class="kpi-val">${totalTime}m</div><div class="kpi-lab">Total Time</div></div>
+      <div class="kpi"><div class="kpi-icon">🎯</div><div class="kpi-val">${accuracy}%</div><div class="kpi-lab">Quiz Accuracy</div></div>
+      <div class="kpi"><div class="kpi-icon">⭐</div><div class="kpi-val">${totalXP}</div><div class="kpi-lab">XP Earned</div></div>
+      <div class="kpi"><div class="kpi-icon">📅</div><div class="kpi-val" style="font-size:1.1rem">${lastSeen}</div><div class="kpi-lab">Last Active</div></div>
+      <div class="kpi"><div class="kpi-icon">🏆</div><div class="kpi-val">${allRoots.length}</div><div class="kpi-lab">Unique Roots</div></div>
+    </div>
+    <div class="goal-bar"><div class="goal-row"><div class="goal-title">📈 Monthly Goal</div><div class="goal-count">${monthRoots} / 1000 roots</div></div><div class="goal-track"><div class="goal-fill" style="width:${Math.min((monthRoots/1000)*100,100)}%"></div></div><div class="goal-labels"><div class="goal-lab">0</div><div class="goal-lab">500</div><div class="goal-lab">1000</div></div></div>
+    <div class="progress-chart"><div class="pd-section-title" style="margin-top:0;margin-bottom:4px">📊 Roots per Session (recent)</div><div class="chart-bars">${chartBars||'<div style="color:rgba(255,255,255,.3);font-size:.8rem">No sessions yet</div>'}</div></div>
+    <div class="pd-section-title">🗒 Session History (last 10)</div>
+    <div class="session-list"><div class="sl-header"><div class="sl-th">Date & Time</div><div class="sl-th">Roots</div><div class="sl-th">Words</div><div class="sl-th">Duration</div><div class="sl-th">Quiz</div></div>${sessionRows||'<div class="sl-row"><div class="sl-td" style="grid-column:1/-1;color:rgba(255,255,255,.3)">No sessions yet</div></div>'}</div>
+    <div class="pd-section-title">🌍 Language Family Coverage</div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:20px">${originBars||'<div style="color:rgba(255,255,255,.3);font-size:.8rem">No roots yet</div>'}</div>
+    <div class="pd-section-title">🔤 All Words Explored (${allWords.length} total)</div>
+    <div class="word-list-grid">${wordCards||'<div style="color:rgba(255,255,255,.3)">No words yet</div>'}</div>
+    <div class="pd-section-title">📚 All Unique Roots (${allRoots.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px">${allRoots.map(r=>`<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:5px 12px;font-family:'Fraunces',serif;font-size:.82rem;color:rgba(255,255,255,.8)"><span style="color:var(--sun);font-size:.65rem">${r.origin}</span><br/>${r.root} <span style="color:rgba(255,255,255,.35);font-size:.65rem">· ${r.meaning}</span></div>`).join('')||'<div style="color:rgba(255,255,255,.3)">None yet</div>'}</div>`;
+}
+
+// ── FALLBACK ──────────────────────────────────────────────────────────
+function useFallback(){
+  const f={root:'PORT',meaning:'carry',origin:'Latin',originFull:'portare',emoji:'🚢',memoryHook:"A 'porter' carries bags — PORT = carry!",branches:[{word:'TRANSPORT',pos:'verb',pronunciation:'/trænsˈpɔːt/',meaning:'to carry across from one place to another',complexity:'beginner',rootHighlight:'PORT'},{word:'IMPORT',pos:'verb/noun',pronunciation:'/ˈɪm.pɔːt/',meaning:'to carry goods into a country',complexity:'beginner',rootHighlight:'PORT'},{word:'EXPORT',pos:'verb/noun',pronunciation:'/ˈek.spɔːt/',meaning:'to carry goods out of a country',complexity:'beginner',rootHighlight:'PORT'},{word:'PORTFOLIO',pos:'noun',pronunciation:'/pɔːtˈfəʊ.li.əʊ/',meaning:'case for carrying papers; a collection of work',complexity:'intermediate',rootHighlight:'PORT'},{word:'DEPORTMENT',pos:'noun',pronunciation:'/dɪˈpɔːt.mənt/',meaning:'the way one carries oneself; bearing',complexity:'advanced',rootHighlight:'PORT'}],sentences:[{word:'TRANSPORT',sentence:'The ancient Romans built roads specifically to transport legions with terrifying efficiency.',author:'Historical narrative'},{word:'DEPORTMENT',sentence:"The queen's deportment was so impeccable that even her stillness seemed to command the room.",author:'Historical fiction'}],literaryQuotes:[{quote:'To transport the reader into another world entirely — that is the ambition of every serious novelist.',author:'Virginia Woolf',book:'The Common Reader'},{quote:"His deportment suggested a man carrying secrets heavier than any suitcase.",author:"John le Carré style",book:'Tinker Tailor Soldier Spy'}],combinations:[{combo:'TRANS + PORT',result:'TRANSPORT',meaning:'carry across',prefixMeaning:'TRANS = across'},{combo:'IM + PORT',result:'IMPORT',meaning:'carry in',prefixMeaning:'IM = in, into'},{combo:'EX + PORT',result:'EXPORT',meaning:'carry out',prefixMeaning:'EX = out of'},{combo:'DE + PORT + MENT',result:'DEPORTMENT',meaning:'manner of carrying oneself',prefixMeaning:'DE = from; MENT = state'}]};
+  A.currentRoot=f;A.usedRoots.push('PORT');
+  setCardHeader(f);renderStep();updateStepUI();
+  showToast('📡 Offline mode — using sample root');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  updateTimerUI();setRole('student');
+  console.log(`WordRoot Academy v${APP_VERSION} (${APP_BUILD}) loaded`);
+});
+</script>
+</body>
+</html>
