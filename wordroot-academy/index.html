@@ -3081,11 +3081,20 @@ function searchIdiomRelated(term){
 }
 
 
-// ═══════════════════════════════════════════════════════════════
-//  WORDROOT ACADEMY v2.0 — SECURITY, ADMIN, SAAS ENGINE
-//  Features: bcrypt-sim hashing, JWT-sim tokens, MFA TOTP-sim,
-//  Remember Me, PII anonymisation, Admin Portal, Feature Flags,
-//  SAAS Subscriptions, Audit Log, Notifications
-// ═══════════════════════════════════════════════════════════════
 
-// ── SECURITY CONFIG ───────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function(){
+  // Initialise auth UI
+  updateTimerUI();
+  setRole('student');
+  switchAuthTab('login');
+  // Load speech voices
+  if(window.speechSynthesis){
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged=function(){};
+  }
+  console.log('WordRoot Academy v'+APP_VERSION+' loaded');
+});
+</script>
+</body>
+</html>
