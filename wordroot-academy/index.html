@@ -3082,6 +3082,33 @@ function searchIdiomRelated(term){
 
 
 
+// ── PASSWORD STRENGTH INDICATOR ──────────────────────────────
+function onPasswordInput(val){
+  const bar=document.getElementById('pwdStrengthBar');
+  const hint=document.getElementById('pwdStrengthHint');
+  if(!bar||!hint)return;
+  const s=passwordStrength(val);
+  bar.className='pwd-strength '+s.level;
+  hint.textContent=s.label;
+  hint.className='pwd-hint '+s.level;
+}
+
+// ── TOAST NOTIFICATION ────────────────────────────────────────
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='toast';
+    t.className='toast';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+
 // ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function(){
   // Initialise auth UI
