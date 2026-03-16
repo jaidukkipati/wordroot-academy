@@ -689,6 +689,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   .tier-grid{grid-template-columns:1fr}
 }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -2434,40 +2435,56 @@ function notifyAdmin(event,data){
 function showMFASetup(user,email){
   const secret=generateTOTPSecret();
   A.pendingMFASecret=secret;
-  const qrData=getTOTPQRData(email,secret);
-  document.getElementById('authScreen').classList.remove('active');
-  // Render MFA setup in auth box
+  const qrUri=getTOTPQRData(email,secret);
+  const secretFormatted=secret.match(/.{1,4}/g).join(' ');
   const authBody=document.getElementById('authScreen');
-  authBody.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">
-      <div class="auth-box">
-        <div class="auth-hero">
-          <div class="auth-logo">Word<span>Root</span></div>
-          <div class="auth-tagline">Set up two-factor authentication</div>
-        </div>
-        <div class="mfa-screen">
-          <div class="mfa-title">Secure Your Account</div>
-          <div class="mfa-sub">Scan this QR code with Google Authenticator or Authy</div>
-          <div class="mfa-qr">
-            <div class="mfa-qr-img">
-              <div>
-                <div style="font-size:1.5rem;margin-bottom:8px">📱</div>
-                <div style="font-size:.68rem;color:var(--ink3);line-height:1.5">QR Code<br/>(Open Authenticator app → scan QR)<br/><br/>Or enter key manually:</div>
-              </div>
-            </div>
-            <div class="mfa-secret">${secret.match(/.{1,4}/g).join(' ')}</div>
-            <div style="font-size:.68rem;color:var(--ink3)">Keep this secret safe. Do not share it.</div>
-          </div>
-          <div style="font-size:.8rem;color:var(--ink3);margin-bottom:12px">Enter the 6-digit code from your authenticator app to confirm setup:</div>
-          <div class="mfa-code-row" id="mfaDigitRow">
-            ${[0,1,2,3,4,5].map(i=>`<input class="mfa-digit" id="mfad${i}" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" oninput="mfaDigitInput(${i},this)" onkeydown="mfaDigitKey(${i},event)"/>`).join('')}
-          </div>
-          <div id="mfaErr" style="color:var(--coral);font-size:.78rem;min-height:20px;margin-bottom:8px"></div>
-          <button class="auth-btn student-btn" onclick="confirmMFASetup()">Activate & Continue →</button>
-        </div>
-      </div>
-    </div>`;
+  authBody.classList.remove('active');
+  authBody.innerHTML=[
+    '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)">',
+      '<div class="auth-box">',
+        '<div class="auth-hero">',
+          '<div class="auth-logo">Word<span>Root</span></div>',
+          '<div class="auth-tagline">Set up two-factor authentication</div>',
+        '</div>',
+        '<div class="mfa-screen">',
+          '<div class="mfa-title">&#128274; Secure Your Account</div>',
+          '<div class="mfa-sub">Scan this QR code with <strong>Google Authenticator</strong> or <strong>Authy</strong></div>',
+          '<div class="mfa-qr">',
+            '<div id="qrCodeCanvas" style="display:flex;justify-content:center;margin-bottom:12px;background:white;padding:12px;border-radius:8px;"></div>',
+            '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:6px;text-align:center">Can\'t scan? Enter this key manually in your app:</div>',
+            '<div class="mfa-secret" id="mfaSecretDisplay">'+secretFormatted+'</div>',
+            '<div style="font-size:.65rem;color:rgba(255,107,107,.8);margin-top:6px;text-align:center">&#128274; Keep this secret safe. Never share it.</div>',
+          '</div>',
+          '<div style="font-size:.8rem;color:var(--ink3);margin-bottom:12px;text-align:center">Enter the 6-digit code from your authenticator app to confirm:</div>',
+          '<div class="mfa-code-row" id="mfaDigitRow">',
+            [0,1,2,3,4,5].map(i=>'<input class="mfa-digit" id="mfad'+i+'" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" oninput="mfaDigitInput('+i+',this)" onkeydown="mfaDigitKey('+i+',event)"/>').join(''),
+          '</div>',
+          '<div id="mfaErr" style="color:var(--coral);font-size:.78rem;min-height:20px;margin-bottom:8px;text-align:center"></div>',
+          '<button class="auth-btn student-btn" onclick="confirmMFASetup()">Activate & Continue &#8594;</button>',
+        '</div>',
+      '</div>',
+    '</div>'
+  ].join('');
   authBody.classList.add('active');
+  // Render actual QR code after DOM is ready
+  setTimeout(()=>{
+    const container=document.getElementById('qrCodeCanvas');
+    if(!container)return;
+    if(typeof QRCode!=='undefined'){
+      new QRCode(container,{
+        text:qrUri,
+        width:180,
+        height:180,
+        colorDark:'#000000',
+        colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+    } else {
+      // Fallback: show the URI as a link if QRCode library fails to load
+      container.innerHTML='<div style="background:white;padding:16px;border-radius:8px;font-family:monospace;font-size:.6rem;word-break:break-all;color:#000;max-width:200px;text-align:left"><strong>OTP URI:</strong><br/>'+qrUri+'</div>';
+    }
+    document.getElementById('mfad0')?.focus();
+  },150);
 }
 
 function showMFAChallenge(isAdmin){
@@ -2692,9 +2709,13 @@ function renderAdminUsers(el){
     '<div class="admin-page-title">&#128101; Users</div>',
     '<div class="admin-page-sub">All PII is anonymised. Click View to see full details (logged).</div>',
     '<div class="admin-table-wrap">',
-      '<div class="admin-table-header">',
+      '<div class="admin-table-header" style="flex-wrap:wrap;gap:8px">',
         '<div class="admin-table-title">Registered Users ('+users.length+')</div>',
-        '<input type="text" placeholder="Search by ID or role..." oninput="filterAdminUsers(this.value)" style="padding:6px 12px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:white;font-size:.75rem;outline:none;width:200px"/>',
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">',
+          '<input type="text" placeholder="Search by ID or role..." oninput="filterAdminUsers(this.value)" style="padding:6px 12px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:white;font-size:.75rem;outline:none;width:180px"/>',
+          '<button class="admin-action-btn delete" onclick="deleteAllUsers()" style="padding:6px 12px;font-size:.72rem">&#128721; Delete All Users</button>',
+          '<button class="admin-action-btn" onclick="wipeAllData()" style="background:rgba(255,60,60,.18);border-color:rgba(255,60,60,.4);color:#ff4444;padding:6px 12px;font-size:.72rem">&#128165; Wipe All Data</button>',
+        '</div>',
       '</div>',
       '<table class="admin-table" id="adminUsersTable">',
         '<thead><tr>',
@@ -2854,6 +2875,122 @@ function deleteUser(email){
   // 8. Admin inbox notification
   notifyAdmin('USER_DELETED',{anonId:anon,ts:Date.now()});
   return true;
+}
+
+
+// ── DELETE ALL USERS — admin emergency purge ──────────────────────
+function deleteAllUsers(){
+  const users=getAllUsers();
+  if(!users.length){showToast('No users to delete');return;}
+  // Build confirmation modal
+  const nonAdmins=users.filter(u=>u.role!=='admin');
+  const html=[
+    '<div class="admin-modal-title" style="color:#ff5555">&#128721; Delete ALL Users</div>',
+    '<div class="admin-modal-sub">This permanently removes every non-admin account and all associated data.</div>',
+    '<div class="delete-confirm-box">',
+      '<div class="delete-confirm-title">Will permanently delete:</div>',
+      '<ul class="delete-confirm-list">',
+        '<li>'+nonAdmins.length+' user account'+(nonAdmins.length!==1?'s':'')+'</li>',
+        '<li>All learning sessions, word searches and progress</li>',
+        '<li>All subscriptions and feature overrides</li>',
+        '<li>All device tokens and MFA secrets</li>',
+        '<li>All parent monitoring data</li>',
+      '</ul>',
+      '<div style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.5)">Admin account will be preserved.</div>',
+    '</div>',
+    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:12px;margin-bottom:16px;font-size:.8rem;color:rgba(255,255,255,.65)">',
+      '<strong style="color:var(--sun)">After deletion:</strong> All deleted email addresses will be free to register again as new accounts.',
+    '</div>',
+    '<div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:10px">Type <strong style="color:#ff5555">DELETE ALL</strong> to confirm:</div>',
+    '<div class="admin-field"><input type="text" id="deleteAllConfirmInput" placeholder="Type DELETE ALL to confirm" autocomplete="off"',
+      ' style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn" id="confirmDeleteAllBtn" disabled',
+        ' style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed"',
+        ' onclick="confirmDeleteAllUsers()">&#128721; Delete All Non-Admin Users</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+  setTimeout(()=>{
+    const inp=document.getElementById('deleteAllConfirmInput');
+    const btn=document.getElementById('confirmDeleteAllBtn');
+    if(inp&&btn){
+      inp.focus();
+      inp.addEventListener('input',()=>{
+        const ok=inp.value.trim()==='DELETE ALL';
+        btn.disabled=!ok;
+        btn.style.opacity=ok?'1':'0.5';
+        btn.style.cursor=ok?'pointer':'not-allowed';
+        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
+      });
+    }
+  },60);
+}
+
+function confirmDeleteAllUsers(){
+  const inp=document.getElementById('deleteAllConfirmInput');
+  if(!inp||inp.value.trim()!=='DELETE ALL'){showToast('Please type DELETE ALL to confirm');return;}
+  closeAdminModal();
+  const users=getAllUsers();
+  const nonAdmins=users.filter(u=>u.role!=='admin');
+  let deleted=0;
+  nonAdmins.forEach(u=>{
+    try{deleteUser(u._email);deleted++;}catch(e){console.error('Failed to delete',u._email,e);}
+  });
+  addAuditLog('BULK_DELETE','All '+deleted+' non-admin users permanently deleted','system','admin');
+  showToast(deleted+' account'+(deleted!==1?'s':'')+' deleted. Emails are now free to re-register.');
+  setTimeout(()=>renderAdminPage('users'),500);
+}
+
+function wipeAllData(){
+  const html=[
+    '<div class="admin-modal-title" style="color:#ff5555">&#9888;&#65039; Wipe ALL App Data</div>',
+    '<div class="admin-modal-sub">This removes every wra: key from localStorage including your own admin session.</div>',
+    '<div class="delete-confirm-box">',
+      '<div class="delete-confirm-title">Will permanently erase:</div>',
+      '<ul class="delete-confirm-list">',
+        '<li>All user accounts including admin</li>',
+        '<li>All sessions, subscriptions, flags</li>',
+        '<li>Entire audit log and notification history</li>',
+        '<li>You will be logged out immediately</li>',
+      '</ul>',
+    '</div>',
+    '<div style="font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:10px">Type <strong style="color:#ff5555">WIPE EVERYTHING</strong> to confirm:</div>',
+    '<div class="admin-field"><input type="text" id="wipeConfirmInput" placeholder="Type WIPE EVERYTHING" autocomplete="off"',
+      ' style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn" id="confirmWipeBtn" disabled',
+        ' style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed"',
+        ' onclick="confirmWipeAll()">&#128165; Wipe Everything</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+  setTimeout(()=>{
+    const inp=document.getElementById('wipeConfirmInput');
+    const btn=document.getElementById('confirmWipeBtn');
+    if(inp&&btn){
+      inp.focus();
+      inp.addEventListener('input',()=>{
+        const ok=inp.value.trim()==='WIPE EVERYTHING';
+        btn.disabled=!ok;
+        btn.style.opacity=ok?'1':'0.5';
+        btn.style.cursor=ok?'pointer':'not-allowed';
+        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
+      });
+    }
+  },60);
+}
+
+function confirmWipeAll(){
+  const inp=document.getElementById('wipeConfirmInput');
+  if(!inp||inp.value.trim()!=='WIPE EVERYTHING'){showToast('Please type WIPE EVERYTHING');return;}
+  closeAdminModal();
+  // Remove every wra: key
+  Object.keys(localStorage).filter(k=>k.startsWith('wra:')).forEach(k=>localStorage.removeItem(k));
+  showToast('All data wiped. Reloading…');
+  setTimeout(()=>location.reload(),1200);
 }
 
 function confirmDeleteUser(email){
