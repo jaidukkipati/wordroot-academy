@@ -191,13 +191,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .idiom-example{font-size:.78rem;color:var(--ink);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(26,26,46,.07)}
 
 /* Images grid */
-.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.img-card{border-radius:var(--rs);overflow:hidden;position:relative;background:rgba(26,26,46,.06);padding-top:75%}
-.img-card img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
-.img-card .img-loading{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.img-card:hover img{transform:scale(1.05)}
-.img-credit{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:6px 8px;font-size:.58rem;color:rgba(255,255,255,.7);text-decoration:none}
-.img-loading{display:flex;align-items:center;justify-content:center;height:100px;color:var(--ink3);font-size:.78rem}
+
+
+
 
 /* Related roots from branches */
 .branch-pills{display:flex;flex-wrap:wrap;gap:7px}
@@ -441,14 +437,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   .root-title{font-size:2rem}
   .wr-word{font-size:1.8rem}
   .syn-ant-grid{grid-template-columns:1fr}
-  .img-grid{grid-template-columns:repeat(2,1fr)}
+  
   .auth-body{padding:20px 20px 24px}
   .search-input-row{flex-direction:column}
   .action-bar{justify-content:center}
 }
 @media(max-width:400px){
   .ptab{font-size:.62rem;padding:8px 4px}
-  .img-grid{grid-template-columns:1fr}
+  
 }
 
 /* ── IDIOMS PANEL ── */
@@ -697,6 +693,50 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .admin-view-btn:hover{background:rgba(255,255,255,.08);color:white}
 .admin-view-btn.active{background:var(--sun);border-color:var(--sun);color:var(--ink)}
 
+
+/* ── SCRAMBLE QUIZ ── */
+.scramble-wrap{text-align:center;padding:8px 0}
+.scramble-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--sky);margin-bottom:8px}
+.scramble-letters{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+.scramble-tile{width:38px;height:42px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:1.1rem;font-weight:900;color:var(--ink);background:var(--white);border:2px solid rgba(26,26,46,.15);border-radius:var(--rs);cursor:pointer;transition:all .2s;user-select:none}
+.scramble-tile:hover:not(.used){transform:translateY(-3px);border-color:var(--violet);box-shadow:0 4px 12px rgba(155,93,229,.2)}
+.scramble-tile.used{opacity:.25;cursor:default;transform:none}
+.scramble-answer-row{display:flex;gap:6px;justify-content:center;min-height:48px;margin:8px 0;flex-wrap:wrap}
+.scramble-slot{width:38px;height:42px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:1.1rem;font-weight:900;color:var(--ink);background:rgba(76,201,240,.08);border:2px dashed rgba(76,201,240,.3);border-radius:var(--rs);cursor:pointer;transition:all .2s}
+.scramble-slot.filled{background:var(--sky);border-color:var(--sky-d);color:var(--ink);border-style:solid}
+.scramble-slot.correct{background:var(--mint);border-color:var(--mint-d);color:white;border-style:solid}
+.scramble-slot.wrong{background:var(--coral);border-color:var(--coral-d);color:white;border-style:solid;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.scramble-hint{font-size:.8rem;color:var(--ink3);margin:8px 0;font-style:italic}
+.scramble-check-btn{padding:10px 24px;background:var(--violet);color:white;border:none;border-radius:var(--rs);font-weight:700;font-size:.88rem;cursor:pointer;margin-top:8px;font-family:sans-serif;transition:all .2s}
+.scramble-check-btn:hover{background:var(--violet-d);transform:translateY(-1px)}
+.scramble-check-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.quiz-type-tabs{display:flex;gap:8px;margin-bottom:14px;justify-content:center}
+.quiz-type-tab{padding:6px 14px;border-radius:99px;font-size:.72rem;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all .2s;font-family:sans-serif}
+.quiz-type-tab.meaning{border-color:var(--violet);color:var(--violet);background:rgba(155,93,229,.08)}
+.quiz-type-tab.scramble{border-color:var(--sky);color:var(--sky-d);background:rgba(76,201,240,.08)}
+.quiz-type-tab.active.meaning{background:var(--violet);color:white}
+.quiz-type-tab.active.scramble{background:var(--sky);color:var(--ink)}
+
+
+/* ── Parent multi-child ── */
+.child-pricing-box{background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.2);border-radius:var(--rs);padding:14px 16px;margin-bottom:16px}
+.child-pricing-title{font-family:Fraunces,serif;font-weight:700;color:var(--sun-d);margin-bottom:8px;font-size:.95rem}
+.child-pricing-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,217,61,.08);font-size:.82rem}
+.child-pricing-row:last-child{border-bottom:none}
+.child-pricing-label{color:var(--ink3)}
+.child-pricing-val{font-weight:700;color:var(--ink);font-family:monospace}
+.add-child-btn{padding:8px 16px;background:var(--mint);color:var(--ink);border:none;border-radius:var(--rs);font-weight:700;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:sans-serif}
+.add-child-btn:hover{background:var(--mint-d);transform:translateY(-1px)}
+.add-child-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.child-input-row{display:flex;gap:8px;margin-bottom:10px}
+.child-input-row input{flex:1;padding:9px 12px;border:2px solid rgba(26,26,46,.1);border-radius:var(--rs);font-size:.85rem;background:var(--paper);color:var(--ink);outline:none;font-family:sans-serif}
+.child-input-row input:focus{border-color:var(--mint)}
+.child-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.25);border-radius:99px;padding:4px 12px;font-size:.78rem;color:var(--mint-d);font-weight:600;margin:4px}
+.child-tag button{background:none;border:none;color:var(--mint-d);cursor:pointer;font-size:.85rem;padding:0;line-height:1}
+.child-tag button:hover{color:var(--coral)}
+.max-children-note{font-size:.72rem;color:var(--ink3);font-style:italic;margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -742,9 +782,19 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <div class="pwd-hint" id="pwdStrengthHint">At least 8 characters required</div>
         </div>
 
-        <div id="parentLinkField" class="field" style="display:none">
-          <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional)</span></label>
-          <input type="email" id="regLinkedStudent" placeholder="student@example.com"/>
+        <div id="parentLinkField" style="display:none">
+          <div class="child-pricing-box">
+            <div class="child-pricing-title">&#128100; Add Children to Monitor</div>
+            <div class="child-pricing-row"><span class="child-pricing-label">1st child</span><span class="child-pricing-val">Full price</span></div>
+            <div class="child-pricing-row"><span class="child-pricing-label">2nd child</span><span class="child-pricing-val">75% (&#188; off)</span></div>
+            <div class="child-pricing-row"><span class="child-pricing-label">3rd child</span><span class="child-pricing-val">75% (&#188; off)</span></div>
+          </div>
+          <div class="child-input-row">
+            <input type="email" id="regLinkedStudent" placeholder="Child's email (optional)"/>
+            <button class="add-child-btn" onclick="addChildEmail()">Add</button>
+          </div>
+          <div id="childTagsRow" style="margin-bottom:8px"></div>
+          <div class="max-children-note">Maximum 3 children per parent account.</div>
         </div>
         <button class="auth-btn student-btn" id="regBtn" onclick="doRegister()">Create Account →</button>
         <div class="auth-divider"><span>or</span></div>
@@ -1491,10 +1541,24 @@ function checkNotifications(){
 
 // ── SUBSCRIPTION SYSTEM ───────────────────────────────────────────
 const PLANS={
-  free:{name:'Free',price:0,features:{wordSearch:true,searchLimit:20,rootLearn:true,rootLimit:10,idioms:false,parentDashboard:false,accounts:1}},
-  standard:{name:'Standard',price:9.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:1}},
-  premium:{name:'Premium',price:19.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:5}}
+  free:{name:'Free',price:0,features:{wordSearch:true,searchLimit:20,rootLearn:true,rootLimit:10,idioms:false,parentDashboard:false,maxChildren:0,accounts:1}},
+  standard:{name:'Standard',price:9.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,maxChildren:1,accounts:1}},
+  premium:{name:'Premium',price:19.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,maxChildren:3,accounts:3}}
 };
+// Child pricing: 1st child = full price, 2nd = 75%, 3rd = 75%
+function calcParentPrice(basePrice,childCount){
+  if(childCount<=0)return 0;
+  let total=basePrice; // 1st child full
+  if(childCount>=2)total+=basePrice*0.75; // 2nd child 75%
+  if(childCount>=3)total+=basePrice*0.75; // 3rd child 75%
+  return Math.round(total*100)/100;
+}
+function getParentChildren(email){
+  try{const v=storeGet('children:'+anonId(email));return v||[];}catch{return[];}
+}
+function setParentChildren(email,children){
+  storeSet('children:'+anonId(email),children.slice(0,3));
+}
 function getUserPlan(email){
   try{const v=localStorage.getItem('wra:subscription:'+anonId(email));return v?JSON.parse(v).plan:'free';}catch{return'free';}
 }
@@ -1516,7 +1580,6 @@ const GLOBAL_FLAGS={
   rootLearn:{label:'Root Learn',desc:'Enable root word learning',default:true},
   idioms:{label:'Idioms Panel',desc:'Enable idioms browser',default:true},
   parentDashboard:{label:'Parent Dashboard',desc:'Enable parent monitoring',default:true},
-  imagesEnabled:{label:'Visual Context Images',desc:'Load images in word search',default:true},
   xpSystem:{label:'XP Rewards',desc:'Show XP gamification system',default:true},
   sessionTimer:{label:'Session Timer',desc:'30-minute countdown timer',default:true},
   emailOTP:{label:'Email OTP Verification',desc:'Require OTP for admin/parent login',default:true}
@@ -2188,12 +2251,16 @@ function doRegister(){
   const roles=A.authRole==='admin'?['admin','student','parent']:[A.authRole];
   const user={
     name,email,role:A.authRole,roles:roles,createdAt:Date.now(),
-    linkedStudent:linked||null,appVersion:APP_VERSION,
+    linkedStudent:A_PENDING_CHILDREN[0]||linked||null,linkedChildren:A_PENDING_CHILDREN.length?[...A_PENDING_CHILDREN]:linked?[linked]:[],appVersion:APP_VERSION,
     anonId:anonId(email),suspended:false,plan:'free'
   };
   storeSet('user:'+email,user);
   storeSet('pass:'+email,hashPassword(pass));
   addAuditLog('USER_REGISTERED','New '+A.authRole+' registered (roles: '+roles.join(',')+') ',maskEmail(email),'system');
+  if(A.authRole==='parent'&&A_PENDING_CHILDREN.length){
+    setParentChildren(email,[...A_PENDING_CHILDREN]);
+    A_PENDING_CHILDREN.length=0;
+  }
   showToast('Account created!');clearErr();
   setTimeout(function(){signIn(user);},600);
 }
@@ -2313,7 +2380,7 @@ function generateRoot(fam){
 }
 
 function newRoot(){
-  A.step=1;A.selectedWord=null;A.quizAnswered=false;
+  A.step=1;A.selectedWord=null;A.quizAnswered=false;A.quizType=null;A._scrambleTarget=null;A._scrambleAnswer=[];A._scrambleLetters=[];
   const fam=A.family==='all'?['Latin','Greek','Anglo-Saxon'][Math.floor(Math.random()*3)]:A.family;
   const root=generateRoot(fam);
   A.currentRoot=root;A.usedRoots.push(root.root);
@@ -2418,30 +2485,148 @@ function renderStep3(r,c){
   const quotes=(r.literaryQuotes||[]).map(q=>`<div class="lit-quote" style="margin-bottom:10px"><div class="lit-text">${q.quote}</div><div class="lit-credit">${q.author} <span class="lit-book">· ${q.book}</span></div></div>`).join('');
   c.innerHTML=`<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:10px">✍️ "${r.root}" in rich context</div>${sents}${quotes?`<div style="margin-top:12px"><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:8px">📚 Literary References</div>${quotes}</div>`:''}`;
 }
-function renderStep4(r,c){if(!A.quizAnswered)buildQuiz(r,c);else buildComplete(r,c);}
+function renderStep4(r,c){
+  if(A.quizAnswered){buildComplete(r,c);return;}
+  if(!A.quizType) A.quizType=Math.random()<0.5?'mcq':'scramble';
+  if(A.quizType==='scramble') buildScramble(r,c);
+  else buildQuiz(r,c);
+}
+
 function buildQuiz(r,c){
-  const bs=r.branches||[];if(!bs.length)return;
+  const bs=r.branches||[];if(!bs.length){buildScramble(r,c);return;}
   const qi=Math.floor(Math.random()*Math.min(bs.length,5));
   const correct=bs[qi];A._qt=correct;
-  const opts=[correct.meaning,...bs.filter((_,i)=>i!==qi).slice(0,3).map(w=>w.meaning)].sort(()=>Math.random()-.5);
-  const optsBtns=opts.map((o,i)=>'<button class="qopt" onclick="answerQuiz(this,\''+encodeURIComponent(o)+'\',\''+encodeURIComponent(correct.meaning)+'\')">'+String.fromCharCode(65+i)+'. '+o+'</button>').join('');
-  c.innerHTML='<div class="quiz-wrap"><div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9B5DE5;margin-bottom:6px">&#129514; Quick Recall</div><div class="quiz-q">What does <strong style="font-size:1.2rem;color:var(--coral)">'+correct.word+'</strong> mean?<br/><span style="font-family:monospace;font-size:.78rem;color:var(--ink3)">'+(correct.pronunciation||'')+'</span></div><div class="quiz-opts">'+optsBtns+'</div><div id="qFb"></div></div>';
+  const opts=[correct.meaning,...bs.filter(function(_,i){return i!==qi;}).slice(0,3).map(function(w){return w.meaning;})].sort(function(){return Math.random()-.5;});
+  const optsBtns=opts.map(function(o,i){
+    return '<button class="qopt" data-ans="'+encodeURIComponent(o)+'" data-correct="'+encodeURIComponent(correct.meaning)+'" onclick="answerQuiz(this)">'+String.fromCharCode(65+i)+'. '+o+'</button>';
+  }).join('');
+  c.innerHTML='<div class="quiz-wrap">'
+    +'<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:6px">&#129514; Multiple Choice &nbsp;'
+    +'<button style="background:none;border:none;color:var(--sky);font-size:.65rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:1px" '
+    +'onclick="A.quizType=\'scramble\';A.quizAnswered=false;renderStep4(A.currentRoot,document.getElementById(\'stepContent\'))">Try Scramble &#8594;</button></div>'
+    +'<div class="quiz-q">What does <strong style="font-size:1.2rem;color:var(--coral)">'+correct.word+'</strong> mean?<br/>'
+    +'<span style="font-family:monospace;font-size:.78rem;color:var(--ink3)">'+(correct.pronunciation||'')+'</span></div>'
+    +'<div class="quiz-opts">'+optsBtns+'</div><div id="qFb"></div></div>';
 }
-function answerQuiz(btn,chosenE,correctE){
+
+function answerQuiz(btn){
   if(A.quizAnswered)return;A.quizAnswered=true;
-  const chosen=decodeURIComponent(chosenE),correct=decodeURIComponent(correctE);
+  const chosen=decodeURIComponent(btn.dataset.ans||'');
+  const correct=decodeURIComponent(btn.dataset.correct||'');
   const ok=chosen===correct;
-  A.sessionData.quizT++;if(ok){A.sessionData.quizC++;A.sessionData.xp+=20;showToast('✅ Correct! +20 XP');}else{A.sessionData.xp+=5;showToast('❌ Not quite — +5 XP');}
+  A.sessionData.quizT++;
+  if(ok){A.sessionData.quizC++;A.sessionData.xp+=20;showToast('Correct! +20 XP');}
+  else{A.sessionData.xp+=5;showToast('Not quite +5 XP');}
   document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   btn.classList.add(ok?'correct':'wrong');
-  if(!ok){document.querySelectorAll('.qopt').forEach(b=>{try{if(decodeURIComponent(b.getAttribute('onclick').match(/'([^']+)','[^']+'\)/)?.[1]||'')===correct)b.classList.add('correct');}catch{}});}
+  if(!ok){
+    document.querySelectorAll('.qopt').forEach(function(b){
+      if(decodeURIComponent(b.dataset.ans||'')===correct)b.classList.add('correct');
+    });
+  }
   const fb=document.getElementById('qFb');
-  if(fb)fb.innerHTML=`<div class="quiz-fb ${ok?'correct':'wrong'}">${ok?`🎉 <strong>${A._qt.word}</strong> = "${correct}". Root: <strong style="color:var(--coral)">${A.currentRoot.root}</strong> (${A.currentRoot.meaning})`:`Correct: "<strong>${correct}</strong>" — <strong style="color:var(--coral)">${A.currentRoot.root}</strong> = "${A.currentRoot.meaning}"`}</div>`;
+  if(fb)fb.innerHTML='<div class="quiz-fb '+(ok?'correct':'wrong')+'">'
+    +(ok?'Correct! <strong>'+A._qt.word+'</strong> = "'+correct+'". Root: <strong style="color:var(--coral)">'+A.currentRoot.root+'</strong> ('+A.currentRoot.meaning+')'
+       :'Correct answer: "<strong>'+correct+'</strong>" — Root <strong style="color:var(--coral)">'+A.currentRoot.root+'</strong> = "'+A.currentRoot.meaning+'"')
+    +'</div>';
 }
-function buildComplete(r,c){
-  const acc=A.sessionData.quizT>0?Math.round((A.sessionData.quizC/A.sessionData.quizT)*100):0;
-  c.innerHTML=`<div class="complete-banner"><span class="complete-emoji">${acc>=70?'🌟':acc>=40?'👍':'💪'}</span><div class="complete-title">Root "${r.root}" Complete!</div><div class="complete-sub">All 4 steps done. Keep going!</div><div class="comp-stats"><div class="cs-item"><div class="cs-val" style="color:var(--violet)">${acc}%</div><div class="cs-lab">Quiz</div></div><div class="cs-item"><div class="cs-val" style="color:var(--mint)">${(r.branches||[]).length}</div><div class="cs-lab">Words</div></div><div class="cs-item"><div class="cs-val" style="color:var(--sun)">${A.sessionData.xp||0}</div><div class="cs-lab">XP</div></div></div><button class="btn btn-accent" onclick="newRoot()">🎲 Next Root →</button></div>`;
+
+function buildScramble(r,c){
+  const bs=r.branches||[];
+  const eligible=bs.filter(function(b){return b.word&&b.word.length>=4;});
+  if(!eligible.length){A.quizType='mcq';buildQuiz(r,c);return;}
+  const target=eligible[Math.floor(Math.random()*eligible.length)];
+  A._scrambleTarget=target;
+  A._scrambleAnswer=[];
+  const letters=target.word.split('');
+  var scrambled=letters.slice();
+  var attempts=0;
+  do{
+    for(var i=scrambled.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=scrambled[i];scrambled[i]=scrambled[j];scrambled[j]=tmp;
+    }
+    attempts++;
+  }while(scrambled.join('')===target.word&&attempts<30);
+  A._scrambleLetters=scrambled.map(function(l,i){return{l:l,i:i,used:false};});
+  _renderScramble(target);
 }
+
+function _renderScramble(target){
+  var c=document.getElementById('stepContent');
+  if(!c)return;
+  var r=A.currentRoot;
+  var rootPart=(target.rootHighlight||r.root.split('/')[0]).toUpperCase();
+  var tileHtml=A._scrambleLetters.map(function(obj,idx){
+    var isRoot=rootPart.indexOf(obj.l.toUpperCase())!==-1;
+    return '<div class="scramble-tile'+(obj.used?' used':'')+'" data-idx="'+idx+'" onclick="scrambleTileClick('+idx+')">'
+      +'<span style="color:'+(isRoot?'var(--coral)':'var(--ink)')+'">'+obj.l.toUpperCase()+'</span></div>';
+  }).join('');
+  var ansLen=target.word.length;
+  var slotHtml=A._scrambleAnswer.map(function(tileIdx,si){
+    var l=A._scrambleLetters[tileIdx].l;
+    var isRoot=rootPart.indexOf(l.toUpperCase())!==-1;
+    return '<div class="scramble-slot filled" onclick="scrambleSlotClick('+si+')" '
+      +'style="'+(isRoot?'background:var(--coral);border-color:var(--coral-d);':'')+'">'
+      +'<span style="color:'+(isRoot?'white':'var(--ink)')+'">'+l.toUpperCase()+'</span></div>';
+  }).join('');
+  var emptySlots=ansLen-A._scrambleAnswer.length;
+  for(var e=0;e<emptySlots;e++) slotHtml+='<div class="scramble-slot"></div>';
+  var isComplete=A._scrambleAnswer.length===ansLen;
+  c.innerHTML='<div class="quiz-wrap scramble-wrap">'
+    +'<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--sky);margin-bottom:4px">&#129431; Word Scramble &nbsp;'
+    +'<button style="background:none;border:none;color:var(--violet);font-size:.65rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:1px" '
+    +'onclick="A.quizType=\'mcq\';A.quizAnswered=false;renderStep4(A.currentRoot,document.getElementById(\'stepContent\'))">Try MCQ &#8594;</button></div>'
+    +'<div style="font-size:.8rem;color:var(--ink3);margin-bottom:8px">Root: <strong style="color:var(--coral)">'+r.root+'</strong> ('+r.meaning+') &mdash; <em>'+target.meaning+'</em></div>'
+    +'<div style="font-size:.7rem;color:var(--ink3);margin-bottom:6px">Tap letters to spell the word. <span style="color:var(--coral)">Red letters</span> = root part.</div>'
+    +'<div class="scramble-answer-row">'+slotHtml+'</div>'
+    +'<div class="scramble-letters">'+tileHtml+'</div>'
+    +(isComplete?'<div id="scrambleFb" style="margin-top:8px"></div>':'<div style="font-size:.7rem;color:rgba(26,26,46,.4);margin-top:6px;text-align:center">Tap a filled slot to remove</div>')
+    +'</div>';
+  if(isComplete) checkScrambleAnswer();
+}
+
+function scrambleTileClick(idx){
+  if(A.quizAnswered)return;
+  var obj=A._scrambleLetters[idx];
+  if(obj.used)return;
+  if(A._scrambleAnswer.length>=A._scrambleTarget.word.length)return;
+  obj.used=true;
+  A._scrambleAnswer.push(idx);
+  _renderScramble(A._scrambleTarget);
+}
+
+function scrambleSlotClick(si){
+  if(A.quizAnswered)return;
+  if(si<0||si>=A._scrambleAnswer.length)return;
+  A._scrambleLetters[A._scrambleAnswer[si]].used=false;
+  A._scrambleAnswer.splice(si,1);
+  _renderScramble(A._scrambleTarget);
+}
+
+function checkScrambleAnswer(){
+  var target=A._scrambleTarget;
+  var built=A._scrambleAnswer.map(function(i){return A._scrambleLetters[i].l;}).join('').toUpperCase();
+  var correct=target.word.toUpperCase();
+  var ok=built===correct;
+  A.quizAnswered=true;
+  A.sessionData.quizT++;
+  if(ok){A.sessionData.quizC++;A.sessionData.xp+=25;showToast('Correct! +25 XP');}
+  else{A.sessionData.xp+=5;showToast('Close! +5 XP');}
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  var fb=document.getElementById('scrambleFb');
+  if(fb){
+    if(ok){
+      fb.innerHTML='<div class="quiz-fb correct">Correct! <strong>'+correct+'</strong> — '+target.meaning+'<br/>'
+        +'Root <strong style="color:var(--coral)">'+A.currentRoot.root+'</strong> ('+A.currentRoot.meaning+') lives inside this word.</div>';
+    } else {
+      fb.innerHTML='<div class="quiz-fb wrong">You built: <strong>'+built+'</strong><br/>'
+        +'Correct answer: <strong style="color:var(--mint)">'+correct+'</strong> — '+target.meaning+'</div>';
+    }
+  }
+}
+
+
 function completeRoot(){
   const r=A.currentRoot;
   A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(b=>b.word)});
@@ -2541,251 +2726,404 @@ function onSearchInput(val){
 //  No Anthropic API needed for Word Search
 // ══════════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════════════════
+//  WORD SEARCH — powered by Claude claude-sonnet-4-20250514
+//  Flow: user types word → Claude analyses it (etymology, roots, idioms,
+//  usage examples, memory hooks) → free dictionary API for pronunciation
+//  → render rich result card
+// ══════════════════════════════════════════════════════════════════════
+
 async function doSearch(){
   const raw=document.getElementById('searchInput').value.trim();
-  if(!raw){showToast('Please type a word first');return}
-  const trimmed=raw.trim();
-  const words=trimmed.split(/\s+/).filter(w=>w.length>0);
+  if(!raw){showToast('Please type a word first');return;}
+
+  const words=raw.trim().split(/\s+/).filter(w=>w.length>0);
   const sentencePattern=/\b(is|are|was|were|the|a|an|and|but|or|if|that|this|how|why|what|when|where|who|do|does|did|has|have|had|will|would|can|could|should|please|tell|give|me|my|i|you|we|they)\b/i;
-  const isSentence=words.length>2||(words.length>1&&sentencePattern.test(trimmed));
-  if(isSentence){
+  if(words.length>2||(words.length>1&&sentencePattern.test(raw))){
     document.getElementById('sentenceWarning').style.display='block';
-    showToast('⚠️ Please enter a single word only');return;
+    showToast('Please enter a single word only');return;
   }
+  document.getElementById('sentenceWarning').style.display='none';
+
   const word=raw.toLowerCase().replace(/[^a-z\-]/g,'');
-  if(!word){showToast('Please enter a valid English word');return}
+  if(!word){showToast('Please enter a valid English word');return;}
 
   A.sessionData.searches.push({word,searchedAt:Date.now()});
   A.sessionData.xp+=2;
   document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   saveSession();
 
-  document.getElementById('searchResult').innerHTML=`
-    <div class="search-loading">
-      <div class="search-spinner"></div>
-      <div class="search-loading-text">Looking up "${word}"…</div>
-    </div>`;
+  // Show loading state
+  document.getElementById('searchResult').innerHTML=
+    '<div class="search-loading">'
+    +'<div class="search-spinner"></div>'
+    +'<div class="search-loading-text">Analysing "'+word+'" with AI…</div>'
+    +'</div>';
 
   A.currentAccent=document.getElementById('accentSelect').value;
 
+  // Run dictionary + synonyms always; Claude only if API key configured
+  const [aiRaw, dictData, synData] = await Promise.all([
+    fetchClaudeAnalysis(word),
+    fetchDictionaryData(word),
+    fetchSynonyms(word)
+  ]);
+
+  // If Claude returned null (no key or error), build rich offline analysis
+  // using the dictionary data we already have
+  const aiAnalysis = aiRaw || analyseWordOffline(word, dictData);
+  renderWordResult(word, dictData, synData, aiAnalysis);
+}
+
+// ── CLAUDE ANALYSIS ────────────────────────────────────────────────────
+// ── CLAUDE API KEY CONFIGURATION ────────────────────────────────────────
+// Set your Anthropic API key here to enable AI-powered word analysis.
+// Leave empty ('') to use the free offline analysis — the app works either way.
+// Get a key at: console.anthropic.com
+const ANTHROPIC_API_KEY = '';   // e.g. 'sk-ant-...'
+
+async function fetchClaudeAnalysis(word){
+  // If no API key configured, go straight to offline analysis
+  if(!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY.trim() === ''){
+    console.info('No API key set — using offline analysis for "'+word+'"');
+    return null; // signals caller to use offline path
+  }
+
+  const SYSTEM = 'You are an expert etymologist and vocabulary teacher for students aged 10-18. '
+    +'Respond ONLY with a valid JSON object, no markdown, no backticks. '
+    +'Use this exact structure: '
+    +'{'
+    +'"definition":"plain English definition",'
+    +'"partOfSpeech":["noun"],'
+    +'"emoji":"relevant emoji",'
+    +'"memoryHook":"vivid phrase to remember this word, max 20 words",'
+    +'"roots":[{"root":"ROOT","meaning":"root meaning","origin":"Latin","originFull":"source word","memoryHook":"root memory tip","otherWords":["word1","word2","word3"]}],'
+    +'"etymologyStory":"2-3 sentence engaging story of how the word came into English",'
+    +'"etymologyTimeline":[{"language":"Latin","word":"original","meaning":"original meaning"},{"language":"Modern English","word":"'+word+'","meaning":"current meaning"}],'
+    +'"usageExamples":[{"sentence":"literary example sentence","source":"Author Name"}],'
+    +'"idioms":[{"phrase":"related idiom","meaning":"what it means","example":"example sentence"}],'
+    +'"relatedWords":["word1","word2","word3","word4","word5"]'
+    +'}';
+
   try{
-    const [dictData,synonymData]=await Promise.all([
-      fetchDictionaryData(word),
-      fetchSynonyms(word)
-    ]);
-    const offlineAnalysis=analyseWordOffline(word,dictData);
-    renderWordResult(word,dictData,synonymData,offlineAnalysis);
+    const response = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system: SYSTEM,
+        messages:[{role:'user', content:'Analyse this word: '+word}]
+      })
+    });
+
+    if(response.status===401){
+      console.warn('Invalid API key — switching to offline analysis');
+      return null;
+    }
+    if(!response.ok) throw new Error('Claude API '+response.status);
+    const data = await response.json();
+    const text = (data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
+    if(!text) return null;
+    return JSON.parse(text);
   }catch(e){
-    console.error(e);
-    const offlineAnalysis=analyseWordOffline(word,null);
-    renderWordResult(word,null,{synonyms:[],antonyms:[]},offlineAnalysis);
+    console.warn('Claude unavailable ('+e.message+') — using offline analysis');
+    return null; // triggers offline fallback
   }
 }
 
+// ── FREE DICTIONARY API (pronunciation + extra definitions) ────────────
 async function fetchDictionaryData(word){
   try{
-    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
     if(!r.ok)return null;
     const d=await r.json();
     return Array.isArray(d)?d[0]:null;
-  }catch{return null}
+  }catch{return null;}
 }
 
 async function fetchSynonyms(word){
   try{
     const [synR,antR]=await Promise.all([
-      fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=12`),
-      fetch(`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(word)}&max=12`)
+      fetch('https://api.datamuse.com/words?rel_syn='+encodeURIComponent(word)+'&max=12'),
+      fetch('https://api.datamuse.com/words?rel_ant='+encodeURIComponent(word)+'&max=12')
     ]);
     const syns=synR.ok?(await synR.json()).map(w=>w.word):[];
     const ants=antR.ok?(await antR.json()).map(w=>w.word):[];
     return{synonyms:syns,antonyms:ants};
-  }catch{return{synonyms:[],antonyms:[]}}
+  }catch{return{synonyms:[],antonyms:[]};}
 }
 
-function analyseWordOffline(word,dict){
-  const upper=word.toUpperCase();
-  // Find matching roots from database
-  const matchedRoots=ROOT_DATABASE.filter(r=>{
-    const rootKey=r.root.split('/')[0];
-    return upper.includes(rootKey)||
-      (r.branches||[]).some(b=>b.word===upper);
+// ── OFFLINE ANALYSIS — runs when no API key set or Claude unavailable ────
+// Uses ROOT_DATABASE + free dictionary API data to give a rich result.
+// This is the default mode and works completely without any API key.
+function analyseWordOffline(word, dict){
+  const upper = word.toUpperCase();
+
+  // Match roots from our database
+  const matchedRoots = ROOT_DATABASE.filter(function(r){
+    const key = r.root.split('/')[0];
+    return upper.includes(key) || (r.branches||[]).some(function(b){return b.word===upper;});
   }).slice(0,3);
 
-  // Build roots array for display
-  const roots=matchedRoots.map(r=>({
-    root:r.root.split('/')[0],
-    meaning:r.meaning,
-    origin:r.origin,
-    originFull:r.originFull,
-    partInWord:r.root.split('/')[0],
-    otherWords:(r.branches||[]).map(b=>b.word).filter(w=>w!==upper).slice(0,5),
-    memoryHook:r.memoryHook
-  }));
-
-  // Build etymology from dictionary data or database
-  let etymologyStory='';
-  let etymologyTimeline=[];
-  if(dict?.origin){
-    etymologyStory=dict.origin;
-  } else if(matchedRoots.length>0){
-    const r=matchedRoots[0];
-    etymologyStory=`The word "${word}" contains the ${r.origin} root "${r.root.split('/')[0]}" from ${r.originFull}, meaning "${r.meaning}". ${r.memoryHook}`;
-    etymologyTimeline=[
-      {language:r.origin,word:r.originFull,meaning:r.meaning},
-      {language:'Modern English',word:word,meaning:'current usage'}
-    ];
-  } else {
-    etymologyStory=`"${word.charAt(0).toUpperCase()+word.slice(1)}" is an English word. Search the dictionary for its full etymology.`;
-  }
-
-  // Build idioms from matched root database entries
-  const idioms=[];
-  matchedRoots.forEach(r=>{
-    if(r.sentences){
-      r.sentences.slice(0,2).forEach(s=>{
-        idioms.push({
-          phrase:s.word,
-          meaning:`A word sharing the root "${r.root.split('/')[0]}" (${r.meaning})`,
-          example:s.sentence
-        });
-      });
-    }
+  // Build roots array
+  const roots = matchedRoots.map(function(r){
+    return{
+      root: r.root.split('/')[0],
+      meaning: r.meaning,
+      origin: r.origin,
+      originFull: r.originFull,
+      memoryHook: r.memoryHook||'',
+      otherWords: (r.branches||[]).map(function(b){return b.word;}).filter(function(w){return w!==upper;}).slice(0,6)
+    };
   });
 
-  // Part of speech from dict
-  const partOfSpeech=dict?.meanings?.map(m=>m.partOfSpeech)||[];
-  const pronunciation=dict?.phonetics?.find(p=>p.text)?.text||'';
-  const definition=dict?.meanings?.[0]?.definitions?.[0]?.definition||'';
+  // Etymology — use dictionary origin if available, otherwise build from root data
+  let etymologyStory = '';
+  let etymologyTimeline = [];
+  if(dict&&dict.origin&&dict.origin.length>10){
+    etymologyStory = dict.origin;
+  } else if(matchedRoots.length>0){
+    const r = matchedRoots[0];
+    etymologyStory = 'The word "'+word+'" contains the '+r.origin+' root "'+r.root.split('/')[0]
+      +'" (from '+r.originFull+'), which means "'+r.meaning+'". '
+      +(r.memoryHook||'');
+    etymologyTimeline = [
+      {language:r.origin, word:r.originFull, meaning:r.meaning},
+      {language:'Modern English', word:word, meaning:'see definition above'}
+    ];
+  } else if(dict&&dict.origin){
+    etymologyStory = dict.origin;
+  } else {
+    etymologyStory = '"'+word.charAt(0).toUpperCase()+word.slice(1)+'" is an English word. '
+      +'Add an Anthropic API key in the app settings for AI-powered etymology.';
+  }
 
-  // Pick emoji based on root or fallback
-  const emoji=matchedRoots.length>0?matchedRoots[0].emoji:'📖';
+  // Usage examples — pull from literary sentences in root database
+  const usageExamples = [];
+  matchedRoots.forEach(function(r){
+    (r.sentences||[]).slice(0,2).forEach(function(s){
+      if(s.sentence && usageExamples.length < 3){
+        usageExamples.push({sentence:s.sentence, source:s.author||'Literary source'});
+      }
+    });
+  });
 
-  return{word,emoji,partOfSpeech,pronunciation,definition,roots,etymologyStory,etymologyTimeline,idioms,imageKeywords:[word,'language','vocabulary']};
+  // Also pull from dictionary examples
+  if(usageExamples.length < 2 && dict){
+    (dict.meanings||[]).forEach(function(m){
+      (m.definitions||[]).forEach(function(d){
+        if(d.example && usageExamples.length < 3){
+          usageExamples.push({sentence:d.example, source:'Dictionary example'});
+        }
+      });
+    });
+  }
+
+  // Idioms — pull from literary sentences in matched roots
+  const idioms = [];
+  matchedRoots.forEach(function(r){
+    (r.sentences||[]).slice(0,2).forEach(function(s){
+      if(idioms.length < 4){
+        idioms.push({
+          phrase: s.word,
+          meaning: 'A word sharing the root "'+r.root.split('/')[0]+'" ('+r.meaning+')',
+          example: s.sentence||''
+        });
+      }
+    });
+  });
+
+  // Literary quotes from root database
+  const literaryQuotes = [];
+  matchedRoots.forEach(function(r){
+    (r.literaryQuotes||[]).slice(0,1).forEach(function(q){
+      literaryQuotes.push({sentence:q.quote, source:q.author+' — '+q.book});
+    });
+  });
+
+  // Definition and parts of speech from dictionary
+  const definition = dict&&dict.meanings&&dict.meanings[0]&&dict.meanings[0].definitions&&dict.meanings[0].definitions[0]
+    ? dict.meanings[0].definitions[0].definition : '';
+  const partOfSpeech = dict ? (dict.meanings||[]).map(function(m){return m.partOfSpeech;}) : [];
+
+  // Pick emoji from matching root
+  const emoji = matchedRoots.length>0 ? (matchedRoots[0].emoji||'📖') : '📖';
+
+  return{
+    word, emoji, definition, partOfSpeech,
+    memoryHook: matchedRoots.length>0 ? (matchedRoots[0].memoryHook||'') : '',
+    roots,
+    etymologyStory,
+    etymologyTimeline,
+    usageExamples: [...usageExamples, ...literaryQuotes].slice(0,3),
+    idioms,
+    relatedWords: [],
+    _source: 'offline'  // flag so UI can show appropriate badge
+  };
 }
 
-function renderWordResult(word,dict,synData,ai){
+// ── RENDER WORD RESULT ─────────────────────────────────────────────────
+function renderWordResult(word, dict, synData, ai){
+  // Pronunciation and extra definitions come from the free dictionary API
+  const pron=dict?.phonetics?.find(function(p){return p.text;})?.text||'';
   const pos=(ai.partOfSpeech||[]).join(', ')||(dict?.meanings?.[0]?.partOfSpeech||'');
-  const pron=ai.pronunciation||(dict?.phonetics?.find(p=>p.text)?.text||'');
-  const def=ai.definition||(dict?.meanings?.[0]?.definitions?.[0]?.definition||'No definition found. Try a different spelling.');
+  const def=ai.definition||(dict?.meanings?.[0]?.definitions?.[0]?.definition||'No definition found.');
   const syns=synData?.synonyms||[];
   const ants=synData?.antonyms||[];
 
-  const rootsHTML=(ai.roots||[]).map((r,i)=>`
-    <div class="root-chip" onclick="toggleRootExpand(${i})">
-      <div class="rc-root">${r.root}</div>
-      <div class="rc-meaning">${r.meaning}</div>
-      <div class="rc-origin">${r.origin}</div>
-    </div>
-    <div class="root-expand" id="re${i}">
-      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:8px">
-        Root <span style="color:var(--coral);font-family:monospace">${r.root}</span> found inside "${word.toUpperCase()}"
-      </div>
-      <div style="font-size:.82rem;color:var(--ink3);margin-bottom:10px">Original: <em>${r.originFull||r.root}</em> · ${r.origin}</div>
-      ${r.memoryHook?`<div style="font-size:.82rem;color:var(--sun-d);margin-bottom:10px;font-style:italic">💡 ${r.memoryHook}</div>`:''}
-      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:6px">Other words with this root:</div>
-      <div class="branch-pills">
-        ${(r.otherWords||[]).map(w=>`<div class="branch-pill" onclick="searchWord('${w}')"><span class="bp-word">${w}</span></div>`).join('')}
-      </div>
-    </div>`).join('');
+  // ── Roots section ────────────────────────────────────────────────────
+  const rootsHTML=(ai.roots||[]).map(function(r,i){
+    const otherPills=(r.otherWords||[]).map(function(w){
+      return '<div class="branch-pill" onclick="searchWord(\''+w+'\')"><span class="bp-word">'+w+'</span></div>';
+    }).join('');
+    return '<div class="root-chip" onclick="toggleRootExpand('+i+')">'
+      +'<div class="rc-root">'+r.root+'</div>'
+      +'<div class="rc-meaning">'+r.meaning+'</div>'
+      +'<div class="rc-origin">'+r.origin+'</div>'
+      +'</div>'
+      +'<div class="root-expand" id="re'+i+'">'
+      +'<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:8px">'
+      +'Root <span style="color:var(--coral);font-family:monospace">'+r.root+'</span> found inside "'+word.toUpperCase()+'"</div>'
+      +'<div style="font-size:.82rem;color:var(--ink3);margin-bottom:10px">Original: <em>'+(r.originFull||r.root)+'</em> &middot; '+r.origin+'</div>'
+      +(r.memoryHook?'<div style="font-size:.82rem;color:var(--sun-d);margin-bottom:10px;font-style:italic">&#128161; '+r.memoryHook+'</div>':'')
+      +'<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin-bottom:6px">Other words with this root:</div>'
+      +'<div class="branch-pills">'+otherPills+'</div>'
+      +'</div>';
+  }).join('');
 
-  const noRootsHTML=`<div style="padding:14px;background:var(--paper2);border-radius:var(--rs);font-size:.85rem;color:var(--ink3)">
-    <strong>No matching roots found</strong> in the database for this word.<br/>
-    <span style="font-size:.78rem">The root database contains Latin, Greek and Anglo-Saxon roots. Some words (especially modern or borrowed words) may not match.</span>
-  </div>`;
+  const noRootsHTML='<div style="padding:14px;background:var(--paper2);border-radius:var(--rs);font-size:.85rem;color:var(--ink3)">'
+    +'<strong>No root match found</strong> in the database for this word.<br/>'
+    +'<span style="font-size:.78rem">The Claude AI has provided etymology above.</span></div>';
 
-  const timelineHTML=(ai.etymologyTimeline||[]).map(t=>`
-    <div class="etym-step">
-      <span class="etym-step-lang">${t.language}</span>
-      <span class="etym-step-word">${t.word}</span>
-      ${t.meaning?`<span class="etym-step-mean"> — ${t.meaning}</span>`:''}
-    </div>`).join('<div style="color:var(--ink3);font-size:.8rem;align-self:center;padding:0 4px">→</div>');
+  // ── Etymology timeline ────────────────────────────────────────────────
+  const timelineHTML=(ai.etymologyTimeline||[]).map(function(t){
+    return '<div class="etym-step">'
+      +'<span class="etym-step-lang">'+t.language+'</span>'
+      +'<span class="etym-step-word">'+t.word+'</span>'
+      +(t.meaning?'<span class="etym-step-mean"> &mdash; '+t.meaning+'</span>':'')
+      +'</div>';
+  }).join('<div style="color:var(--ink3);font-size:.8rem;align-self:center;padding:0 4px">&#8594;</div>');
 
-  const synAntHTML=`
-    <div class="syn-ant-grid">
-      <div class="sa-box">
-        <div class="sa-box-title syn">✓ Synonyms</div>
-        <div class="word-pills">${syns.length?syns.map(w=>`<span class="word-pill syn-pill" onclick="searchWord('${w}')">${w}</span>`).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>'}</div>
-      </div>
-      <div class="sa-box">
-        <div class="sa-box-title ant">✗ Antonyms</div>
-        <div class="word-pills">${ants.length?ants.map(w=>`<span class="word-pill ant-pill" onclick="searchWord('${w}')">${w}</span>`).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>'}</div>
-      </div>
-    </div>`;
+  // ── Usage examples (from Claude) ──────────────────────────────────────
+  const usageHTML=(ai.usageExamples||[]).map(function(ex){
+    return '<div class="idiom-card">'
+      +'<div class="idiom-example" style="font-style:italic">&ldquo;'+ex.sentence+'&rdquo;</div>'
+      +'<div style="font-size:.72rem;color:var(--ink3);margin-top:4px">&mdash; '+ex.source+'</div>'
+      +'</div>';
+  }).join('');
 
-  const idiomsHTML=(ai.idioms||[]).filter(id=>id.example).map(id=>`
-    <div class="idiom-card">
-      <div class="idiom-phrase">"${id.phrase}"</div>
-      <div class="idiom-meaning">${id.meaning}</div>
-      <div class="idiom-example">${id.example}</div>
-    </div>`).join('');
+  // ── Idioms from Claude ────────────────────────────────────────────────
+  const idiomsHTML=(ai.idioms||[]).filter(function(id){return id.phrase&&id.meaning;}).map(function(id){
+    return '<div class="idiom-card">'
+      +'<div class="idiom-phrase">&ldquo;'+id.phrase+'&rdquo;</div>'
+      +'<div class="idiom-meaning">'+id.meaning+'</div>'
+      +(id.example?'<div class="idiom-example">'+id.example+'</div>':'')
+      +'</div>';
+  }).join('');
 
-  const imgHTML=`<div class="img-grid" id="imgGrid">
-    ${[0,1,2].map(i=>`<div class="img-card" id="imgCard${i}"><div class="img-loading">Loading…</div></div>`).join('')}
-  </div>`;
+  // ── Synonyms & antonyms ───────────────────────────────────────────────
+  const relatedWords=(ai.relatedWords||[]);
+  const allSyns=[...new Set([...syns,...relatedWords])].slice(0,12);
+  const synAntHTML='<div class="syn-ant-grid">'
+    +'<div class="sa-box"><div class="sa-box-title syn">&#10003; Synonyms</div>'
+    +'<div class="word-pills">'+(allSyns.length?allSyns.map(function(w){return '<span class="word-pill syn-pill" onclick="searchWord(\''+w+'\')">'+w+'</span>';}).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>')+'</div></div>'
+    +'<div class="sa-box"><div class="sa-box-title ant">&#10007; Antonyms</div>'
+    +'<div class="word-pills">'+(ants.length?ants.map(function(w){return '<span class="word-pill ant-pill" onclick="searchWord(\''+w+'\')">'+w+'</span>';}).join(''):'<span style="font-size:.78rem;color:var(--ink3)">None found</span>')+'</div></div>'
+    +'</div>';
 
-  // Additional dict definitions
-  const extraDefs=(dict?.meanings||[]).slice(0,3).map(m=>`
-    <div style="margin-bottom:10px">
-      <span style="background:var(--ink);color:white;padding:1px 7px;border-radius:4px;font-size:.65rem;font-weight:600;margin-right:6px">${m.partOfSpeech}</span>
-      ${(m.definitions||[]).slice(0,2).map(d=>`<div style="font-size:.85rem;color:var(--ink);margin-top:4px;margin-left:4px">• ${d.definition}${d.example?`<br/><span style="font-size:.78rem;color:var(--ink3);font-style:italic">"${d.example}"</span>`:''}</div>`).join('')}
-    </div>`).join('');
+  // ── Extra dictionary definitions ──────────────────────────────────────
+  const extraDefs=(dict?.meanings||[]).slice(0,3).map(function(m){
+    return '<div style="margin-bottom:10px">'
+      +'<span style="background:var(--ink);color:white;padding:1px 7px;border-radius:4px;font-size:.65rem;font-weight:600;margin-right:6px">'+m.partOfSpeech+'</span>'
+      +(m.definitions||[]).slice(0,2).map(function(d){
+        return '<div style="font-size:.85rem;color:var(--ink);margin-top:4px;margin-left:4px">&bull; '+d.definition
+          +(d.example?'<br/><span style="font-size:.78rem;color:var(--ink3);font-style:italic">&ldquo;'+d.example+'&rdquo;</span>':'')
+          +'</div>';
+      }).join('')
+      +'</div>';
+  }).join('');
 
-  document.getElementById('searchResult').innerHTML=`
-    <div class="word-result">
-      <div class="wr-header" data-emoji="${ai.emoji||'📖'}">
-        <div class="wr-word-row">
-          <div class="wr-word">${word.charAt(0).toUpperCase()+word.slice(1)}</div>
-          <div class="wr-pron">${pron}</div>
-          <button class="speak-btn" id="speakBtn" onclick="speakWord('${word}')" title="Hear pronunciation">🔊</button>
-        </div>
-        <div class="wr-pos-row">
-          ${pos.split(', ').filter(Boolean).map(p=>`<span class="pos-badge">${p}</span>`).join('')}
-        </div>
-        ${def?`<div style="font-size:.88rem;color:rgba(255,255,255,.65);margin-top:8px;line-height:1.55">${def}</div>`:''}
-      </div>
-      <div class="wr-body">
+  // ── Memory hook from Claude ───────────────────────────────────────────
+  const memHookHTML=ai.memoryHook
+    ?'<div class="wr-section"><div class="wr-sec-title"><span class="wr-sec-icon">&#128161;</span> Memory Hook</div>'
+      +'<div style="background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:var(--rs);padding:14px 16px;font-size:.92rem;color:var(--ink);font-style:italic;line-height:1.6">'
+      +ai.memoryHook+'</div></div>'
+    :'';
 
-        ${extraDefs?`<div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">📘</span> All Definitions</div>
-          ${extraDefs}
-        </div>`:''}
+  // ── Source badge — shows AI or offline mode ──────────────────────────
+  const aiBadge = ai._source==='offline'
+    ? '<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(6,214,160,.08);border:1px solid rgba(6,214,160,.2);border-radius:99px;padding:3px 10px;font-size:.68rem;font-weight:600;color:var(--mint-d);margin-bottom:12px">'
+      +'&#128218; Dictionary &amp; Root Database analysis</div>'
+    : '<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(155,93,229,.1);border:1px solid rgba(155,93,229,.2);border-radius:99px;padding:3px 10px;font-size:.68rem;font-weight:600;color:var(--violet);margin-bottom:12px">'
+      +'&#10024; Analysed by Claude AI</div>';
 
-        <div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">🌳</span> Root Words Found</div>
-          <div class="root-cards">${(ai.roots||[]).length?rootsHTML:noRootsHTML}</div>
-        </div>
+  // ── Assemble result card ──────────────────────────────────────────────
+  document.getElementById('searchResult').innerHTML=
+    '<div class="word-result">'
 
-        <div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">📜</span> Etymology — Origin Story</div>
-          <div class="etym-story">${ai.etymologyStory||'Etymology not available for this word.'}</div>
-          ${timelineHTML?`<div class="etym-timeline" style="align-items:center;margin-top:10px">${timelineHTML}</div>`:''}
-        </div>
+    // Header
+    +'<div class="wr-header" data-emoji="'+(ai.emoji||'📖')+'">'
+      +'<div class="wr-word-row">'
+        +'<div class="wr-word">'+word.charAt(0).toUpperCase()+word.slice(1)+'</div>'
+        +(pron?'<div class="wr-pron">'+pron+'</div>':'')
+        +'<button class="speak-btn" id="speakBtn" onclick="speakWord(\''+word+'\')" title="Hear pronunciation">&#128266;</button>'
+      +'</div>'
+      +'<div class="wr-pos-row">'
+        +pos.split(', ').filter(Boolean).map(function(p){return '<span class="pos-badge">'+p+'</span>';}).join('')
+      +'</div>'
+      +(def?'<div style="font-size:.88rem;color:rgba(255,255,255,.65);margin-top:8px;line-height:1.55">'+def+'</div>':'')
+    +'</div>'
 
-        <div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">🔄</span> Synonyms & Antonyms</div>
-          ${synAntHTML}
-        </div>
+    // Body
+    +'<div class="wr-body">'
+      +aiBadge
 
-        ${idiomsHTML?`<div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">💬</span> Root in Context</div>
-          ${idiomsHTML}
-        </div>`:''}
+      // Memory hook
+      +memHookHTML
 
-        <div class="wr-section">
-          <div class="wr-sec-title"><span class="wr-sec-icon">🖼️</span> Visual Context</div>
-          ${imgHTML}
-        </div>
+      // All definitions from dictionary
+      +(extraDefs?'<div class="wr-section"><div class="wr-sec-title"><span class="wr-sec-icon">&#128218;</span> All Definitions</div>'+extraDefs+'</div>':'')
 
-      </div>
-    </div>`;
+      // Root words
+      +'<div class="wr-section">'
+        +'<div class="wr-sec-title"><span class="wr-sec-icon">&#127795;</span> Root Words</div>'
+        +'<div class="root-cards">'+(( ai.roots||[]).length?rootsHTML:noRootsHTML)+'</div>'
+      +'</div>'
 
-  loadImages(ai.imageKeywords||[word,'language','vocabulary']);
+      // Etymology story + timeline
+      +'<div class="wr-section">'
+        +'<div class="wr-sec-title"><span class="wr-sec-icon">&#128219;</span> Etymology &mdash; Origin Story</div>'
+        +'<div class="etym-story">'+(ai.etymologyStory||'Etymology not available.')+'</div>'
+        +(timelineHTML?'<div class="etym-timeline" style="align-items:center;margin-top:10px">'+timelineHTML+'</div>':'')
+      +'</div>'
+
+      // Synonyms & antonyms
+      +'<div class="wr-section">'
+        +'<div class="wr-sec-title"><span class="wr-sec-icon">&#8644;</span> Synonyms &amp; Antonyms</div>'
+        +synAntHTML
+      +'</div>'
+
+      // Usage examples from Claude
+      +(usageHTML?'<div class="wr-section"><div class="wr-sec-title"><span class="wr-sec-icon">&#128221;</span> Usage Examples</div>'+usageHTML+'</div>':'')
+
+      // Idioms from Claude
+      +(idiomsHTML?'<div class="wr-section"><div class="wr-sec-title"><span class="wr-sec-icon">&#128172;</span> Idioms &amp; Phrases</div>'+idiomsHTML+'</div>':'')
+
+    +'</div>'
+    +'</div>';
+
   A.sessionData.xp+=10;
   document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   saveSession();
-  showToast(`✨ "${word}" looked up! +10 XP`);
+  showToast('"'+word+'" analysed! +10 XP');
 }
+
 
 function toggleRootExpand(i){
   const el=document.getElementById('re'+i);
@@ -2820,22 +3158,8 @@ function speakWord(word){
 }
 
 // ── IMAGES ──────────────────────────────────────────────────────
-function loadImages(keywords){
-  const queries=[(keywords[0]||'language'),(keywords[1]||'book'),(keywords[2]||'education')];
-  queries.forEach((q,i)=>{
-    const card=document.getElementById('imgCard'+i);
-    if(!card)return;
-    const img=new Image();
-    const seed=encodeURIComponent((q||'word')+Date.now()+i);
-    img.src=`https://picsum.photos/seed/${seed}/400/300`;
-    img.alt=q;
-    img.onload=()=>{card.innerHTML=`<img src="${img.src}" alt="${q}" loading="lazy"/><a class="img-credit" href="https://picsum.photos" target="_blank" rel="noopener">Photo: Picsum</a>`;};
-    img.onerror=()=>{card.innerHTML=`<div class="img-loading" style="height:120px">📷 Unavailable</div>`;};
-  });
-}
 
 // Keep these stub functions so nothing breaks
-async function fetchAIAnalysis(word){return analyseWordOffline(word,null);}
 
 
 // ── SESSION PERSISTENCE ───────────────────────────────────────────
@@ -2906,14 +3230,15 @@ function updateStudentStats(){
 
 // ── PARENT DASHBOARD ──────────────────────────────
 function initParentDashboard(){
-  const u=A.currentUser;
-  document.getElementById('pdWelcome').textContent=`Welcome, ${u.name}`;
-  const linkedEmail=u.linkedStudent;let students=[];
-  if(linkedEmail){const su=storeGet('user:'+linkedEmail);if(su&&su.role==='student')students.push(su);}
-  storeList('index:').forEach(k=>{const idx=storeGet(k);if(idx&&idx.studentName){const em=k.replace('index:','');if(!students.find(s=>s.email===em))students.push({email:em,name:idx.studentName});}});
-  if(!students.length){document.getElementById('pdContent').innerHTML=`<div class="pd-no-data"><div>👩‍🎓</div><p>No student data found yet.<br/>Ask your student to register and complete at least one root.</p></div>`;return;}
-  document.getElementById('pdStudentSelector').innerHTML=`<div class="pd-section-title">Select Student</div><div class="student-select">${students.map((s,i)=>`<button class="stu-btn${i===0?' active':''}" onclick="selectStudent('${s.email}',this)">${s.name}</button>`).join('')}</div>`;
-  A.selectedStudentEmail=students[0].email;loadStudentDashboard(students[0].email);
+  initParentDashboardMulti();
+}
+
+function selectStudentBtn(btn){
+  var email=btn.dataset.email;
+  document.querySelectorAll('.stu-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  A.selectedStudentEmail=email;
+  loadStudentDashboard(email);
 }
 function selectStudent(email,btn){
   document.querySelectorAll('.stu-btn').forEach(b=>b.classList.remove('active'));
@@ -3199,6 +3524,131 @@ function showToast(msg){
   t.classList.add('show');
   clearTimeout(t._timer);
   t._timer=setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+
+// ════════════════════════════════════════════════════════════════
+//  PARENT MULTI-CHILD MANAGEMENT
+// ════════════════════════════════════════════════════════════════
+const A_PENDING_CHILDREN=[];  // during registration
+
+function addChildEmail(){
+  const inp=document.getElementById('regLinkedStudent');
+  const email=inp?.value.trim().toLowerCase();
+  if(!email)return;
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showToast('Please enter a valid email address');return;}
+  if(A_PENDING_CHILDREN.length>=3){showToast('Maximum 3 children per parent account');return;}
+  if(A_PENDING_CHILDREN.includes(email)){showToast('Already added');return;}
+  A_PENDING_CHILDREN.push(email);
+  inp.value='';
+  renderChildTags();
+}
+
+function removeChildEmail(email){
+  const idx=A_PENDING_CHILDREN.indexOf(email);
+  if(idx!==-1)A_PENDING_CHILDREN.splice(idx,1);
+  renderChildTags();
+}
+
+function renderChildTags(){
+  const row=document.getElementById('childTagsRow');
+  if(!row)return;
+  row.innerHTML='';
+  A_PENDING_CHILDREN.forEach(function(e){
+    const span=document.createElement('span');
+    span.className='child-tag';
+    span.textContent=e;
+    const btn=document.createElement('button');
+    btn.textContent='✕';
+    btn.dataset.cemail=e;
+    btn.addEventListener('click',function(){removeChildEmail(this.dataset.cemail);});
+    span.appendChild(btn);
+    row.appendChild(span);
+  });
+}
+
+// Get linked children for a parent (from stored list + legacy single)
+function getLinkedChildren(user){
+  const stored=getParentChildren(user.email||'');
+  if(stored.length)return stored;
+  // Legacy: single linkedStudent
+  if(user.linkedStudent)return[user.linkedStudent];
+  return[];
+}
+
+// ── PARENT DASHBOARD — multi-child selector ───────────────────────
+function initParentDashboardMulti(){
+  const u=A.currentUser;
+  // Welcome message
+  const welcome=document.getElementById('pdWelcome');
+  if(welcome)welcome.textContent='Welcome, '+u.name;
+
+  const children=getLinkedChildren(u);
+
+  // Also scan for any registered students
+  const students=[];
+  children.forEach(function(email){
+    const su=storeGet('user:'+email);
+    if(su)students.push({email,name:su.name||email});
+    else students.push({email,name:email}); // not yet registered
+  });
+  // Also pick up any who have sessions
+  storeList('index:').forEach(function(k){
+    const idx=storeGet(k);
+    if(!idx)return;
+    const em=k.replace('index:','');
+    if(!students.find(s=>s.email===em))
+      students.push({email:em,name:idx.studentName||em});
+  });
+
+  const pdContent=document.getElementById('pdContent');
+  const pdSelector=document.getElementById('pdStudentSelector');
+
+  if(!students.length){
+    if(pdContent)pdContent.innerHTML='<div class="pd-no-data"><div>&#128105;&#8205;&#127979;</div><p>No students linked yet.<br/>Add your children&#39;s emails to your account,<br/>then ask them to register.</p></div>';
+    if(pdSelector)pdSelector.innerHTML='';
+    return;
+  }
+
+  // Build child selector with pricing info
+  const plan=getUserPlan(u.email||'');
+  const basePrice=PLANS[plan]?.price||9.99;
+  const childCount=children.length;
+  const totalPrice=childCount>0?calcParentPrice(basePrice,childCount):basePrice;
+
+  if(pdSelector){
+    pdSelector.innerHTML='<div class="pd-section-title">Your Children ('+students.length+')'
+      +(childCount>0?'<span style="margin-left:10px;font-size:.72rem;color:var(--mint-d);font-weight:400">&#163;'+totalPrice+'/mo for '+childCount+' child'+(childCount!==1?'ren':'')+'</span>':'')
+      +'</div>'
+      +'<div class="student-select">'
+      +students.map(function(s,i){
+        return '<button class="stu-btn'+(i===0?' active':'')+'" data-email="'+s.email+'" onclick="selectStudentBtn(this)">'+s.name+'</button>';
+      }).join('')+'</div>'
+      // Add child button
+      +(childCount<3?'<div style="margin-top:10px"><div class="child-input-row"><input type="email" id="addChildInput" placeholder="Add child email..."/><button class="add-child-btn" onclick="parentAddChild()">+ Add</button></div></div>':'<div style="font-size:.72rem;color:var(--ink3);margin-top:6px;font-style:italic">Maximum 3 children reached</div>');
+    A.selectedStudentEmail=students[0].email;
+    loadStudentDashboard(students[0].email);
+  }
+}
+
+function parentAddChild(){
+  const inp=document.getElementById('addChildInput');
+  const email=inp?.value.trim().toLowerCase();
+  if(!email){showToast('Enter an email address');return;}
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showToast('Invalid email address');return;}
+  const u=A.currentUser;
+  const existing=getLinkedChildren(u);
+  if(existing.length>=3){showToast('Maximum 3 children per account');return;}
+  if(existing.includes(email)){showToast('Already added');return;}
+  existing.push(email);
+  setParentChildren(u.email||'',existing);
+  // Update user object
+  u.linkedChildren=existing;
+  storeSet('user:'+(u.email||''),u);
+  if(inp)inp.value='';
+  showToast('Child added! They need to register as a Student.');
+  addAuditLog('CHILD_LINKED','Parent linked a child account',maskEmail(u.email||''),'system');
+  initParentDashboardMulti();
 }
 
 
