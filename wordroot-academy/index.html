@@ -741,12 +741,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <div class="pwd-strength" id="pwdStrengthBar"></div>
           <div class="pwd-hint" id="pwdStrengthHint">At least 8 characters required</div>
         </div>
-        <!-- Extra roles for admin -->
-        <div class="extra-roles" id="extraRolesSection">
-          <div class="extra-roles-title">&#128101; Also enable these views for this admin account:</div>
-          <div class="extra-role-check"><input type="checkbox" id="extraStudent"/><label for="extraStudent"><strong>Student</strong> — use the word search and root learning app</label></div>
-          <div class="extra-role-check"><input type="checkbox" id="extraParent"/><label for="extraParent"><strong>Parent / Monitor</strong> — view student activity dashboards</label></div>
-        </div>
+
         <div id="parentLinkField" class="field" style="display:none">
           <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional)</span></label>
           <input type="email" id="regLinkedStudent" placeholder="student@example.com"/>
@@ -959,6 +954,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       <div class="admin-nav-item" data-page="notifications" onclick="renderAdminPage('notifications')"><span class="admin-nav-icon">📢</span> Notifications</div>
       <div class="admin-nav-section">Security</div>
       <div class="admin-nav-item" data-page="audit" onclick="renderAdminPage('audit')"><span class="admin-nav-icon">📋</span> Audit Log</div>
+      <div class="admin-nav-section">Switch View</div>
+      <div class="admin-nav-item" onclick="adminSwitchView('student',this)"><span class="admin-nav-icon">📚</span> Student App</div>
+      <div class="admin-nav-item" onclick="adminSwitchView('parent',this)"><span class="admin-nav-icon">👁</span> Parent Dashboard</div>
     </nav>
     <button class="admin-logout-btn" onclick="doLogout()">🚪 Sign Out</button>
   </div>
@@ -2053,9 +2051,6 @@ function setRole(r){
   const btnClass=isAdmin?'parent-btn':isParent?'parent-btn':'student-btn';
   document.getElementById('loginBtn').className='auth-btn '+btnClass;
   document.getElementById('regBtn').className='auth-btn '+btnClass;
-  // Show/hide extra-roles section (only on register tab, only for admin)
-  const extraSection=document.getElementById('extraRolesSection');
-  if(extraSection) extraSection.style.display=(isAdmin&&A.authTab==='register')?'block':'none';
   // Show/hide parent link field
   const plf=document.getElementById('parentLinkField');
   if(plf) plf.style.display=(isParent&&A.authTab==='register')?'block':'none';
@@ -2189,12 +2184,8 @@ function doRegister(){
   const pwdErr=validatePassword(pass);
   if(pwdErr){showErr(pwdErr);return;}
   if(storeGet('user:'+email)){showErr('An account with this email already exists.');return;}
-  // Build roles array — admin can also be student and/or parent
-  const roles=[A.authRole];
-  if(A.authRole==='admin'){
-    if(document.getElementById('extraStudent')?.checked) roles.push('student');
-    if(document.getElementById('extraParent')?.checked) roles.push('parent');
-  }
+  // Admin automatically gets all three roles; others get just their selected role
+  const roles=A.authRole==='admin'?['admin','student','parent']:[A.authRole];
   const user={
     name,email,role:A.authRole,roles:roles,createdAt:Date.now(),
     linkedStudent:linked||null,appVersion:APP_VERSION,
@@ -2227,14 +2218,18 @@ function doLogin(){
     return;
   }
   if(user.suspended){showErr('This account has been suspended. Contact support.');return;}
-  // Check role — admin accounts accept any role they have registered
+  // Role check: admin accounts can log in under any role tab
   const userRoles=user.roles||[user.role];
-  if(!userRoles.includes(A.authRole)){
-    showErr('This account does not have the "'+A.authRole+'" role. It has: '+userRoles.join(', ')+'.');
+  const userIsAdmin=user.role==='admin'||userRoles.includes('admin');
+  if(!userIsAdmin && !userRoles.includes(A.authRole)){
+    showErr('This is a "'+user.role+'" account. Please select the correct role above.');
     return;
   }
-  // For login, treat the selected role as the active session role
-  user._sessionRole=A.authRole;
+  // Admin signing in via student/parent tab — redirect them to admin then let them switch
+  if(userIsAdmin && A.authRole!=='admin'){
+    A.authRole='admin';  // normalise to admin login
+  }
+  user._sessionRole='admin';
   recordLoginAttempt(email,true);
   // Admin and Parent get an email OTP code — students sign in directly
   if(user.role==='admin'||user.role==='parent'){
@@ -2258,20 +2253,17 @@ function signIn(user){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   checkNotifications();
   const userRoles=user.roles||[user.role];
-  const isAdmin=userRoles.includes('admin');
+  const isAdmin=userRoles.includes('admin')||user.role==='admin';
   if(isAdmin&&A.currentRole==='admin'){
     initAdminPortal();
-    // Show view nav if admin also has student/parent roles
+    // Admin always gets access to all three views
     const nav=document.getElementById('adminViewNav');
     if(nav){
       nav.style.display='flex';
       const sb=document.getElementById('adminStudentBtn');
       const pb=document.getElementById('adminParentBtn');
-      if(sb) sb.style.display=userRoles.includes('student')?'inline-flex':'none';
-      if(pb) pb.style.display=userRoles.includes('parent')?'inline-flex':'none';
-      // Only show nav if there are extra views available
-      const hasExtra=userRoles.includes('student')||userRoles.includes('parent');
-      nav.style.display=hasExtra?'flex':'none';
+      if(sb) sb.style.display='inline-flex';
+      if(pb) pb.style.display='inline-flex';
     }
   } else if(A.currentRole==='parent'){
     document.getElementById('parentScreen').classList.add('active');
