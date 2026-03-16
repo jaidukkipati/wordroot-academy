@@ -681,6 +681,22 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 }
 
 
+
+/* ── Multi-role registration ── */
+.role-btn.active.admin{background:rgba(255,107,107,.12);border-color:var(--coral);color:var(--coral)}
+.extra-roles{background:rgba(155,93,229,.06);border:1px solid rgba(155,93,229,.15);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;display:none}
+.extra-roles-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--violet-d);margin-bottom:8px}
+.extra-role-check{display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer}
+.extra-role-check:last-child{margin-bottom:0}
+.extra-role-check input[type=checkbox]{width:15px;height:15px;accent-color:var(--violet);cursor:pointer}
+.extra-role-check label{font-size:.82rem;color:var(--ink3);cursor:pointer}
+.extra-role-check label strong{color:var(--ink)}
+/* Admin top nav */
+.admin-view-nav{display:flex;gap:8px;padding:12px 16px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
+.admin-view-btn{padding:7px 14px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:sans-serif}
+.admin-view-btn:hover{background:rgba(255,255,255,.08);color:white}
+.admin-view-btn.active{background:var(--sun);border-color:var(--sun);color:var(--ink)}
+
 </style>
 </head>
 <body>
@@ -725,6 +741,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <div class="pwd-strength" id="pwdStrengthBar"></div>
           <div class="pwd-hint" id="pwdStrengthHint">At least 8 characters required</div>
         </div>
+        <!-- Extra roles for admin -->
+        <div class="extra-roles" id="extraRolesSection">
+          <div class="extra-roles-title">&#128101; Also enable these views for this admin account:</div>
+          <div class="extra-role-check"><input type="checkbox" id="extraStudent"/><label for="extraStudent"><strong>Student</strong> — use the word search and root learning app</label></div>
+          <div class="extra-role-check"><input type="checkbox" id="extraParent"/><label for="extraParent"><strong>Parent / Monitor</strong> — view student activity dashboards</label></div>
+        </div>
         <div id="parentLinkField" class="field" style="display:none">
           <label>Student Email to Monitor <span style="color:var(--ink3);font-weight:400;text-transform:none">(optional)</span></label>
           <input type="email" id="regLinkedStudent" placeholder="student@example.com"/>
@@ -748,6 +770,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       <div class="s-user">
         <div class="s-avatar" id="sAvatar">?</div>
         <div><div class="s-name" id="sName">Student</div><div class="s-xp" id="sXp">0 XP</div></div>
+        <button id="backToAdminBtn" class="logout-btn" onclick="adminSwitchView('admin',null)" style="display:none;background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);color:var(--coral)">&#8592; Admin</button>
         <button class="logout-btn" onclick="doLogout()">Sign out</button>
       </div>
     </div>
@@ -940,6 +963,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
     <button class="admin-logout-btn" onclick="doLogout()">🚪 Sign Out</button>
   </div>
   <div class="admin-main">
+    <!-- Admin view switcher — admin can also use student/parent views -->
+    <div class="admin-view-nav" id="adminViewNav" style="display:none">
+      <button class="admin-view-btn active" onclick="adminSwitchView('admin',this)">&#128202; Admin Portal</button>
+      <button class="admin-view-btn" id="adminStudentBtn" onclick="adminSwitchView('student',this)" style="display:none">&#128218; Student App</button>
+      <button class="admin-view-btn" id="adminParentBtn" onclick="adminSwitchView('parent',this)" style="display:none">&#128065; Parent Dashboard</button>
+    </div>
     <div id="adminMainContent"></div>
   </div>
 </div>
@@ -1514,7 +1543,7 @@ function getAllUsers(){
         users.push({
           anonId:anonId(email),maskedEmail:maskEmail(email),
           displayName:maskName(u.name||''),role:u.role||'student',
-          plan:getUserPlan(email),createdAt:u.createdAt||Date.now(),
+          plan:getUserPlan(email),roles:(u.roles||[u.role]),createdAt:u.createdAt||Date.now(),
           suspended:u.suspended||false,mfaEnabled:false,_email:email
         });
       }catch{}
@@ -1712,7 +1741,7 @@ function adminViewUser(email){
     '<div class="admin-field"><label>Name</label><div style="color:white;font-size:.9rem;padding:6px 0">'+user.name+'</div></div>',
     '<div class="admin-field"><label>Email</label><div style="color:var(--sky);font-family:monospace;font-size:.85rem;padding:6px 0">'+email+'</div></div>',
     '<div class="admin-field"><label>Anonymous ID</label><div style="color:rgba(255,255,255,.35);font-family:monospace;font-size:.75rem;padding:6px 0">'+anonId(email)+'</div></div>',
-    '<div class="admin-field"><label>Role</label><div style="color:white;padding:6px 0">'+user.role+'</div></div>',
+    '<div class="admin-field"><label>Role(s)</label><div style="color:white;padding:6px 0">'+(user.roles||[user.role]).join(', ')+'</div></div>',
     '<div class="admin-field"><label>Plan</label><select id="adminPlanSelect" style="background:#1A1A2E;color:white;border:1px solid rgba(255,255,255,.2);padding:8px;border-radius:8px;width:100%">'+planOpts+'</select></div>',
     '<div class="admin-btn-row">',
       '<button class="admin-btn cancel" onclick="closeAdminModal()">Close</button>',
@@ -1843,6 +1872,7 @@ const ADMIN={page:'dashboard',pendingPlanEmail:''};
 
 function initAdminPortal(){
   document.getElementById('adminScreen').classList.add('active');
+  document.getElementById('adminMainContent').style.display='block';
   checkNotifications();
   renderAdminPage('dashboard');
   addAuditLog('ADMIN_LOGIN','Admin portal accessed',maskEmail(A.currentUser.email),'admin');
@@ -2005,19 +2035,30 @@ function switchAuthTab(t){
   document.getElementById('loginForm').style.display=t==='login'?'block':'none';
   document.getElementById('registerForm').style.display=t==='register'?'block':'none';
   clearErr();
+  // Re-run setRole so extra-roles section shows/hides correctly
+  setRole(A.authRole);
 }
 function setRole(r){
   A.authRole=r;
   document.getElementById('roleStudent').classList.toggle('active',r==='student');
   document.getElementById('roleParent').classList.toggle('active',r==='parent');
   const adminBtn=document.getElementById('roleAdmin');
-  if(adminBtn){adminBtn.style.background=r==='admin'?'rgba(255,107,107,.15)':'var(--white)';
+  if(adminBtn){
+    adminBtn.style.background=r==='admin'?'rgba(255,107,107,.12)':'var(--white)';
     adminBtn.style.borderColor=r==='admin'?'var(--coral)':'rgba(26,26,46,.1)';
-    adminBtn.style.color=r==='admin'?'var(--coral)':'var(--ink3)';}
-  const btnClass=r==='student'?'student-btn':r==='admin'?'danger-btn':'parent-btn';
-  document.getElementById('loginBtn').className='auth-btn '+(r==='admin'?'parent-btn':btnClass.replace('danger-btn','parent-btn'));
-  document.getElementById('regBtn').className='auth-btn '+(r==='admin'?'parent-btn':btnClass.replace('danger-btn','parent-btn'));
-  document.getElementById('parentLinkField').style.display=r==='parent'&&A.authTab==='register'?'block':'none';
+    adminBtn.style.color=r==='admin'?'var(--coral)':'var(--ink3)';
+  }
+  const isAdmin=r==='admin';
+  const isParent=r==='parent';
+  const btnClass=isAdmin?'parent-btn':isParent?'parent-btn':'student-btn';
+  document.getElementById('loginBtn').className='auth-btn '+btnClass;
+  document.getElementById('regBtn').className='auth-btn '+btnClass;
+  // Show/hide extra-roles section (only on register tab, only for admin)
+  const extraSection=document.getElementById('extraRolesSection');
+  if(extraSection) extraSection.style.display=(isAdmin&&A.authTab==='register')?'block':'none';
+  // Show/hide parent link field
+  const plf=document.getElementById('parentLinkField');
+  if(plf) plf.style.display=(isParent&&A.authTab==='register')?'block':'none';
 }
 function showErr(m){const e=document.getElementById('authErr');e.textContent=m;e.style.display='block'}
 function clearErr(){document.getElementById('authErr').style.display='none'}
@@ -2148,14 +2189,20 @@ function doRegister(){
   const pwdErr=validatePassword(pass);
   if(pwdErr){showErr(pwdErr);return;}
   if(storeGet('user:'+email)){showErr('An account with this email already exists.');return;}
+  // Build roles array — admin can also be student and/or parent
+  const roles=[A.authRole];
+  if(A.authRole==='admin'){
+    if(document.getElementById('extraStudent')?.checked) roles.push('student');
+    if(document.getElementById('extraParent')?.checked) roles.push('parent');
+  }
   const user={
-    name,email,role:A.authRole,createdAt:Date.now(),
+    name,email,role:A.authRole,roles:roles,createdAt:Date.now(),
     linkedStudent:linked||null,appVersion:APP_VERSION,
     anonId:anonId(email),suspended:false,plan:'free'
   };
   storeSet('user:'+email,user);
   storeSet('pass:'+email,hashPassword(pass));
-  addAuditLog('USER_REGISTERED','New '+A.authRole+' registered',maskEmail(email),'system');
+  addAuditLog('USER_REGISTERED','New '+A.authRole+' registered (roles: '+roles.join(',')+') ',maskEmail(email),'system');
   showToast('Account created!');clearErr();
   setTimeout(function(){signIn(user);},600);
 }
@@ -2180,7 +2227,14 @@ function doLogin(){
     return;
   }
   if(user.suspended){showErr('This account has been suspended. Contact support.');return;}
-  if(user.role!==A.authRole){showErr('This is a "'+user.role+'" account. Please select the correct role above.');return;}
+  // Check role — admin accounts accept any role they have registered
+  const userRoles=user.roles||[user.role];
+  if(!userRoles.includes(A.authRole)){
+    showErr('This account does not have the "'+A.authRole+'" role. It has: '+userRoles.join(', ')+'.');
+    return;
+  }
+  // For login, treat the selected role as the active session role
+  user._sessionRole=A.authRole;
   recordLoginAttempt(email,true);
   // Admin and Parent get an email OTP code — students sign in directly
   if(user.role==='admin'||user.role==='parent'){
@@ -2198,16 +2252,60 @@ function doLogin(){
 
 let AUTH_HTML_BACKUP='';
 function signIn(user){
-  A.currentUser=user;A.currentRole=user.role;
+  A.currentUser=user;
+  // Determine active session role (may differ from primary role for multi-role admin)
+  A.currentRole=user._sessionRole||user.role;
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   checkNotifications();
-  if(user.role==='admin'){initAdminPortal();}
-  else if(user.role==='parent'){
+  const userRoles=user.roles||[user.role];
+  const isAdmin=userRoles.includes('admin');
+  if(isAdmin&&A.currentRole==='admin'){
+    initAdminPortal();
+    // Show view nav if admin also has student/parent roles
+    const nav=document.getElementById('adminViewNav');
+    if(nav){
+      nav.style.display='flex';
+      const sb=document.getElementById('adminStudentBtn');
+      const pb=document.getElementById('adminParentBtn');
+      if(sb) sb.style.display=userRoles.includes('student')?'inline-flex':'none';
+      if(pb) pb.style.display=userRoles.includes('parent')?'inline-flex':'none';
+      // Only show nav if there are extra views available
+      const hasExtra=userRoles.includes('student')||userRoles.includes('parent');
+      nav.style.display=hasExtra?'flex':'none';
+    }
+  } else if(A.currentRole==='parent'){
     document.getElementById('parentScreen').classList.add('active');
     initParentDashboard();
   } else {
     document.getElementById('studentScreen').classList.add('active');
     initStudentApp();
+  }
+}
+
+function adminSwitchView(view, btn){
+  // Admin switching between their admin portal and student/parent views
+  document.querySelectorAll('.admin-view-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  if(view==='admin'){
+    // Show admin portal content, hide other screens
+    document.getElementById('adminMainContent').style.display='block';
+    document.getElementById('studentScreen').classList.remove('active');
+    document.getElementById('parentScreen').classList.remove('active');
+    renderAdminPage(ADMIN.page||'dashboard');
+  } else if(view==='student'){
+    document.getElementById('adminMainContent').style.display='none';
+    document.getElementById('parentScreen').classList.remove('active');
+    document.getElementById('studentScreen').classList.add('active');
+    if(!A.sessionData||!A.sessionData.roots){
+      A.sessionData={roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
+      A.usedRoots=[];
+    }
+    initStudentApp();
+  } else if(view==='parent'){
+    document.getElementById('adminMainContent').style.display='none';
+    document.getElementById('studentScreen').classList.remove('active');
+    document.getElementById('parentScreen').classList.add('active');
+    initParentDashboard();
   }
 }
 
@@ -2367,6 +2465,9 @@ function initStudentApp(){
   const u=A.currentUser;
   document.getElementById('sAvatar').textContent=u.name[0].toUpperCase();
   document.getElementById('sName').textContent=u.name;
+  // Show back-to-admin button if user has admin role
+  const backBtn=document.getElementById('backToAdminBtn');
+  if(backBtn){const roles=u.roles||[u.role];backBtn.style.display=roles.includes('admin')?'inline-block':'none';}
   A.sessionData={roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
   A.usedRoots=[];A.timeLeft=1800;
   updateTimerUI();
