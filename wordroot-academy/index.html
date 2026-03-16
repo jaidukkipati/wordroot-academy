@@ -839,6 +839,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
     <!-- ══ SEARCH PANEL (NEW v1.1.0) ══ -->
     <div id="panel-search">
+      <!-- Root suggestion bar — appears after completing a Root Learn root -->
+      <div id="rootSuggestion" style="display:none;margin-bottom:12px"></div>
       <div class="search-hero">
         <div class="search-hero-title">Search Any Word</div>
         <div class="search-hero-sub">Discover root words, etymology, pronunciation, synonyms, antonyms, idioms & images instantly</div>
@@ -2086,7 +2088,8 @@ const A={
   sessionData:{roots:[],words:[],searches:[],quizC:0,quizT:0,startTime:null,xp:0},
   selectedWord:null,quizAnswered:false,usedRoots:[],
   selectedStudentEmail:null,authTab:'login',authRole:'student',
-  currentAccent:'en-GB',speaking:false,speechSynth:window.speechSynthesis||null
+  currentAccent:'en-GB',speaking:false,speechSynth:window.speechSynthesis||null,
+  lastSearchedWord:null,lastSearchedRootKey:null,lastLearnedRoot:null
 };
 
 // ── AUTH UI ───────────────────────────────────────
@@ -2629,9 +2632,14 @@ function checkScrambleAnswer(){
 
 function completeRoot(){
   const r=A.currentRoot;
-  A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(b=>b.word)});
-  A.sessionData.xp+=50;document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
-  saveSession();showToast(`🎉 "${r.root}" mastered! +50 XP`);goStep(4);
+  A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(function(b){return b.word;})});
+  A.sessionData.xp+=50;
+  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  // Store for cross-panel sync — Word Search will suggest words from this root
+  A.lastLearnedRoot=r;
+  saveSession();
+  showToast('Root "'+r.root+'" mastered! +50 XP');
+  goStep(4);
 }
 function skipRoot(){
   if(A.currentRoot)A.sessionData.roots.push({root:A.currentRoot.root,meaning:A.currentRoot.meaning,origin:A.currentRoot.origin,completedAt:Date.now(),skipped:true,words:[]});
@@ -2690,11 +2698,74 @@ function updateTimerUI(){
 
 // ── PANELS ────────────────────────────────────────
 function showPanel(p){
-  ['search','learn','idioms','history','stats'].forEach(x=>document.getElementById('panel-'+x).style.display=x===p?'block':'none');
-  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['search','learn','idioms','history','stats'][i]===p));
-  if(p==='stats')updateStudentStats();
-  if(p==='history')renderHistory();
-  if(p==='idioms')initIdiomsPanel();
+  ['search','learn','idioms','history','stats'].forEach(function(x){
+    document.getElementById('panel-'+x).style.display=x===p?'block':'none';
+  });
+  document.querySelectorAll('.ptab').forEach(function(t,i){
+    t.classList.toggle('active',['search','learn','idioms','history','stats'][i]===p);
+  });
+  if(p==='stats')   updateStudentStats();
+  if(p==='history') renderHistory();
+  if(p==='idioms')  initIdiomsPanel();
+
+  // ── Cross-panel sync ──────────────────────────────────────────────────
+  if(p==='learn'){
+    // If user just searched a word, load the matching root in Root Learn
+    const lastWord=A.lastSearchedWord;
+    const lastRoot=A.lastSearchedRootKey;
+    if(lastRoot && lastRoot!==A.currentRoot?.root?.split('/')[0]){
+      const match=ROOT_DATABASE.find(function(r){
+        return r.root.split('/')[0]===lastRoot;
+      });
+      if(match){
+        A.currentRoot=match;
+        A.step=1;A.selectedWord=null;A.quizAnswered=false;A.quizType=null;
+        A._scrambleTarget=null;A._scrambleAnswer=[];A._scrambleLetters=[];
+        if(!A.usedRoots.includes(match.root)) A.usedRoots.push(match.root);
+        setCardHeader(match);
+        renderStep();
+        updateStepUI();
+        showSyncTip('learn', lastWord, lastRoot);
+        return;
+      }
+    }
+    // No match — just ensure a root is loaded
+    if(!A.currentRoot) newRoot();
+  }
+
+  if(p==='search'){
+    // If user just completed a root, suggest one of its words in the search box
+    const lastRoot=A.lastLearnedRoot;
+    if(lastRoot){
+      const suggestEl=document.getElementById('rootSuggestion');
+      if(suggestEl){
+        suggestEl.style.display='block';
+        suggestEl.innerHTML='&#128218; You just learned root <strong style="color:var(--coral)">'+lastRoot.root
+          +'</strong> ('+lastRoot.meaning+'). Try searching one of its words: '
+          +(lastRoot.branches||[]).slice(0,4).map(function(b){
+            return '<button class="word-pill syn-pill" onclick="searchWord(this.dataset.w)" data-w="'+b.word.toLowerCase()+'" '
+              +'style="cursor:pointer;font-size:.78rem">'+b.word+'</button>';
+          }).join(' ');
+      }
+    }
+  }
+}
+
+// Tip banner shown when Root Learn auto-loads a matching root
+function showSyncTip(panel, word, rootKey){
+  const tipId='syncTip';
+  var old=document.getElementById(tipId);
+  if(old)old.remove();
+  const tip=document.createElement('div');
+  tip.id=tipId;
+  tip.style.cssText='background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;font-size:.78rem;color:var(--ink3);display:flex;align-items:center;justify-content:space-between;gap:10px';
+    tip.innerHTML='&#128218; Loaded the root of <strong style="color:var(--coral)">'+word+'</strong> &mdash; <strong>'+rootKey+'</strong>'
+    +'<button onclick="this.parentNode.remove()" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:.9rem">&#215;</button>';
+  if(panel==='learn'){
+    const stepContent=document.getElementById('stepContent');
+    if(stepContent&&stepContent.parentNode) stepContent.parentNode.insertBefore(tip,stepContent);
+    else{const lp=document.getElementById('panel-learn');if(lp)lp.insertBefore(tip,lp.firstChild);}
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -3122,6 +3193,44 @@ function renderWordResult(word, dict, synData, ai){
   document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
   saveSession();
   showToast('"'+word+'" analysed! +10 XP');
+
+  // Store last searched word and its primary root for cross-panel sync
+  A.lastSearchedWord=word;
+  A.lastSearchedRootKey=null;
+
+  // Find the best matching root in the database for this word
+  const wordUpper=word.toUpperCase();
+  if(ai.roots&&ai.roots.length>0){
+    // Claude/offline gave us roots — find if any match our ROOT_DATABASE
+    ai.roots.forEach(function(r){
+      if(!A.lastSearchedRootKey){
+        const dbMatch=ROOT_DATABASE.find(function(db){
+          return db.root.split('/')[0]===r.root;
+        });
+        if(dbMatch) A.lastSearchedRootKey=r.root;
+      }
+    });
+  }
+  if(!A.lastSearchedRootKey){
+    // Fallback: scan ROOT_DATABASE directly
+    const match=ROOT_DATABASE.find(function(r){
+      return wordUpper.includes(r.root.split('/')[0]);
+    });
+    if(match) A.lastSearchedRootKey=match.root.split('/')[0];
+  }
+
+  // Show "Explore this root" link if we found a match
+  if(A.lastSearchedRootKey){
+    const resultEl=document.getElementById('searchResult');
+    if(resultEl){
+      const exploreBar=document.createElement('div');
+      exploreBar.style.cssText='margin-top:12px;padding:10px 14px;background:rgba(155,93,229,.06);border:1px solid rgba(155,93,229,.15);border-radius:var(--rs);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px';
+      exploreBar.innerHTML='<span style="font-size:.8rem;color:var(--ink3)">&#127795; Root <strong style="color:var(--violet)">'+A.lastSearchedRootKey+'</strong> is in the Root Learn database</span>'
+        +'<button class="auth-btn student-btn" style="width:auto;padding:6px 16px;font-size:.78rem;margin:0" '
+        +'onclick="showPanel(\'learn\')">Explore Root &#8594;</button>';
+      resultEl.appendChild(exploreBar);
+    }
+  }
 }
 
 
