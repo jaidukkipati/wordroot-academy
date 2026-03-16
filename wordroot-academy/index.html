@@ -680,12 +680,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   .tier-grid{grid-template-columns:1fr}
 }
 
-/* ── Emergency Reset Banner on Login Screen ── */
-.login-reset-bar{margin-top:16px;padding:10px 14px;background:rgba(255,60,60,.05);border:1px solid rgba(255,107,107,.2);border-radius:var(--rs);display:flex;align-items:center;justify-content:space-between;gap:10px}
-.login-reset-bar p{font-size:.7rem;color:rgba(255,107,107,.8);line-height:1.4;margin:0}
-.login-reset-bar strong{display:block;color:var(--coral);margin-bottom:1px}
-.reset-btn-sm{padding:6px 12px;background:rgba(255,60,60,.1);border:1.5px solid rgba(255,107,107,.3);color:var(--coral);border-radius:var(--rs);font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:sans-serif}
-.reset-btn-sm:hover{background:rgba(255,60,60,.22);border-color:var(--coral)}
 
 </style>
 </head>
@@ -739,11 +733,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <div class="auth-divider"><span>or</span></div>
         <div style="text-align:center;font-size:.78rem;color:var(--ink3)">Have an account? <a href="#" onclick="switchAuthTab('login');return false" style="color:var(--violet);font-weight:600">Sign in</a></div>
       </div>
-      <!-- Emergency Reset Bar -->
-      <div class="login-reset-bar" id="loginResetBar">
-        <p><strong>&#9888; Locked out?</strong>Can't log in or MFA isn't working? Delete all users and start fresh.</p>
-        <button class="reset-btn-sm" onclick="emergencyReset()">&#128465; Reset App</button>
-      </div>
+
     </div>
   </div>
 </div>
@@ -1053,6 +1043,943 @@ const ROOT_DATABASE=[
 ];
 
 
+// ── ONE-TIME DATA WIPE — removes all existing users on first load of v2.1.0 ──
+(function(){
+  const WIPE_VERSION='wra-wipe-v2.1.0';
+  if(!localStorage.getItem(WIPE_VERSION)){
+    // Wipe all wra: keys from previous versions
+    Object.keys(localStorage).filter(function(k){return k.startsWith('wra:');}).forEach(function(k){localStorage.removeItem(k);});
+    localStorage.setItem(WIPE_VERSION,'done');
+    console.log('WordRoot Academy v2.1.0: all existing user data wiped. Please register again.');
+  }
+})();
+
+
+const SEC={
+  ADMIN_EMAIL:'admin@wordroot.app',  // Change to your email
+  JWT_SECRET:'wra-jwt-2025-secret',
+  AES_KEY:'wra-aes-256-2025-key-x',
+  SALT_ROUNDS:12,
+  TOKEN_EXPIRY:3600000,        // 1 hour
+  REFRESH_EXPIRY:2592000000,   // 30 days
+  DEVICE_EXPIRY:2592000000,    // 30 days
+  MAX_LOGIN_ATTEMPTS:5,
+  LOCKOUT_DURATION:900000,     // 15 minutes
+  PASSWORD_MIN_LENGTH:8,
+  RATE_LIMIT_WINDOW:60000,
+  RATE_LIMIT_MAX:200
+};
+
+// ── PII ANONYMISATION ─────────────────────────────────────────
+// All PII is anonymised using HMAC-like hashing before storage
+// Real implementation would use server-side AES-256 encryption
+function anonId(email){
+  // Deterministic anonymous ID from email - same email always produces same ID
+  let h=0;
+  const s=email.toLowerCase()+SEC.AES_KEY;
+  for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
+  return 'uid_'+Math.abs(h).toString(36).padStart(8,'0');
+}
+
+function maskEmail(email){
+  const [local,domain]=email.split('@');
+  if(!local||!domain)return email;
+  return local[0]+'****@'+domain;
+}
+
+function maskName(name){
+  if(!name)return '***';
+  const parts=name.trim().split(' ');
+  return parts[0]+(parts.length>1?' '+parts[1][0]+'.':'');
+}
+
+// ── PASSWORD HASHING (client-side simulation) ─────────────────
+// Production: use bcrypt on server. This simulates the pattern.
+function hashPassword(pwd){
+  let h=0;
+  const salted=pwd+SEC.AES_KEY+SEC.SALT_ROUNDS;
+  for(let i=0;i<salted.length;i++){h=((h<<5)-h)+salted.charCodeAt(i);h|=0;}
+  return 'bcrypt_'+Math.abs(h).toString(36)+'_'+btoa(pwd.length.toString()).replace(/=/g,'');
+}
+
+function verifyPassword(pwd,hash){
+  return hash===hashPassword(pwd);
+}
+
+function passwordStrength(pwd){
+  let score=0;
+  if(pwd.length>=8)score++;
+  if(pwd.length>=12)score++;
+  if(/[A-Z]/.test(pwd))score++;
+  if(/[a-z]/.test(pwd))score++;
+  if(/[0-9]/.test(pwd))score++;
+  if(/[^A-Za-z0-9]/.test(pwd))score++;
+  if(score<=1)return{level:'weak',label:'Weak — add uppercase, numbers, symbols',pct:25};
+  if(score<=2)return{level:'fair',label:'Fair — add more variety',pct:50};
+  if(score<=4)return{level:'good',label:'Good — almost there',pct:75};
+  return{level:'strong',label:'Strong password',pct:100};
+}
+
+function validatePassword(pwd){
+  if(pwd.length<SEC.PASSWORD_MIN_LENGTH)return'Password must be at least 8 characters';
+  if(!/[A-Z]/.test(pwd))return'Password must contain an uppercase letter';
+  if(!/[a-z]/.test(pwd))return'Password must contain a lowercase letter';
+  if(!/[0-9]/.test(pwd))return'Password must contain a number';
+  if(!/[^A-Za-z0-9]/.test(pwd))return'Password must contain a special character (!@#$%^&*)';
+  return null;
+}
+
+// ── TOKEN SYSTEM ──────────────────────────────────────────────
+function generateToken(payload,expiry){
+  const header={alg:'HS256',typ:'JWT'};
+  const exp=Date.now()+expiry;
+  const data={...payload,exp,iat:Date.now()};
+  const encoded=btoa(JSON.stringify(header))+'.'+btoa(JSON.stringify(data));
+  const sig=btoa(encoded+SEC.JWT_SECRET).substring(0,16);
+  return encoded+'.'+sig;
+}
+
+function verifyToken(token){
+  try{
+    const parts=token.split('.');
+    if(parts.length!==3)return null;
+    const data=JSON.parse(atob(parts[1]));
+    if(data.exp<Date.now())return null;
+    // Verify signature
+    const expected=btoa(parts[0]+'.'+parts[1]+SEC.JWT_SECRET).substring(0,16);
+    if(parts[2]!==expected)return null;
+    return data;
+  }catch{return null}
+}
+
+function generateDeviceToken(userId){
+  return 'dev_'+userId+'_'+Date.now()+'_'+Math.random().toString(36).substring(2);
+}
+
+// ── RATE LIMITING ─────────────────────────────────────────────
+const RATE_LIMITS={};
+function checkRateLimit(key,max,window){
+  const now=Date.now();
+  if(!RATE_LIMITS[key])RATE_LIMITS[key]=[];
+  RATE_LIMITS[key]=RATE_LIMITS[key].filter(t=>now-t<window);
+  if(RATE_LIMITS[key].length>=max)return false;
+  RATE_LIMITS[key].push(now);
+  return true;
+}
+
+// ── LOGIN ATTEMPT TRACKING ────────────────────────────────────
+function getLoginAttempts(email){
+  const k='wra:attempts:'+email;
+  try{const v=localStorage.getItem(k);return v?JSON.parse(v):{count:0,locked:false,lockedUntil:0};}
+  catch{return{count:0,locked:false,lockedUntil:0};}
+}
+function recordLoginAttempt(email,success){
+  const k='wra:attempts:'+email;
+  const a=getLoginAttempts(email);
+  if(success){localStorage.removeItem(k);return;}
+  a.count++;
+  if(a.count>=SEC.MAX_LOGIN_ATTEMPTS){
+    a.locked=true;a.lockedUntil=Date.now()+SEC.LOCKOUT_DURATION;
+    addAuditLog('ACCOUNT_LOCKED','Account locked after '+SEC.MAX_LOGIN_ATTEMPTS+' failed attempts',maskEmail(email),'security');
+  }
+  localStorage.setItem(k,JSON.stringify(a));
+}
+function isAccountLocked(email){
+  const a=getLoginAttempts(email);
+  if(!a.locked)return false;
+  if(Date.now()>a.lockedUntil){localStorage.removeItem('wra:attempts:'+email);return false;}
+  return true;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EMAIL OTP SYSTEM v2.1
+//  Replaces TOTP/MFA. Generates a 6-digit code on login,
+//  displays it on screen (and would email it in production).
+//  To wire up real email: replace sendOTPEmail() with your
+//  EmailJS / Brevo / SendGrid API call.
+// ══════════════════════════════════════════════════════════════
+
+// ── OTP STORAGE ───────────────────────────────────────────────
+function generateOTP(){
+  return String(Math.floor(100000+Math.random()*900000));
+}
+
+function saveOTP(email, code){
+  const record={code, email, createdAt:Date.now(), expires:Date.now()+600000, used:false}; // 10 min expiry
+  localStorage.setItem('wra:otp:'+anonId(email), JSON.stringify(record));
+}
+
+function verifyOTP(email, inputCode){
+  try{
+    const k='wra:otp:'+anonId(email);
+    const rec=JSON.parse(localStorage.getItem(k)||'null');
+    if(!rec) return {ok:false, reason:'No code found. Please request a new one.'};
+    if(rec.used) return {ok:false, reason:'This code has already been used.'};
+    if(Date.now()>rec.expires) return {ok:false, reason:'Code expired. Please log in again to get a new code.'};
+    if(rec.code!==inputCode.trim()) return {ok:false, reason:'Incorrect code. Please try again.'};
+    rec.used=true;
+    localStorage.setItem(k, JSON.stringify(rec));
+    return {ok:true};
+  }catch(e){return {ok:false, reason:'Verification error. Please try again.'};}
+}
+
+function clearOTP(email){
+  localStorage.removeItem('wra:otp:'+anonId(email));
+}
+
+// ── EMAIL SENDER (plug in real service here) ──────────────────
+function sendOTPEmail(email, code, name){
+  // ─────────────────────────────────────────────────────────────
+  // PRODUCTION: replace this block with your email API call.
+  // Example using EmailJS:
+  //   emailjs.send('service_id','template_id',{to_email:email,code:code,name:name});
+  // Example using Brevo/SendGrid fetch:
+  //   fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',...})
+  // ─────────────────────────────────────────────────────────────
+
+  // For now: store in admin inbox + show in on-screen banner
+  notifyAdmin('OTP_SENT',{anonId:anonId(email), ts:Date.now()});
+  addAuditLog('OTP_GENERATED','Verification code sent to '+maskEmail(email),'security');
+
+  // Show the code on screen in a banner (remove this in production once real email works)
+  showOTPBanner(code, email);
+}
+
+function showOTPBanner(code, email){
+  // Remove any existing banner
+  document.getElementById('otpBanner')?.remove();
+  const banner=document.createElement('div');
+  banner.id='otpBanner';
+  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1A1A2E,#2D2D4E);border-bottom:3px solid #FFD93D;padding:16px 20px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.4)';
+  banner.innerHTML=[
+    '<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:6px">Verification Code sent to '+maskEmail(email)+'</div>',
+    '<div style="font-family:monospace;font-size:2.2rem;font-weight:900;color:#FFD93D;letter-spacing:8px;margin-bottom:8px">'+code+'</div>',
+    '<div style="font-size:.72rem;color:rgba(255,255,255,.45);margin-bottom:10px">Enter this code below. Valid for 10 minutes. <span style="color:rgba(255,107,107,.7)">(In production this will be emailed — not shown here)</span></div>',
+    '<button onclick="document.getElementById(\'otpBanner\').remove()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:.75rem">Dismiss</button>'
+  ].join('');
+  document.body.prepend(banner);
+}
+
+// ── OTP VERIFICATION SCREEN ───────────────────────────────────
+function showOTPScreen(user, email, rememberMe){
+  A.pendingOTPUser=user;
+  A.pendingOTPEmail=email;
+  A.pendingRememberMe=rememberMe;
+  const authBody=document.getElementById('authScreen');
+  authBody.classList.remove('active');
+
+  // Build HTML using DOM manipulation instead of innerHTML string — zero quote conflicts
+  authBody.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)';
+
+  const box=document.createElement('div');
+  box.className='auth-box';
+
+  const hero=document.createElement('div');
+  hero.className='auth-hero';
+  hero.innerHTML='<div class="auth-logo">Word<span>Root</span></div><div class="auth-tagline">Verify your identity</div>';
+
+  const body=document.createElement('div');
+  body.style.cssText='padding:28px 32px 32px;text-align:center';
+
+  const note=document.createElement('div');
+  note.style.cssText='background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.75rem;color:var(--ink3);line-height:1.5';
+  note.innerHTML='<strong style="color:var(--sun-d)">&#128161; Development mode:</strong> Your verification code appears in the yellow banner at the top. In production this will be emailed.';
+
+  const inp=document.createElement('input');
+  inp.type='text';
+  inp.id='otpInput';
+  inp.maxLength=6;
+  inp.setAttribute('inputmode','numeric');
+  inp.placeholder='Enter 6-digit code';
+  inp.setAttribute('autocomplete','one-time-code');
+  inp.style.cssText='width:100%;padding:14px;text-align:center;font-family:monospace;font-size:1.8rem;font-weight:700;letter-spacing:8px;border:2px solid rgba(26,26,46,.15);border-radius:var(--rs);outline:none;background:var(--paper);color:var(--ink);margin-bottom:12px;box-sizing:border-box;transition:border .2s';
+  inp.addEventListener('input',function(){if(this.value.length===6)document.getElementById('otpSubmitBtn').click();});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('otpSubmitBtn').click();});
+
+  const errDiv=document.createElement('div');
+  errDiv.id='otpErr';
+  errDiv.style.cssText='color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:10px';
+
+  const submitBtn=document.createElement('button');
+  submitBtn.id='otpSubmitBtn';
+  submitBtn.className='auth-btn student-btn';
+  submitBtn.style.width='100%';
+  submitBtn.textContent='Verify Code →';
+  submitBtn.onclick=submitOTP;
+
+  const resendBtn=document.createElement('button');
+  resendBtn.style.cssText='background:none;border:none;color:var(--violet);font-size:.78rem;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit;display:block;width:100%';
+  resendBtn.textContent='Resend code';
+  resendBtn.onclick=resendOTP;
+
+  const backBtn=document.createElement('button');
+  backBtn.style.cssText='background:none;border:none;color:var(--ink3);font-size:.75rem;cursor:pointer;margin-top:6px;display:block;width:100%;font-family:inherit';
+  backBtn.textContent='← Back to login';
+  backBtn.onclick=backToLoginFromOTP;
+
+  body.innerHTML='<div style="font-size:2.5rem;margin-bottom:8px">&#128231;</div><div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:900;color:var(--ink);margin-bottom:8px">Check Your Email</div><div style="font-size:.83rem;color:var(--ink3);margin-bottom:4px;line-height:1.6">A 6-digit code has been sent to</div><div style="font-family:monospace;font-size:.88rem;color:var(--violet);font-weight:700;margin-bottom:16px">'+maskEmail(email)+'</div>';
+  body.appendChild(note);
+  body.appendChild(inp);
+  body.appendChild(errDiv);
+  body.appendChild(submitBtn);
+  body.appendChild(resendBtn);
+  body.appendChild(backBtn);
+
+  box.appendChild(hero);
+  box.appendChild(body);
+  wrap.appendChild(box);
+  authBody.appendChild(wrap);
+  authBody.classList.add('active');
+  setTimeout(function(){inp.focus();}, 150);
+}
+
+function submitOTP(){
+  const input=document.getElementById('otpInput');
+  const errEl=document.getElementById('otpErr');
+  if(!input||!errEl) return;
+  const code=input.value.trim();
+  if(code.length!==6){errEl.textContent='Please enter the full 6-digit code.';return;}
+  const email=A.pendingOTPEmail;
+  const result=verifyOTP(email, code);
+  if(!result.ok){
+    errEl.textContent=result.reason;
+    input.style.borderColor='var(--coral)';
+    input.select();
+    return;
+  }
+  // OTP valid
+  clearOTP(email);
+  input.style.borderColor='var(--mint)';
+  errEl.style.color='var(--mint)';
+  errEl.textContent='Verified!';
+  const user=A.pendingOTPUser;
+  const rememberMe=A.pendingRememberMe;
+  if(rememberMe) saveDeviceToken(anonId(email), email);
+  addAuditLog('OTP_VERIFIED','Email OTP verified successfully', maskEmail(email),'security');
+  delete A.pendingOTPUser; delete A.pendingOTPEmail; delete A.pendingRememberMe;
+  document.getElementById('otpBanner')?.remove();
+  setTimeout(()=>signIn(user), 400);
+}
+
+function resendOTP(){
+  const email=A.pendingOTPEmail;
+  const user=A.pendingOTPUser;
+  if(!email||!user) return;
+  const code=generateOTP();
+  saveOTP(email, code);
+  sendOTPEmail(email, code, user.name||'there');
+  const errEl=document.getElementById('otpErr');
+  if(errEl){errEl.style.color='var(--mint)';errEl.textContent='New code sent!';}
+  const inp=document.getElementById('otpInput');
+  if(inp){inp.value='';inp.style.borderColor='';inp.focus();}
+  setTimeout(()=>{if(errEl)errEl.textContent='';},3000);
+}
+
+function backToLoginFromOTP(){
+  clearOTP(A.pendingOTPEmail||'');
+  delete A.pendingOTPUser; delete A.pendingOTPEmail; delete A.pendingRememberMe;
+  document.getElementById('otpBanner')?.remove();
+  location.reload();
+}
+
+// Legacy stubs (keep so nothing breaks if referenced elsewhere)
+function backToLogin(){ backToLoginFromOTP(); }
+function generateTOTPSecret(){ return ''; }
+function verifyTOTP(){ return false; }
+function getTOTPQRData(){ return ''; }
+function showMFASetup(user, email){ showOTPScreen(user, email, false); }
+function showMFAChallenge(){ }
+function confirmMFASetup(){ submitOTP(); }
+function verifyMFAChallenge(){ submitOTP(); }
+function getMFACode(){ return document.getElementById('otpInput')?.value||''; }
+function mfaDigitInput(){ }
+function mfaDigitKey(){ }
+
+
+
+// ══════════════════════════════════════════════════════════════════
+//  ADMIN + SECURITY FUNCTIONS — injected v2.1.0
+// ══════════════════════════════════════════════════════════════════
+
+// ── STORAGE HELPERS (safe wrappers) ──────────────────────────────
+function storeGet(key){
+  try{const v=localStorage.getItem('wra:'+key);return v?JSON.parse(v):null;}catch{return null;}
+}
+function storeSet(key,val){
+  try{localStorage.setItem('wra:'+key,JSON.stringify(val));}catch{}
+}
+function storeList(prefix){
+  const out=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('wra:'+prefix))out.push(k.replace('wra:',''));
+  }
+  return out;
+}
+
+// ── AUDIT LOG ─────────────────────────────────────────────────────
+function addAuditLog(action,detail,target,type){
+  try{
+    const logs=JSON.parse(localStorage.getItem('wra:audit')||'[]');
+    logs.unshift({action,detail,target:target||'system',type:type||'system',ts:Date.now()});
+    if(logs.length>500)logs.length=500;
+    localStorage.setItem('wra:audit',JSON.stringify(logs));
+  }catch{}
+}
+function getAuditLogs(limit){
+  try{return JSON.parse(localStorage.getItem('wra:audit')||'[]').slice(0,limit||50);}
+  catch{return[];}
+}
+
+// ── ADMIN INBOX ───────────────────────────────────────────────────
+function notifyAdmin(event,data){
+  try{
+    const inbox=JSON.parse(localStorage.getItem('wra:admin:inbox')||'[]');
+    inbox.unshift({event,data,ts:Date.now(),read:false});
+    if(inbox.length>200)inbox.length=200;
+    localStorage.setItem('wra:admin:inbox',JSON.stringify(inbox));
+  }catch{}
+}
+
+// ── IN-APP NOTIFICATIONS ──────────────────────────────────────────
+function sendNotification(message,targetEmail){
+  const k='wra:notification'+(targetEmail?':'+anonId(targetEmail):'');
+  localStorage.setItem(k,JSON.stringify({message,sent:Date.now(),shown:false}));
+  addAuditLog('NOTIFICATION_SENT',message,targetEmail?maskEmail(targetEmail):'All Users','admin');
+}
+function checkNotifications(){
+  try{
+    const n=localStorage.getItem('wra:notification');
+    if(!n)return;
+    const notif=JSON.parse(n);
+    if(notif.shown)return;
+    const bar=document.getElementById('appNotificationBar');
+    const msg=document.getElementById('appNotificationMsg');
+    if(bar&&msg){msg.textContent=notif.message;bar.style.display='block';}
+    notif.shown=true;localStorage.setItem('wra:notification',JSON.stringify(notif));
+  }catch{}
+}
+
+// ── SUBSCRIPTION SYSTEM ───────────────────────────────────────────
+const PLANS={
+  free:{name:'Free',price:0,features:{wordSearch:true,searchLimit:20,rootLearn:true,rootLimit:10,idioms:false,parentDashboard:false,accounts:1}},
+  standard:{name:'Standard',price:9.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:1}},
+  premium:{name:'Premium',price:19.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:5}}
+};
+function getUserPlan(email){
+  try{const v=localStorage.getItem('wra:subscription:'+anonId(email));return v?JSON.parse(v).plan:'free';}catch{return'free';}
+}
+function setUserPlan(email,plan,adminOverride){
+  localStorage.setItem('wra:subscription:'+anonId(email),JSON.stringify({plan,activatedAt:Date.now(),adminOverride:!!adminOverride}));
+  if(adminOverride)addAuditLog('PLAN_CHANGED','Plan changed to '+plan,maskEmail(email),'admin');
+}
+function getFeatureOverride(email,feature){
+  try{const v=localStorage.getItem('wra:override:'+anonId(email)+':'+feature);return v!==null?JSON.parse(v):null;}catch{return null;}
+}
+function setFeatureOverride(email,feature,value){
+  localStorage.setItem('wra:override:'+anonId(email)+':'+feature,JSON.stringify(value));
+  addAuditLog('FEATURE_OVERRIDE','Feature "'+feature+'" set to '+value,maskEmail(email),'admin');
+}
+
+// ── GLOBAL FEATURE FLAGS ──────────────────────────────────────────
+const GLOBAL_FLAGS={
+  wordSearch:{label:'Word Search',desc:'Enable word lookup feature',default:true},
+  rootLearn:{label:'Root Learn',desc:'Enable root word learning',default:true},
+  idioms:{label:'Idioms Panel',desc:'Enable idioms browser',default:true},
+  parentDashboard:{label:'Parent Dashboard',desc:'Enable parent monitoring',default:true},
+  imagesEnabled:{label:'Visual Context Images',desc:'Load images in word search',default:true},
+  xpSystem:{label:'XP Rewards',desc:'Show XP gamification system',default:true},
+  sessionTimer:{label:'Session Timer',desc:'30-minute countdown timer',default:true},
+  emailOTP:{label:'Email OTP Verification',desc:'Require OTP for admin/parent login',default:true}
+};
+function getGlobalFlag(flag){
+  try{const v=localStorage.getItem('wra:flag:'+flag);return v!==null?JSON.parse(v):GLOBAL_FLAGS[flag]?.default!==false;}catch{return true;}
+}
+function setGlobalFlag(flag,value){
+  localStorage.setItem('wra:flag:'+flag,JSON.stringify(value));
+  addAuditLog('FLAG_CHANGED','Global flag "'+flag+'" set to '+value,'system','admin');
+}
+
+// ── USER MANAGEMENT ───────────────────────────────────────────────
+function getAllUsers(){
+  const users=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('wra:user:')){
+      try{
+        const u=JSON.parse(localStorage.getItem(k));
+        const email=k.replace('wra:user:','');
+        users.push({
+          anonId:anonId(email),maskedEmail:maskEmail(email),
+          displayName:maskName(u.name||''),role:u.role||'student',
+          plan:getUserPlan(email),createdAt:u.createdAt||Date.now(),
+          suspended:u.suspended||false,mfaEnabled:false,_email:email
+        });
+      }catch{}
+    }
+  }
+  return users.sort((a,b)=>b.createdAt-a.createdAt);
+}
+function suspendUser(email){
+  try{
+    const u=storeGet('user:'+email); if(!u)return false;
+    u.suspended=true;u.suspendedAt=Date.now();storeSet('user:'+email,u);
+    localStorage.removeItem('wra:device:'+anonId(email));
+    addAuditLog('USER_SUSPENDED','Account suspended',maskEmail(email),'admin');
+    return true;
+  }catch{return false;}
+}
+function restoreUser(email){
+  try{
+    const u=storeGet('user:'+email); if(!u)return false;
+    u.suspended=false;delete u.suspendedAt;storeSet('user:'+email,u);
+    addAuditLog('USER_RESTORED','Account restored',maskEmail(email),'admin');
+    return true;
+  }catch{return false;}
+}
+function resetUserMFA(email){
+  try{
+    const u=storeGet('user:'+email); if(!u)return false;
+    delete u.mfaSecret;delete u.mfaEnabled;storeSet('user:'+email,u);
+    addAuditLog('MFA_RESET','MFA/OTP reset for user',maskEmail(email),'admin');
+    return true;
+  }catch{return false;}
+}
+
+// ── DELETE USER (wipes every trace) ──────────────────────────────
+function deleteUser(email){
+  const anon=anonId(email);
+  localStorage.removeItem('wra:user:'+email);
+  localStorage.removeItem('wra:pass:'+email);
+  localStorage.removeItem('wra:device:'+anon);
+  localStorage.removeItem('wra:attempts:'+email);
+  localStorage.removeItem('wra:reset:'+anon);
+  localStorage.removeItem('wra:subscription:'+anon);
+  localStorage.removeItem('wra:otp:'+anon);
+  Object.keys(GLOBAL_FLAGS).forEach(f=>localStorage.removeItem('wra:override:'+anon+':'+f));
+  for(let i=localStorage.length-1;i>=0;i--){
+    const k=localStorage.key(i);
+    if(k&&(k.startsWith('wra:session:'+email+':')||k.startsWith('wra:session:'+anon+':')))
+      localStorage.removeItem(k);
+  }
+  localStorage.removeItem('wra:index:'+email);
+  localStorage.removeItem('wra:notification:'+anon);
+  addAuditLog('USER_DELETED','Account permanently deleted',maskEmail(email),'admin');
+  notifyAdmin('USER_DELETED',{anonId:anon,ts:Date.now()});
+  return true;
+}
+
+// ── EMERGENCY RESET (from login screen — no login required) ───────
+
+function saveDeviceToken(userId,email){
+  const token='dev_'+userId+'_'+Date.now()+'_'+Math.random().toString(36).substring(2);
+  localStorage.setItem('wra:device:'+anonId(email),JSON.stringify({
+    token,expires:Date.now()+SEC.DEVICE_EXPIRY,
+    fp:navigator.userAgent.substring(0,50)
+  }));
+}
+function checkDeviceToken(email){
+  try{
+    const r=JSON.parse(localStorage.getItem('wra:device:'+anonId(email))||'null');
+    if(!r)return false;
+    if(Date.now()>r.expires){localStorage.removeItem('wra:device:'+anonId(email));return false;}
+    return true;
+  }catch{return false;}
+}
+function emergencyReset(){
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('wra:'));
+  if(!keys.length){alert('App is already clean — no data to delete.');return;}
+  const ok=window.confirm(
+    'DELETE ALL USERS AND RESET APP?\n\n'+
+    'This permanently removes:\n'+
+    '  \u2022 All '+keys.length+' stored records\n'+
+    '  \u2022 Every user account and password\n'+
+    '  \u2022 All sessions, progress and settings\n\n'+
+    'Everyone must register again.\n\nPress OK to confirm.'
+  );
+  if(!ok)return;
+  keys.forEach(k=>localStorage.removeItem(k));
+  setTimeout(function(){location.reload();},200);
+}
+
+// ── BULK DELETE ───────────────────────────────────────────────────
+function deleteAllUsers(){
+  const users=getAllUsers().filter(u=>u.role!=='admin');
+  if(!users.length){showToast('No non-admin users to delete.');return;}
+  const html=[
+    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Delete ALL Users</div>',
+    '<div class="admin-modal-sub">Permanently removes every non-admin account.</div>',
+    '<div class="delete-confirm-box">',
+      '<div class="delete-confirm-title">Will delete '+users.length+' account'+(users.length!==1?'s':'')+':</div>',
+      '<ul class="delete-confirm-list">',
+        '<li>All credentials and passwords</li>',
+        '<li>All learning sessions and progress</li>',
+        '<li>All subscriptions and feature overrides</li>',
+        '<li>All OTP codes and device tokens</li>',
+      '</ul>',
+      '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-top:8px">Admin account will be preserved.</div>',
+    '</div>',
+    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:rgba(255,255,255,.65)">',
+      '<strong style="color:var(--sun)">After deletion:</strong> All email addresses will be free to re-register.',
+    '</div>',
+    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">DELETE ALL</strong> to confirm:</div>',
+    '<div class="admin-field"><input type="text" id="deleteAllInput" placeholder="DELETE ALL" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn" id="confirmDeleteAllBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" onclick="confirmDeleteAllUsers()">&#128465; Delete All</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+  setTimeout(function(){
+    const inp=document.getElementById('deleteAllInput');
+    const btn=document.getElementById('confirmDeleteAllBtn');
+    if(inp&&btn){
+      inp.focus();
+      inp.addEventListener('input',function(){
+        const ok=inp.value.trim()==='DELETE ALL';
+        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
+        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
+      });
+    }
+  },60);
+}
+function confirmDeleteAllUsers(){
+  const inp=document.getElementById('deleteAllInput');
+  if(!inp||inp.value.trim()!=='DELETE ALL'){showToast('Please type DELETE ALL');return;}
+  closeAdminModal();
+  const users=getAllUsers().filter(u=>u.role!=='admin');
+  let n=0;users.forEach(function(u){try{deleteUser(u._email);n++;}catch{}});
+  addAuditLog('BULK_DELETE',n+' non-admin accounts deleted','system','admin');
+  showToast(n+' account'+(n!==1?'s':'')+' deleted. Emails free to re-register.');
+  setTimeout(function(){renderAdminPage('users');},500);
+}
+function wipeAllData(){
+  const html=[
+    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Wipe ALL App Data</div>',
+    '<div class="admin-modal-sub">Removes every wra: key — including your admin account. You will be logged out.</div>',
+    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">WIPE EVERYTHING</strong> to confirm:</div>',
+    '<div class="admin-field"><input type="text" id="wipeInput" placeholder="WIPE EVERYTHING" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn" id="confirmWipeBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" onclick="confirmWipeAll()">&#128165; Wipe Everything</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+  setTimeout(function(){
+    const inp=document.getElementById('wipeInput');
+    const btn=document.getElementById('confirmWipeBtn');
+    if(inp&&btn){
+      inp.focus();
+      inp.addEventListener('input',function(){
+        const ok=inp.value.trim()==='WIPE EVERYTHING';
+        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
+        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
+      });
+    }
+  },60);
+}
+function confirmWipeAll(){
+  const inp=document.getElementById('wipeInput');
+  if(!inp||inp.value.trim()!=='WIPE EVERYTHING'){showToast('Please type WIPE EVERYTHING');return;}
+  closeAdminModal();
+  Object.keys(localStorage).filter(k=>k.startsWith('wra:')).forEach(k=>localStorage.removeItem(k));
+  showToast('All data wiped. Reloading...');
+  setTimeout(function(){location.reload();},1000);
+}
+
+// ── ADMIN MODAL ───────────────────────────────────────────────────
+function showAdminModal(html){
+  const ov=document.createElement('div');
+  ov.className='admin-modal-overlay';ov.id='adminModalOverlay';
+  ov.innerHTML='<div class="admin-modal">'+html+'</div>';
+  ov.addEventListener('click',function(e){if(e.target===ov)closeAdminModal();});
+  document.body.appendChild(ov);
+}
+function closeAdminModal(){document.getElementById('adminModalOverlay')?.remove();}
+
+// ── ADMIN USER ACTIONS ────────────────────────────────────────────
+function adminViewUser(email){
+  const user=storeGet('user:'+email);if(!user)return;
+  addAuditLog('USER_VIEWED','Admin viewed full user details',maskEmail(email),'admin');
+  const plan=getUserPlan(email);
+  const planOpts=Object.keys(PLANS).map(p=>'<option value="'+p+'"'+(p===plan?' selected':'')+'>'+PLANS[p].name+' \u2014 \u00a3'+PLANS[p].price+'/mo</option>').join('');
+  const delBtn=user.role!=='admin'?'<button class="admin-btn" style="background:rgba(255,30,30,.12);color:#ff5555;border:1px solid rgba(255,60,60,.3)" data-email="'+email+'" onclick="closeAdminModal();adminDeleteUser(this.dataset.email)">&#128465; Delete User</button>':'';
+  const html=[
+    '<div class="admin-modal-title">&#128100; User Detail</div>',
+    '<div class="admin-modal-sub">Full details — this view is logged.</div>',
+    '<div class="admin-field"><label>Name</label><div style="color:white;font-size:.9rem;padding:6px 0">'+user.name+'</div></div>',
+    '<div class="admin-field"><label>Email</label><div style="color:var(--sky);font-family:monospace;font-size:.85rem;padding:6px 0">'+email+'</div></div>',
+    '<div class="admin-field"><label>Anonymous ID</label><div style="color:rgba(255,255,255,.35);font-family:monospace;font-size:.75rem;padding:6px 0">'+anonId(email)+'</div></div>',
+    '<div class="admin-field"><label>Role</label><div style="color:white;padding:6px 0">'+user.role+'</div></div>',
+    '<div class="admin-field"><label>Plan</label><select id="adminPlanSelect" style="background:#1A1A2E;color:white;border:1px solid rgba(255,255,255,.2);padding:8px;border-radius:8px;width:100%">'+planOpts+'</select></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Close</button>',
+      delBtn,
+      '<button class="admin-btn danger" data-email="'+email+'" onclick="adminSuspendUser(this.dataset.email);closeAdminModal()">Suspend</button>',
+      '<button class="admin-btn primary" data-pemail="'+email+'" onclick="ADMIN.pendingPlanEmail=this.dataset.pemail;adminSavePlan()">Save Plan</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+}
+function adminSuspendUser(email){
+  if(!confirm('Suspend '+maskEmail(email)+'?'))return;
+  suspendUser(email);showToast('Account suspended');renderAdminPage('users');
+}
+function adminRestoreUser(email){
+  restoreUser(email);showToast('Account restored');renderAdminPage('users');
+}
+function adminResetMFA(email){
+  if(!confirm('Reset OTP for '+maskEmail(email)+'?'))return;
+  resetUserMFA(email);showToast('OTP reset');renderAdminPage('users');
+}
+function adminDeleteUser(email){
+  const user=storeGet('user:'+email);if(!user)return;
+  if(user.role==='admin'){showToast('Cannot delete admin accounts');return;}
+  const sessions=Object.keys(localStorage).filter(k=>k.startsWith('wra:session:'+email+':')||k.startsWith('wra:session:'+anonId(email)+':')).length;
+  const html=[
+    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Delete User Account</div>',
+    '<div class="admin-modal-sub">This is permanent and cannot be undone.</div>',
+    '<div class="delete-confirm-box">',
+      '<div class="delete-confirm-title">Will permanently delete:</div>',
+      '<ul class="delete-confirm-list">',
+        '<li>Account credentials and login access</li>',
+        '<li>'+sessions+' recorded learning session'+(sessions!==1?'s':'')+'</li>',
+        '<li>All OTP codes and device tokens</li>',
+        '<li>All feature overrides and subscription data</li>',
+      '</ul>',
+      '<div style="margin-top:8px;font-size:.75rem;color:rgba(255,255,255,.45)">Email: '+maskEmail(email)+'</div>',
+      '<div style="font-size:.72rem;color:rgba(255,255,255,.25);font-family:monospace;margin-top:3px">'+anonId(email)+'</div>',
+    '</div>',
+    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;color:rgba(255,255,255,.65)">',
+      '<strong style="color:var(--sun)">After deletion:</strong> This email will be free to register again as a new account.',
+    '</div>',
+    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">DELETE</strong> to confirm:</div>',
+    '<div class="admin-field"><input type="text" id="deleteConfirmInput" placeholder="DELETE" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn" id="confirmDeleteBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" data-email="'+email+'" onclick="confirmDeleteUser(this.dataset.email)">&#128465; Delete Account</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+  setTimeout(function(){
+    const inp=document.getElementById('deleteConfirmInput');
+    const btn=document.getElementById('confirmDeleteBtn');
+    if(inp&&btn){
+      inp.focus();
+      inp.addEventListener('input',function(){
+        const ok=inp.value.trim()==='DELETE';
+        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
+        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
+      });
+    }
+  },60);
+}
+function confirmDeleteUser(email){
+  const inp=document.getElementById('deleteConfirmInput');
+  if(!inp||inp.value.trim()!=='DELETE'){showToast('Please type DELETE');return;}
+  closeAdminModal();
+  deleteUser(email);
+  showToast('Account deleted. Email is free to re-register.');
+  setTimeout(function(){renderAdminPage('users');},400);
+}
+function adminSavePlan(){
+  const email=ADMIN.pendingPlanEmail;
+  const sel=document.getElementById('adminPlanSelect');
+  if(!email||!sel)return;
+  setUserPlan(email,sel.value,true);showToast('Plan updated');closeAdminModal();
+}
+function adminNotifPreview(val){
+  const p=document.getElementById('notifPreview');if(p)p.textContent=val;
+}
+function adminSendNotification(){
+  const msg=document.getElementById('notifMessage')?.value.trim();
+  if(!msg){showToast('Please enter a message');return;}
+  sendNotification(msg,null);
+  showToast('Notification queued for all users');
+  document.getElementById('notifMessage').value='';
+  adminNotifPreview('Your message will appear here...');
+}
+function adminToggleFlag(flag,value){
+  setGlobalFlag(flag,value);
+  const st=value?'enabled':'disabled';
+  showToast('Feature "'+( GLOBAL_FLAGS[flag]?.label||flag)+'" '+st);
+}
+function adminEditTierLimits(plan){
+  const p=PLANS[plan];
+  const html=[
+    '<div class="admin-modal-title">&#9999; Edit '+p.name+' Tier</div>',
+    '<div class="admin-modal-sub">Changes apply to all '+plan+' users immediately.</div>',
+    '<div class="admin-field"><label>Daily Search Limit</label><input type="number" id="editSearchLimit" value="'+(p.features.searchLimit>=999?'Unlimited':p.features.searchLimit)+'" placeholder="999 = unlimited"/></div>',
+    '<div class="admin-field"><label>Daily Root Limit</label><input type="number" id="editRootLimit" value="'+(p.features.rootLimit>=999?'Unlimited':p.features.rootLimit)+'" placeholder="999 = unlimited"/></div>',
+    '<div class="admin-btn-row">',
+      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
+      '<button class="admin-btn primary" data-plan="'+plan+'" onclick="saveAdminTierLimits(this.dataset.plan)">Save Changes</button>',
+    '</div>'
+  ].join('');
+  showAdminModal(html);
+}
+function saveAdminTierLimits(plan){
+  const sl=parseInt(document.getElementById('editSearchLimit')?.value)||999;
+  const rl=parseInt(document.getElementById('editRootLimit')?.value)||999;
+  PLANS[plan].features.searchLimit=sl;PLANS[plan].features.rootLimit=rl;
+  addAuditLog('TIER_EDITED','Tier limits updated for '+plan,'system','admin');
+  showToast('Tier updated');closeAdminModal();renderAdminPage('subscriptions');
+}
+function filterAdminUsers(q){
+  document.querySelectorAll('#adminUsersTbody tr').forEach(function(r){
+    r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+function adminImpersonate(email,role){
+  const user=storeGet('user:'+email);if(!user)return;
+  addAuditLog('ADMIN_IMPERSONATE','Admin viewed app as '+role,maskEmail(email),'admin');
+  signIn(user);
+}
+
+// ── ADMIN PORTAL ──────────────────────────────────────────────────
+const ADMIN={page:'dashboard',pendingPlanEmail:''};
+
+function initAdminPortal(){
+  document.getElementById('adminScreen').classList.add('active');
+  checkNotifications();
+  renderAdminPage('dashboard');
+  addAuditLog('ADMIN_LOGIN','Admin portal accessed',maskEmail(A.currentUser.email),'admin');
+}
+
+function renderAdminPage(page){
+  ADMIN.page=page;
+  document.querySelectorAll('.admin-nav-item').forEach(function(el){
+    el.classList.toggle('active',el.dataset.page===page);
+  });
+  const main=document.getElementById('adminMainContent');
+  if(!main)return;
+  const renderers={
+    dashboard:renderAdminDashboard,users:renderAdminUsers,
+    subscriptions:renderAdminSubscriptions,flags:renderAdminFlags,
+    notifications:renderAdminNotifications,audit:renderAdminAudit
+  };
+  (renderers[page]||renderAdminDashboard)(main);
+}
+
+function renderAdminDashboard(el){
+  const users=getAllUsers();
+  const sessions=Object.keys(localStorage).filter(k=>k.startsWith('wra:session:')).length;
+  const plans={free:0,standard:0,premium:0};
+  users.forEach(function(u){plans[u.plan]=(plans[u.plan]||0)+1;});
+  const rev=((plans.standard*9.99)+(plans.premium*19.99)).toFixed(0);
+  const kpis=[
+    {icon:'&#128101;',val:users.length,lab:'Total Users'},
+    {icon:'&#128197;',val:sessions,lab:'Total Sessions'},
+    {icon:'&#10024;',val:plans.standard+plans.premium,lab:'Paid Users'},
+    {icon:'&#9989;',val:plans.free,lab:'Free Tier'},
+    {icon:'&#128683;',val:users.filter(function(u){return u.suspended;}).length,lab:'Suspended'},
+    {icon:'&#128176;',val:'\u00a3'+rev,lab:'Est. Monthly Revenue'},
+    {icon:'&#128203;',val:getAuditLogs(1000).length,lab:'Audit Events'},
+    {icon:'&#128272;',val:Object.keys(localStorage).filter(function(k){return k.startsWith('wra:otp:');}).length,lab:'Pending OTPs'}
+  ];
+  const kpiHtml=kpis.map(function(k){
+    return '<div class="admin-kpi"><div class="admin-kpi-icon">'+k.icon+'</div><div class="admin-kpi-val">'+k.val+'</div><div class="admin-kpi-lab">'+k.lab+'</div></div>';
+  }).join('');
+  const logs=getAuditLogs(10);
+  const logRows=logs.length?logs.map(function(l){
+    const t=new Date(l.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="audit-entry" style="padding:10px 18px"><div class="audit-time">'+t+'</div><div class="audit-action"><strong>'+l.action+'</strong> &mdash; '+l.detail+' <span style="color:rgba(255,255,255,.3)">'+l.target+'</span></div><span class="audit-badge '+l.type+'">'+l.type+'</span></div>';
+  }).join(''):'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">No activity yet</div>';
+  el.innerHTML='<div class="admin-page-title">&#128202; Dashboard</div><div class="admin-page-sub">System overview &mdash; all PII anonymised</div><div class="admin-kpi-grid">'+kpiHtml+'</div><div class="admin-table-wrap"><div class="admin-table-header"><div class="admin-table-title">&#128336; Recent Activity</div></div><div style="padding:4px 0">'+logRows+'</div></div>';
+}
+
+function renderAdminUsers(el){
+  const users=getAllUsers();
+  const rows=users.map(function(u){
+    const rClr=u.role==='admin'?'rgba(255,107,107,.2)':u.role==='parent'?'rgba(255,217,61,.15)':'rgba(155,93,229,.15)';
+    const tClr=u.role==='admin'?'var(--coral)':u.role==='parent'?'var(--sun)':'var(--violet)';
+    const rolePill='<span style="padding:2px 8px;border-radius:99px;font-size:.62rem;font-weight:700;background:'+rClr+';color:'+tClr+'">'+u.role+'</span>';
+    const planPill='<span class="plan-badge '+u.plan+'">'+u.plan+'</span>';
+    const status=u.suspended?'<span style="color:var(--coral)">Suspended</span>':'<span style="color:var(--mint)">Active</span>';
+    const date=new Date(u.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
+    const actionBtns=[
+      '<button class="admin-action-btn view" data-email="'+u._email+'" onclick="adminViewUser(this.dataset.email)">View</button>',
+      u.suspended
+        ?'<button class="admin-action-btn restore" data-email="'+u._email+'" onclick="adminRestoreUser(this.dataset.email)">Restore</button>'
+        :'<button class="admin-action-btn suspend" data-email="'+u._email+'" onclick="adminSuspendUser(this.dataset.email)">Suspend</button>',
+      u.role!=='admin'?'<button class="admin-action-btn delete" data-email="'+u._email+'" onclick="adminDeleteUser(this.dataset.email)">&#128465; Delete</button>':'<span style="font-size:.62rem;color:rgba(255,255,255,.2)">Admin protected</span>'
+    ].join('');
+    return '<tr><td><span style="font-family:monospace;font-size:.68rem;color:rgba(255,255,255,.35)">'+u.anonId+'</span></td><td>'+u.maskedEmail+'</td><td>'+rolePill+'</td><td>'+planPill+'</td><td style="font-size:.72rem;color:rgba(255,255,255,.4)">'+date+'</td><td>'+status+'</td><td>'+actionBtns+'</td></tr>';
+  }).join('');
+  el.innerHTML=[
+    '<div class="admin-page-title">&#128101; Users</div>',
+    '<div class="admin-page-sub">All PII anonymised. Click View to see full details (logged).</div>',
+    '<div class="admin-table-wrap">',
+      '<div class="admin-table-header" style="flex-wrap:wrap;gap:8px">',
+        '<div class="admin-table-title">Registered Users ('+users.length+')</div>',
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">',
+          '<input type="text" placeholder="Search..." oninput="filterAdminUsers(this.value)" style="padding:6px 12px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:white;font-size:.75rem;outline:none;width:160px"/>',
+          '<button class="admin-action-btn delete" onclick="deleteAllUsers()" style="padding:6px 12px;font-size:.72rem">&#128721; Delete All Users</button>',
+          '<button class="admin-action-btn" onclick="wipeAllData()" style="background:rgba(255,60,60,.18);border-color:rgba(255,60,60,.4);color:#ff4444;padding:6px 12px;font-size:.72rem">&#128165; Wipe All Data</button>',
+        '</div>',
+      '</div>',
+      '<table class="admin-table"><thead><tr><th>Anon ID</th><th>Email</th><th>Role</th><th>Plan</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>',
+      '<tbody id="adminUsersTbody">'+rows+'</tbody></table>',
+    '</div>'
+  ].join('');
+}
+
+function renderAdminSubscriptions(el){
+  const users=getAllUsers();
+  const plans={free:0,standard:0,premium:0};
+  users.forEach(function(u){plans[u.plan]=(plans[u.plan]||0)+1;});
+  const rev=((plans.standard*9.99)+(plans.premium*19.99)).toFixed(2);
+  function tierCard(id,name,price,period,features,userCount,featured){
+    const fItems=features.map(function(f){return '<li class="'+(f.inc?'included':'excluded')+'">'+f.label+'</li>';}).join('');
+    return '<div class="tier-card'+(featured?' featured':'')+'"><div class="tier-name">'+name+'</div><div class="tier-price">\u00a3'+price+'</div><div class="tier-period">'+period+'</div><ul class="tier-features">'+fItems+'</ul><div style="font-size:.78rem;color:var(--sun);margin-bottom:10px">'+userCount+' users</div><button class="tier-edit-btn" data-plan="'+id+'" onclick="adminEditTierLimits(this.dataset.plan)">Edit Limits</button></div>';
+  }
+  const f=[{inc:true,label:'Word Search (20/day)'},{inc:true,label:'Root Learn (10/day)'},{inc:false,label:'Idioms Panel'},{inc:false,label:'Parent Dashboard'}];
+  const s=[{inc:true,label:'Unlimited Word Search'},{inc:true,label:'Unlimited Root Learn'},{inc:true,label:'Idioms Panel'},{inc:true,label:'Parent Dashboard'},{inc:true,label:'Email OTP'}];
+  const p=[{inc:true,label:'All Standard features'},{inc:true,label:'Up to 5 student accounts'},{inc:true,label:'Priority support'},{inc:true,label:'All future features'}];
+  el.innerHTML='<div class="admin-page-title">&#128179; Subscriptions</div><div class="admin-page-sub">Manage subscription tiers and pricing</div><div class="tier-grid">'+tierCard('free','Free','0','forever',f,plans.free,false)+tierCard('standard','Standard','9.99','per month',s,plans.standard,true)+tierCard('premium','Premium','19.99','per month',p,plans.premium,false)+'</div><div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:var(--r);padding:16px;margin-bottom:20px"><div style="font-weight:700;color:var(--sun);margin-bottom:4px">&#128176; Estimated Monthly Revenue</div><div style="font-family:monospace;font-size:1.4rem;color:white">\u00a3'+rev+'</div><div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:4px">Connect Stripe for real payment processing</div></div>';
+}
+
+function renderAdminFlags(el){
+  const cards=Object.entries(GLOBAL_FLAGS).map(function(entry){
+    const key=entry[0],flag=entry[1];
+    const checked=getGlobalFlag(key)?'checked':'';
+    return '<div class="feature-flag-card"><div class="feature-flag-info"><div class="feature-flag-name">'+flag.label+'</div><div class="feature-flag-desc">'+flag.desc+'</div></div><label class="toggle-switch"><input type="checkbox" '+checked+' data-flag="'+key+'" onchange="adminToggleFlag(this.dataset.flag,this.checked)"/><span class="toggle-slider"></span></label></div>';
+  }).join('');
+  el.innerHTML='<div class="admin-page-title">&#127897; Feature Flags</div><div class="admin-page-sub">Enable or disable features globally. Changes take effect immediately.</div><div class="feature-flag-grid">'+cards+'</div>';
+}
+
+function renderAdminNotifications(el){
+  el.innerHTML=[
+    '<div class="admin-page-title">&#128226; Send Notification</div>',
+    '<div class="admin-page-sub">Send in-app banners to users on their next page load.</div>',
+    '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:20px">',
+      '<div class="admin-field"><label>Message</label>',
+        '<textarea id="notifMessage" rows="3" placeholder="Enter notification message..." style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:white;border-radius:var(--rs);padding:10px;width:100%;font-size:.85rem;resize:vertical;outline:none" oninput="adminNotifPreview(this.value)"></textarea>',
+      '</div>',
+      '<div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:6px">Preview:</div>',
+      '<div class="notif-preview" id="notifPreview">Your message will appear here...</div>',
+      '<div class="admin-btn-row" style="margin-top:14px">',
+        '<button class="admin-btn primary" onclick="adminSendNotification()">Send to All Users</button>',
+      '</div>',
+    '</div>'
+  ].join('');
+}
+
+function renderAdminAudit(el){
+  const logs=getAuditLogs(100);
+  const rows=logs.length?logs.map(function(l){
+    const d=new Date(l.ts);
+    const dt=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="audit-entry"><div class="audit-time">'+dt+'</div><div class="audit-action"><strong>'+l.action+'</strong><br/><span style="font-size:.72rem;color:rgba(255,255,255,.45)">'+l.detail+'</span><br/><span style="font-size:.68rem;color:rgba(255,255,255,.25);font-family:monospace">'+l.target+'</span></div><span class="audit-badge '+l.type+'">'+l.type+'</span></div>';
+  }).join(''):'<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">No events yet</div>';
+  el.innerHTML='<div class="admin-page-title">&#128203; Audit Log</div><div class="admin-page-sub">Append-only record. All users identified by anonymous ID only.</div><div class="admin-table-wrap"><div class="admin-table-header"><div class="admin-table-title">Recent Events ('+logs.length+')</div></div><div style="max-height:520px;overflow-y:auto;padding:4px 18px">'+rows+'</div></div>';
+}
+
+
+
+
 const APP_VERSION='2.1.0';
 const APP_BUILD='2025-03-15';
 
@@ -1107,6 +2034,111 @@ function doLogout(){
 // ═══════════════════════════════════════════════════════════════
 //  CORE AUTH — doRegister, doLogin, signIn
 // ═══════════════════════════════════════════════════════════════
+
+// ── FORGOT PASSWORD — sends OTP to registered email ───────────────
+function forgotPassword(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  if(!email){showErr('Please enter your email address first, then click Forgot password.');return;}
+  const user=storeGet('user:'+email);
+  if(!user){showErr('No account found with that email address.');return;}
+  // Generate and send OTP code
+  const code=generateOTP();
+  saveOTP(email,code);
+  sendOTPEmail(email,code,user.name||'');
+  // Show password reset OTP screen
+  A.pendingResetEmail=email;
+  A.pendingResetUser=user;
+  showPasswordResetOTPScreen(email);
+}
+
+function showPasswordResetOTPScreen(email){
+  const authBody=document.getElementById('authScreen');
+  authBody.classList.remove('active');
+  authBody.innerHTML='';
+
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)';
+
+  const box=document.createElement('div');
+  box.className='auth-box';
+
+  const hero=document.createElement('div');
+  hero.className='auth-hero';
+  hero.innerHTML='<div class="auth-logo">Word<span>Root</span></div><div class="auth-tagline">Reset your password</div>';
+
+  const body=document.createElement('div');
+  body.style.cssText='padding:28px 32px 32px';
+
+  const devNote=document.createElement('div');
+  devNote.style.cssText='background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.75rem;color:var(--ink3);line-height:1.5';
+  devNote.innerHTML='<strong style="color:var(--sun-d)">&#128161; Development mode:</strong> Your reset code is shown in the yellow banner at the top of the screen. In production it will be emailed.';
+
+  body.innerHTML='<div style="font-size:2.2rem;margin-bottom:8px;text-align:center">&#128274;</div>'
+    +'<div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:900;color:var(--ink);margin-bottom:6px;text-align:center">Password Reset</div>'
+    +'<div style="font-size:.82rem;color:var(--ink3);margin-bottom:16px;text-align:center;line-height:1.5">Enter the 6-digit code sent to<br/><strong style="color:var(--violet)">'+maskEmail(email)+'</strong></div>';
+  body.appendChild(devNote);
+
+  const codeField=document.createElement('div');
+  codeField.className='field';
+  codeField.innerHTML='<label>Verification Code</label><input type="text" id="resetCode" maxlength="6" inputmode="numeric" placeholder="6-digit code" autocomplete="one-time-code" style="font-family:monospace;font-size:1.4rem;letter-spacing:6px;text-align:center"/>';
+  body.appendChild(codeField);
+
+  const pwdField=document.createElement('div');
+  pwdField.className='field';
+  pwdField.innerHTML='<label>New Password</label><input type="password" id="resetNewPwd" placeholder="Min 8 chars, upper, number, symbol" oninput="onPasswordInput(this.value)"/><div class="pwd-strength" id="pwdStrengthBar"></div><div class="pwd-hint" id="pwdStrengthHint"></div>';
+  body.appendChild(pwdField);
+
+  const errDiv=document.createElement('div');
+  errDiv.id='resetErr';
+  errDiv.style.cssText='color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:10px';
+  body.appendChild(errDiv);
+
+  const submitBtn=document.createElement('button');
+  submitBtn.className='auth-btn student-btn';
+  submitBtn.style.width='100%';
+  submitBtn.textContent='Reset Password';
+  submitBtn.onclick=submitPasswordReset;
+  body.appendChild(submitBtn);
+
+  const backBtn=document.createElement('button');
+  backBtn.style.cssText='background:none;border:none;color:var(--ink3);font-size:.75rem;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;font-family:inherit';
+  backBtn.textContent='← Back to login';
+  backBtn.onclick=function(){
+    clearOTP(A.pendingResetEmail||'');
+    delete A.pendingResetEmail; delete A.pendingResetUser;
+    document.getElementById('otpBanner')?.remove();
+    location.reload();
+  };
+  body.appendChild(backBtn);
+
+  box.appendChild(hero);
+  box.appendChild(body);
+  wrap.appendChild(box);
+  authBody.appendChild(wrap);
+  authBody.classList.add('active');
+  setTimeout(function(){document.getElementById('resetCode')?.focus();},150);
+}
+
+function submitPasswordReset(){
+  const code=document.getElementById('resetCode')?.value.trim();
+  const newPwd=document.getElementById('resetNewPwd')?.value;
+  const errEl=document.getElementById('resetErr');
+  if(!code||code.length!==6){if(errEl)errEl.textContent='Please enter the 6-digit code.';return;}
+  const email=A.pendingResetEmail;
+  const result=verifyOTP(email,code);
+  if(!result.ok){if(errEl)errEl.textContent=result.reason;return;}
+  const pwdErr=validatePassword(newPwd||'');
+  if(pwdErr){if(errEl)errEl.textContent=pwdErr;return;}
+  // Save new password
+  storeSet('pass:'+email,hashPassword(newPwd));
+  clearOTP(email);
+  addAuditLog('PASSWORD_RESET','Password reset via email OTP',maskEmail(email),'security');
+  delete A.pendingResetEmail; delete A.pendingResetUser;
+  document.getElementById('otpBanner')?.remove();
+  alert('Password reset successfully! Please sign in with your new password.');
+  location.reload();
+}
+
 function doRegister(){
   const name=document.getElementById('regName').value.trim();
   const email=document.getElementById('regEmail').value.trim().toLowerCase();
@@ -2057,926 +3089,3 @@ function searchIdiomRelated(term){
 // ═══════════════════════════════════════════════════════════════
 
 // ── SECURITY CONFIG ───────────────────────────────────────────
-const SEC={
-  ADMIN_EMAIL:'admin@wordroot.app',  // Change to your email
-  JWT_SECRET:'wra-jwt-2025-secret',
-  AES_KEY:'wra-aes-256-2025-key-x',
-  SALT_ROUNDS:12,
-  TOKEN_EXPIRY:3600000,        // 1 hour
-  REFRESH_EXPIRY:2592000000,   // 30 days
-  DEVICE_EXPIRY:2592000000,    // 30 days
-  MAX_LOGIN_ATTEMPTS:5,
-  LOCKOUT_DURATION:900000,     // 15 minutes
-  PASSWORD_MIN_LENGTH:8,
-  RATE_LIMIT_WINDOW:60000,
-  RATE_LIMIT_MAX:200
-};
-
-// ── PII ANONYMISATION ─────────────────────────────────────────
-// All PII is anonymised using HMAC-like hashing before storage
-// Real implementation would use server-side AES-256 encryption
-function anonId(email){
-  // Deterministic anonymous ID from email - same email always produces same ID
-  let h=0;
-  const s=email.toLowerCase()+SEC.AES_KEY;
-  for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
-  return 'uid_'+Math.abs(h).toString(36).padStart(8,'0');
-}
-
-function maskEmail(email){
-  const [local,domain]=email.split('@');
-  if(!local||!domain)return email;
-  return local[0]+'****@'+domain;
-}
-
-function maskName(name){
-  if(!name)return '***';
-  const parts=name.trim().split(' ');
-  return parts[0]+(parts.length>1?' '+parts[1][0]+'.':'');
-}
-
-// ── PASSWORD HASHING (client-side simulation) ─────────────────
-// Production: use bcrypt on server. This simulates the pattern.
-function hashPassword(pwd){
-  let h=0;
-  const salted=pwd+SEC.AES_KEY+SEC.SALT_ROUNDS;
-  for(let i=0;i<salted.length;i++){h=((h<<5)-h)+salted.charCodeAt(i);h|=0;}
-  return 'bcrypt_'+Math.abs(h).toString(36)+'_'+btoa(pwd.length.toString()).replace(/=/g,'');
-}
-
-function verifyPassword(pwd,hash){
-  return hash===hashPassword(pwd);
-}
-
-function passwordStrength(pwd){
-  let score=0;
-  if(pwd.length>=8)score++;
-  if(pwd.length>=12)score++;
-  if(/[A-Z]/.test(pwd))score++;
-  if(/[a-z]/.test(pwd))score++;
-  if(/[0-9]/.test(pwd))score++;
-  if(/[^A-Za-z0-9]/.test(pwd))score++;
-  if(score<=1)return{level:'weak',label:'Weak — add uppercase, numbers, symbols',pct:25};
-  if(score<=2)return{level:'fair',label:'Fair — add more variety',pct:50};
-  if(score<=4)return{level:'good',label:'Good — almost there',pct:75};
-  return{level:'strong',label:'Strong password',pct:100};
-}
-
-function validatePassword(pwd){
-  if(pwd.length<SEC.PASSWORD_MIN_LENGTH)return'Password must be at least 8 characters';
-  if(!/[A-Z]/.test(pwd))return'Password must contain an uppercase letter';
-  if(!/[a-z]/.test(pwd))return'Password must contain a lowercase letter';
-  if(!/[0-9]/.test(pwd))return'Password must contain a number';
-  if(!/[^A-Za-z0-9]/.test(pwd))return'Password must contain a special character (!@#$%^&*)';
-  return null;
-}
-
-// ── TOKEN SYSTEM ──────────────────────────────────────────────
-function generateToken(payload,expiry){
-  const header={alg:'HS256',typ:'JWT'};
-  const exp=Date.now()+expiry;
-  const data={...payload,exp,iat:Date.now()};
-  const encoded=btoa(JSON.stringify(header))+'.'+btoa(JSON.stringify(data));
-  const sig=btoa(encoded+SEC.JWT_SECRET).substring(0,16);
-  return encoded+'.'+sig;
-}
-
-function verifyToken(token){
-  try{
-    const parts=token.split('.');
-    if(parts.length!==3)return null;
-    const data=JSON.parse(atob(parts[1]));
-    if(data.exp<Date.now())return null;
-    // Verify signature
-    const expected=btoa(parts[0]+'.'+parts[1]+SEC.JWT_SECRET).substring(0,16);
-    if(parts[2]!==expected)return null;
-    return data;
-  }catch{return null}
-}
-
-function generateDeviceToken(userId){
-  return 'dev_'+userId+'_'+Date.now()+'_'+Math.random().toString(36).substring(2);
-}
-
-// ── RATE LIMITING ─────────────────────────────────────────────
-const RATE_LIMITS={};
-function checkRateLimit(key,max,window){
-  const now=Date.now();
-  if(!RATE_LIMITS[key])RATE_LIMITS[key]=[];
-  RATE_LIMITS[key]=RATE_LIMITS[key].filter(t=>now-t<window);
-  if(RATE_LIMITS[key].length>=max)return false;
-  RATE_LIMITS[key].push(now);
-  return true;
-}
-
-// ── LOGIN ATTEMPT TRACKING ────────────────────────────────────
-function getLoginAttempts(email){
-  const k='wra:attempts:'+email;
-  try{const v=localStorage.getItem(k);return v?JSON.parse(v):{count:0,locked:false,lockedUntil:0};}
-  catch{return{count:0,locked:false,lockedUntil:0};}
-}
-function recordLoginAttempt(email,success){
-  const k='wra:attempts:'+email;
-  const a=getLoginAttempts(email);
-  if(success){localStorage.removeItem(k);return;}
-  a.count++;
-  if(a.count>=SEC.MAX_LOGIN_ATTEMPTS){
-    a.locked=true;a.lockedUntil=Date.now()+SEC.LOCKOUT_DURATION;
-    addAuditLog('ACCOUNT_LOCKED','Account locked after '+SEC.MAX_LOGIN_ATTEMPTS+' failed attempts',maskEmail(email),'security');
-  }
-  localStorage.setItem(k,JSON.stringify(a));
-}
-function isAccountLocked(email){
-  const a=getLoginAttempts(email);
-  if(!a.locked)return false;
-  if(Date.now()>a.lockedUntil){localStorage.removeItem('wra:attempts:'+email);return false;}
-  return true;
-}
-
-// ══════════════════════════════════════════════════════════════
-//  EMAIL OTP SYSTEM v2.1
-//  Replaces TOTP/MFA. Generates a 6-digit code on login,
-//  displays it on screen (and would email it in production).
-//  To wire up real email: replace sendOTPEmail() with your
-//  EmailJS / Brevo / SendGrid API call.
-// ══════════════════════════════════════════════════════════════
-
-// ── OTP STORAGE ───────────────────────────────────────────────
-function generateOTP(){
-  return String(Math.floor(100000+Math.random()*900000));
-}
-
-function saveOTP(email, code){
-  const record={code, email, createdAt:Date.now(), expires:Date.now()+600000, used:false}; // 10 min expiry
-  localStorage.setItem('wra:otp:'+anonId(email), JSON.stringify(record));
-}
-
-function verifyOTP(email, inputCode){
-  try{
-    const k='wra:otp:'+anonId(email);
-    const rec=JSON.parse(localStorage.getItem(k)||'null');
-    if(!rec) return {ok:false, reason:'No code found. Please request a new one.'};
-    if(rec.used) return {ok:false, reason:'This code has already been used.'};
-    if(Date.now()>rec.expires) return {ok:false, reason:'Code expired. Please log in again to get a new code.'};
-    if(rec.code!==inputCode.trim()) return {ok:false, reason:'Incorrect code. Please try again.'};
-    rec.used=true;
-    localStorage.setItem(k, JSON.stringify(rec));
-    return {ok:true};
-  }catch(e){return {ok:false, reason:'Verification error. Please try again.'};}
-}
-
-function clearOTP(email){
-  localStorage.removeItem('wra:otp:'+anonId(email));
-}
-
-// ── EMAIL SENDER (plug in real service here) ──────────────────
-function sendOTPEmail(email, code, name){
-  // ─────────────────────────────────────────────────────────────
-  // PRODUCTION: replace this block with your email API call.
-  // Example using EmailJS:
-  //   emailjs.send('service_id','template_id',{to_email:email,code:code,name:name});
-  // Example using Brevo/SendGrid fetch:
-  //   fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',...})
-  // ─────────────────────────────────────────────────────────────
-
-  // For now: store in admin inbox + show in on-screen banner
-  notifyAdmin('OTP_SENT',{anonId:anonId(email), ts:Date.now()});
-  addAuditLog('OTP_GENERATED','Verification code sent to '+maskEmail(email),'security');
-
-  // Show the code on screen in a banner (remove this in production once real email works)
-  showOTPBanner(code, email);
-}
-
-function showOTPBanner(code, email){
-  // Remove any existing banner
-  document.getElementById('otpBanner')?.remove();
-  const banner=document.createElement('div');
-  banner.id='otpBanner';
-  banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1A1A2E,#2D2D4E);border-bottom:3px solid #FFD93D;padding:16px 20px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.4)';
-  banner.innerHTML=[
-    '<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.5);margin-bottom:6px">Verification Code sent to '+maskEmail(email)+'</div>',
-    '<div style="font-family:monospace;font-size:2.2rem;font-weight:900;color:#FFD93D;letter-spacing:8px;margin-bottom:8px">'+code+'</div>',
-    '<div style="font-size:.72rem;color:rgba(255,255,255,.45);margin-bottom:10px">Enter this code below. Valid for 10 minutes. <span style="color:rgba(255,107,107,.7)">(In production this will be emailed — not shown here)</span></div>',
-    '<button onclick="document.getElementById(\'otpBanner\').remove()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:.75rem">Dismiss</button>'
-  ].join('');
-  document.body.prepend(banner);
-}
-
-// ── OTP VERIFICATION SCREEN ───────────────────────────────────
-function showOTPScreen(user, email, rememberMe){
-  A.pendingOTPUser=user;
-  A.pendingOTPEmail=email;
-  A.pendingRememberMe=rememberMe;
-  const authBody=document.getElementById('authScreen');
-  authBody.classList.remove('active');
-
-  // Build HTML using DOM manipulation instead of innerHTML string — zero quote conflicts
-  authBody.innerHTML='';
-  const wrap=document.createElement('div');
-  wrap.style.cssText='display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)';
-
-  const box=document.createElement('div');
-  box.className='auth-box';
-
-  const hero=document.createElement('div');
-  hero.className='auth-hero';
-  hero.innerHTML='<div class="auth-logo">Word<span>Root</span></div><div class="auth-tagline">Verify your identity</div>';
-
-  const body=document.createElement('div');
-  body.style.cssText='padding:28px 32px 32px;text-align:center';
-
-  const note=document.createElement('div');
-  note.style.cssText='background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.75rem;color:var(--ink3);line-height:1.5';
-  note.innerHTML='<strong style="color:var(--sun-d)">&#128161; Development mode:</strong> Your verification code appears in the yellow banner at the top. In production this will be emailed.';
-
-  const inp=document.createElement('input');
-  inp.type='text';
-  inp.id='otpInput';
-  inp.maxLength=6;
-  inp.setAttribute('inputmode','numeric');
-  inp.placeholder='Enter 6-digit code';
-  inp.setAttribute('autocomplete','one-time-code');
-  inp.style.cssText='width:100%;padding:14px;text-align:center;font-family:monospace;font-size:1.8rem;font-weight:700;letter-spacing:8px;border:2px solid rgba(26,26,46,.15);border-radius:var(--rs);outline:none;background:var(--paper);color:var(--ink);margin-bottom:12px;box-sizing:border-box;transition:border .2s';
-  inp.addEventListener('input',function(){if(this.value.length===6)document.getElementById('otpSubmitBtn').click();});
-  inp.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('otpSubmitBtn').click();});
-
-  const errDiv=document.createElement('div');
-  errDiv.id='otpErr';
-  errDiv.style.cssText='color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:10px';
-
-  const submitBtn=document.createElement('button');
-  submitBtn.id='otpSubmitBtn';
-  submitBtn.className='auth-btn student-btn';
-  submitBtn.style.width='100%';
-  submitBtn.textContent='Verify Code →';
-  submitBtn.onclick=submitOTP;
-
-  const resendBtn=document.createElement('button');
-  resendBtn.style.cssText='background:none;border:none;color:var(--violet);font-size:.78rem;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit;display:block;width:100%';
-  resendBtn.textContent='Resend code';
-  resendBtn.onclick=resendOTP;
-
-  const backBtn=document.createElement('button');
-  backBtn.style.cssText='background:none;border:none;color:var(--ink3);font-size:.75rem;cursor:pointer;margin-top:6px;display:block;width:100%;font-family:inherit';
-  backBtn.textContent='← Back to login';
-  backBtn.onclick=backToLoginFromOTP;
-
-  body.innerHTML='<div style="font-size:2.5rem;margin-bottom:8px">&#128231;</div><div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:900;color:var(--ink);margin-bottom:8px">Check Your Email</div><div style="font-size:.83rem;color:var(--ink3);margin-bottom:4px;line-height:1.6">A 6-digit code has been sent to</div><div style="font-family:monospace;font-size:.88rem;color:var(--violet);font-weight:700;margin-bottom:16px">'+maskEmail(email)+'</div>';
-  body.appendChild(note);
-  body.appendChild(inp);
-  body.appendChild(errDiv);
-  body.appendChild(submitBtn);
-  body.appendChild(resendBtn);
-  body.appendChild(backBtn);
-
-  box.appendChild(hero);
-  box.appendChild(body);
-  wrap.appendChild(box);
-  authBody.appendChild(wrap);
-  authBody.classList.add('active');
-  setTimeout(function(){inp.focus();}, 150);
-}
-
-function submitOTP(){
-  const input=document.getElementById('otpInput');
-  const errEl=document.getElementById('otpErr');
-  if(!input||!errEl) return;
-  const code=input.value.trim();
-  if(code.length!==6){errEl.textContent='Please enter the full 6-digit code.';return;}
-  const email=A.pendingOTPEmail;
-  const result=verifyOTP(email, code);
-  if(!result.ok){
-    errEl.textContent=result.reason;
-    input.style.borderColor='var(--coral)';
-    input.select();
-    return;
-  }
-  // OTP valid
-  clearOTP(email);
-  input.style.borderColor='var(--mint)';
-  errEl.style.color='var(--mint)';
-  errEl.textContent='Verified!';
-  const user=A.pendingOTPUser;
-  const rememberMe=A.pendingRememberMe;
-  if(rememberMe) saveDeviceToken(anonId(email), email);
-  addAuditLog('OTP_VERIFIED','Email OTP verified successfully', maskEmail(email),'security');
-  delete A.pendingOTPUser; delete A.pendingOTPEmail; delete A.pendingRememberMe;
-  document.getElementById('otpBanner')?.remove();
-  setTimeout(()=>signIn(user), 400);
-}
-
-function resendOTP(){
-  const email=A.pendingOTPEmail;
-  const user=A.pendingOTPUser;
-  if(!email||!user) return;
-  const code=generateOTP();
-  saveOTP(email, code);
-  sendOTPEmail(email, code, user.name||'there');
-  const errEl=document.getElementById('otpErr');
-  if(errEl){errEl.style.color='var(--mint)';errEl.textContent='New code sent!';}
-  const inp=document.getElementById('otpInput');
-  if(inp){inp.value='';inp.style.borderColor='';inp.focus();}
-  setTimeout(()=>{if(errEl)errEl.textContent='';},3000);
-}
-
-function backToLoginFromOTP(){
-  clearOTP(A.pendingOTPEmail||'');
-  delete A.pendingOTPUser; delete A.pendingOTPEmail; delete A.pendingRememberMe;
-  document.getElementById('otpBanner')?.remove();
-  location.reload();
-}
-
-// Legacy stubs (keep so nothing breaks if referenced elsewhere)
-function backToLogin(){ backToLoginFromOTP(); }
-function generateTOTPSecret(){ return ''; }
-function verifyTOTP(){ return false; }
-function getTOTPQRData(){ return ''; }
-function showMFASetup(user, email){ showOTPScreen(user, email, false); }
-function showMFAChallenge(){ }
-function confirmMFASetup(){ submitOTP(); }
-function verifyMFAChallenge(){ submitOTP(); }
-function getMFACode(){ return document.getElementById('otpInput')?.value||''; }
-function mfaDigitInput(){ }
-function mfaDigitKey(){ }
-
-
-
-// ══════════════════════════════════════════════════════════════════
-//  ADMIN + SECURITY FUNCTIONS — injected v2.1.0
-// ══════════════════════════════════════════════════════════════════
-
-// ── STORAGE HELPERS (safe wrappers) ──────────────────────────────
-function storeGet(key){
-  try{const v=localStorage.getItem('wra:'+key);return v?JSON.parse(v):null;}catch{return null;}
-}
-function storeSet(key,val){
-  try{localStorage.setItem('wra:'+key,JSON.stringify(val));}catch{}
-}
-function storeList(prefix){
-  const out=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.startsWith('wra:'+prefix))out.push(k.replace('wra:',''));
-  }
-  return out;
-}
-
-// ── AUDIT LOG ─────────────────────────────────────────────────────
-function addAuditLog(action,detail,target,type){
-  try{
-    const logs=JSON.parse(localStorage.getItem('wra:audit')||'[]');
-    logs.unshift({action,detail,target:target||'system',type:type||'system',ts:Date.now()});
-    if(logs.length>500)logs.length=500;
-    localStorage.setItem('wra:audit',JSON.stringify(logs));
-  }catch{}
-}
-function getAuditLogs(limit){
-  try{return JSON.parse(localStorage.getItem('wra:audit')||'[]').slice(0,limit||50);}
-  catch{return[];}
-}
-
-// ── ADMIN INBOX ───────────────────────────────────────────────────
-function notifyAdmin(event,data){
-  try{
-    const inbox=JSON.parse(localStorage.getItem('wra:admin:inbox')||'[]');
-    inbox.unshift({event,data,ts:Date.now(),read:false});
-    if(inbox.length>200)inbox.length=200;
-    localStorage.setItem('wra:admin:inbox',JSON.stringify(inbox));
-  }catch{}
-}
-
-// ── IN-APP NOTIFICATIONS ──────────────────────────────────────────
-function sendNotification(message,targetEmail){
-  const k='wra:notification'+(targetEmail?':'+anonId(targetEmail):'');
-  localStorage.setItem(k,JSON.stringify({message,sent:Date.now(),shown:false}));
-  addAuditLog('NOTIFICATION_SENT',message,targetEmail?maskEmail(targetEmail):'All Users','admin');
-}
-function checkNotifications(){
-  try{
-    const n=localStorage.getItem('wra:notification');
-    if(!n)return;
-    const notif=JSON.parse(n);
-    if(notif.shown)return;
-    const bar=document.getElementById('appNotificationBar');
-    const msg=document.getElementById('appNotificationMsg');
-    if(bar&&msg){msg.textContent=notif.message;bar.style.display='block';}
-    notif.shown=true;localStorage.setItem('wra:notification',JSON.stringify(notif));
-  }catch{}
-}
-
-// ── SUBSCRIPTION SYSTEM ───────────────────────────────────────────
-const PLANS={
-  free:{name:'Free',price:0,features:{wordSearch:true,searchLimit:20,rootLearn:true,rootLimit:10,idioms:false,parentDashboard:false,accounts:1}},
-  standard:{name:'Standard',price:9.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:1}},
-  premium:{name:'Premium',price:19.99,features:{wordSearch:true,searchLimit:999,rootLearn:true,rootLimit:999,idioms:true,parentDashboard:true,accounts:5}}
-};
-function getUserPlan(email){
-  try{const v=localStorage.getItem('wra:subscription:'+anonId(email));return v?JSON.parse(v).plan:'free';}catch{return'free';}
-}
-function setUserPlan(email,plan,adminOverride){
-  localStorage.setItem('wra:subscription:'+anonId(email),JSON.stringify({plan,activatedAt:Date.now(),adminOverride:!!adminOverride}));
-  if(adminOverride)addAuditLog('PLAN_CHANGED','Plan changed to '+plan,maskEmail(email),'admin');
-}
-function getFeatureOverride(email,feature){
-  try{const v=localStorage.getItem('wra:override:'+anonId(email)+':'+feature);return v!==null?JSON.parse(v):null;}catch{return null;}
-}
-function setFeatureOverride(email,feature,value){
-  localStorage.setItem('wra:override:'+anonId(email)+':'+feature,JSON.stringify(value));
-  addAuditLog('FEATURE_OVERRIDE','Feature "'+feature+'" set to '+value,maskEmail(email),'admin');
-}
-
-// ── GLOBAL FEATURE FLAGS ──────────────────────────────────────────
-const GLOBAL_FLAGS={
-  wordSearch:{label:'Word Search',desc:'Enable word lookup feature',default:true},
-  rootLearn:{label:'Root Learn',desc:'Enable root word learning',default:true},
-  idioms:{label:'Idioms Panel',desc:'Enable idioms browser',default:true},
-  parentDashboard:{label:'Parent Dashboard',desc:'Enable parent monitoring',default:true},
-  imagesEnabled:{label:'Visual Context Images',desc:'Load images in word search',default:true},
-  xpSystem:{label:'XP Rewards',desc:'Show XP gamification system',default:true},
-  sessionTimer:{label:'Session Timer',desc:'30-minute countdown timer',default:true},
-  emailOTP:{label:'Email OTP Verification',desc:'Require OTP for admin/parent login',default:true}
-};
-function getGlobalFlag(flag){
-  try{const v=localStorage.getItem('wra:flag:'+flag);return v!==null?JSON.parse(v):GLOBAL_FLAGS[flag]?.default!==false;}catch{return true;}
-}
-function setGlobalFlag(flag,value){
-  localStorage.setItem('wra:flag:'+flag,JSON.stringify(value));
-  addAuditLog('FLAG_CHANGED','Global flag "'+flag+'" set to '+value,'system','admin');
-}
-
-// ── USER MANAGEMENT ───────────────────────────────────────────────
-function getAllUsers(){
-  const users=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.startsWith('wra:user:')){
-      try{
-        const u=JSON.parse(localStorage.getItem(k));
-        const email=k.replace('wra:user:','');
-        users.push({
-          anonId:anonId(email),maskedEmail:maskEmail(email),
-          displayName:maskName(u.name||''),role:u.role||'student',
-          plan:getUserPlan(email),createdAt:u.createdAt||Date.now(),
-          suspended:u.suspended||false,mfaEnabled:false,_email:email
-        });
-      }catch{}
-    }
-  }
-  return users.sort((a,b)=>b.createdAt-a.createdAt);
-}
-function suspendUser(email){
-  try{
-    const u=storeGet('user:'+email); if(!u)return false;
-    u.suspended=true;u.suspendedAt=Date.now();storeSet('user:'+email,u);
-    localStorage.removeItem('wra:device:'+anonId(email));
-    addAuditLog('USER_SUSPENDED','Account suspended',maskEmail(email),'admin');
-    return true;
-  }catch{return false;}
-}
-function restoreUser(email){
-  try{
-    const u=storeGet('user:'+email); if(!u)return false;
-    u.suspended=false;delete u.suspendedAt;storeSet('user:'+email,u);
-    addAuditLog('USER_RESTORED','Account restored',maskEmail(email),'admin');
-    return true;
-  }catch{return false;}
-}
-function resetUserMFA(email){
-  try{
-    const u=storeGet('user:'+email); if(!u)return false;
-    delete u.mfaSecret;delete u.mfaEnabled;storeSet('user:'+email,u);
-    addAuditLog('MFA_RESET','MFA/OTP reset for user',maskEmail(email),'admin');
-    return true;
-  }catch{return false;}
-}
-
-// ── DELETE USER (wipes every trace) ──────────────────────────────
-function deleteUser(email){
-  const anon=anonId(email);
-  localStorage.removeItem('wra:user:'+email);
-  localStorage.removeItem('wra:pass:'+email);
-  localStorage.removeItem('wra:device:'+anon);
-  localStorage.removeItem('wra:attempts:'+email);
-  localStorage.removeItem('wra:reset:'+anon);
-  localStorage.removeItem('wra:subscription:'+anon);
-  localStorage.removeItem('wra:otp:'+anon);
-  Object.keys(GLOBAL_FLAGS).forEach(f=>localStorage.removeItem('wra:override:'+anon+':'+f));
-  for(let i=localStorage.length-1;i>=0;i--){
-    const k=localStorage.key(i);
-    if(k&&(k.startsWith('wra:session:'+email+':')||k.startsWith('wra:session:'+anon+':')))
-      localStorage.removeItem(k);
-  }
-  localStorage.removeItem('wra:index:'+email);
-  localStorage.removeItem('wra:notification:'+anon);
-  addAuditLog('USER_DELETED','Account permanently deleted',maskEmail(email),'admin');
-  notifyAdmin('USER_DELETED',{anonId:anon,ts:Date.now()});
-  return true;
-}
-
-// ── EMERGENCY RESET (from login screen — no login required) ───────
-
-function saveDeviceToken(userId,email){
-  const token='dev_'+userId+'_'+Date.now()+'_'+Math.random().toString(36).substring(2);
-  localStorage.setItem('wra:device:'+anonId(email),JSON.stringify({
-    token,expires:Date.now()+SEC.DEVICE_EXPIRY,
-    fp:navigator.userAgent.substring(0,50)
-  }));
-}
-function checkDeviceToken(email){
-  try{
-    const r=JSON.parse(localStorage.getItem('wra:device:'+anonId(email))||'null');
-    if(!r)return false;
-    if(Date.now()>r.expires){localStorage.removeItem('wra:device:'+anonId(email));return false;}
-    return true;
-  }catch{return false;}
-}
-function emergencyReset(){
-  const keys=Object.keys(localStorage).filter(k=>k.startsWith('wra:'));
-  if(!keys.length){alert('App is already clean — no data to delete.');return;}
-  const ok=window.confirm(
-    'DELETE ALL USERS AND RESET APP?\n\n'+
-    'This permanently removes:\n'+
-    '  \u2022 All '+keys.length+' stored records\n'+
-    '  \u2022 Every user account and password\n'+
-    '  \u2022 All sessions, progress and settings\n\n'+
-    'Everyone must register again.\n\nPress OK to confirm.'
-  );
-  if(!ok)return;
-  keys.forEach(k=>localStorage.removeItem(k));
-  setTimeout(function(){location.reload();},200);
-}
-
-// ── BULK DELETE ───────────────────────────────────────────────────
-function deleteAllUsers(){
-  const users=getAllUsers().filter(u=>u.role!=='admin');
-  if(!users.length){showToast('No non-admin users to delete.');return;}
-  const html=[
-    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Delete ALL Users</div>',
-    '<div class="admin-modal-sub">Permanently removes every non-admin account.</div>',
-    '<div class="delete-confirm-box">',
-      '<div class="delete-confirm-title">Will delete '+users.length+' account'+(users.length!==1?'s':'')+':</div>',
-      '<ul class="delete-confirm-list">',
-        '<li>All credentials and passwords</li>',
-        '<li>All learning sessions and progress</li>',
-        '<li>All subscriptions and feature overrides</li>',
-        '<li>All OTP codes and device tokens</li>',
-      '</ul>',
-      '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-top:8px">Admin account will be preserved.</div>',
-    '</div>',
-    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:rgba(255,255,255,.65)">',
-      '<strong style="color:var(--sun)">After deletion:</strong> All email addresses will be free to re-register.',
-    '</div>',
-    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">DELETE ALL</strong> to confirm:</div>',
-    '<div class="admin-field"><input type="text" id="deleteAllInput" placeholder="DELETE ALL" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
-      '<button class="admin-btn" id="confirmDeleteAllBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" onclick="confirmDeleteAllUsers()">&#128465; Delete All</button>',
-    '</div>'
-  ].join('');
-  showAdminModal(html);
-  setTimeout(function(){
-    const inp=document.getElementById('deleteAllInput');
-    const btn=document.getElementById('confirmDeleteAllBtn');
-    if(inp&&btn){
-      inp.focus();
-      inp.addEventListener('input',function(){
-        const ok=inp.value.trim()==='DELETE ALL';
-        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
-        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
-      });
-    }
-  },60);
-}
-function confirmDeleteAllUsers(){
-  const inp=document.getElementById('deleteAllInput');
-  if(!inp||inp.value.trim()!=='DELETE ALL'){showToast('Please type DELETE ALL');return;}
-  closeAdminModal();
-  const users=getAllUsers().filter(u=>u.role!=='admin');
-  let n=0;users.forEach(function(u){try{deleteUser(u._email);n++;}catch{}});
-  addAuditLog('BULK_DELETE',n+' non-admin accounts deleted','system','admin');
-  showToast(n+' account'+(n!==1?'s':'')+' deleted. Emails free to re-register.');
-  setTimeout(function(){renderAdminPage('users');},500);
-}
-function wipeAllData(){
-  const html=[
-    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Wipe ALL App Data</div>',
-    '<div class="admin-modal-sub">Removes every wra: key — including your admin account. You will be logged out.</div>',
-    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">WIPE EVERYTHING</strong> to confirm:</div>',
-    '<div class="admin-field"><input type="text" id="wipeInput" placeholder="WIPE EVERYTHING" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
-      '<button class="admin-btn" id="confirmWipeBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" onclick="confirmWipeAll()">&#128165; Wipe Everything</button>',
-    '</div>'
-  ].join('');
-  showAdminModal(html);
-  setTimeout(function(){
-    const inp=document.getElementById('wipeInput');
-    const btn=document.getElementById('confirmWipeBtn');
-    if(inp&&btn){
-      inp.focus();
-      inp.addEventListener('input',function(){
-        const ok=inp.value.trim()==='WIPE EVERYTHING';
-        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
-        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
-      });
-    }
-  },60);
-}
-function confirmWipeAll(){
-  const inp=document.getElementById('wipeInput');
-  if(!inp||inp.value.trim()!=='WIPE EVERYTHING'){showToast('Please type WIPE EVERYTHING');return;}
-  closeAdminModal();
-  Object.keys(localStorage).filter(k=>k.startsWith('wra:')).forEach(k=>localStorage.removeItem(k));
-  showToast('All data wiped. Reloading...');
-  setTimeout(function(){location.reload();},1000);
-}
-
-// ── ADMIN MODAL ───────────────────────────────────────────────────
-function showAdminModal(html){
-  const ov=document.createElement('div');
-  ov.className='admin-modal-overlay';ov.id='adminModalOverlay';
-  ov.innerHTML='<div class="admin-modal">'+html+'</div>';
-  ov.addEventListener('click',function(e){if(e.target===ov)closeAdminModal();});
-  document.body.appendChild(ov);
-}
-function closeAdminModal(){document.getElementById('adminModalOverlay')?.remove();}
-
-// ── ADMIN USER ACTIONS ────────────────────────────────────────────
-function adminViewUser(email){
-  const user=storeGet('user:'+email);if(!user)return;
-  addAuditLog('USER_VIEWED','Admin viewed full user details',maskEmail(email),'admin');
-  const plan=getUserPlan(email);
-  const planOpts=Object.keys(PLANS).map(p=>'<option value="'+p+'"'+(p===plan?' selected':'')+'>'+PLANS[p].name+' \u2014 \u00a3'+PLANS[p].price+'/mo</option>').join('');
-  const delBtn=user.role!=='admin'?'<button class="admin-btn" style="background:rgba(255,30,30,.12);color:#ff5555;border:1px solid rgba(255,60,60,.3)" data-email="'+email+'" onclick="closeAdminModal();adminDeleteUser(this.dataset.email)">&#128465; Delete User</button>':'';
-  const html=[
-    '<div class="admin-modal-title">&#128100; User Detail</div>',
-    '<div class="admin-modal-sub">Full details — this view is logged.</div>',
-    '<div class="admin-field"><label>Name</label><div style="color:white;font-size:.9rem;padding:6px 0">'+user.name+'</div></div>',
-    '<div class="admin-field"><label>Email</label><div style="color:var(--sky);font-family:monospace;font-size:.85rem;padding:6px 0">'+email+'</div></div>',
-    '<div class="admin-field"><label>Anonymous ID</label><div style="color:rgba(255,255,255,.35);font-family:monospace;font-size:.75rem;padding:6px 0">'+anonId(email)+'</div></div>',
-    '<div class="admin-field"><label>Role</label><div style="color:white;padding:6px 0">'+user.role+'</div></div>',
-    '<div class="admin-field"><label>Plan</label><select id="adminPlanSelect" style="background:#1A1A2E;color:white;border:1px solid rgba(255,255,255,.2);padding:8px;border-radius:8px;width:100%">'+planOpts+'</select></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Close</button>',
-      delBtn,
-      '<button class="admin-btn danger" data-email="'+email+'" onclick="adminSuspendUser(this.dataset.email);closeAdminModal()">Suspend</button>',
-      '<button class="admin-btn primary" data-pemail="'+email+'" onclick="ADMIN.pendingPlanEmail=this.dataset.pemail;adminSavePlan()">Save Plan</button>',
-    '</div>'
-  ].join('');
-  showAdminModal(html);
-}
-function adminSuspendUser(email){
-  if(!confirm('Suspend '+maskEmail(email)+'?'))return;
-  suspendUser(email);showToast('Account suspended');renderAdminPage('users');
-}
-function adminRestoreUser(email){
-  restoreUser(email);showToast('Account restored');renderAdminPage('users');
-}
-function adminResetMFA(email){
-  if(!confirm('Reset OTP for '+maskEmail(email)+'?'))return;
-  resetUserMFA(email);showToast('OTP reset');renderAdminPage('users');
-}
-function adminDeleteUser(email){
-  const user=storeGet('user:'+email);if(!user)return;
-  if(user.role==='admin'){showToast('Cannot delete admin accounts');return;}
-  const sessions=Object.keys(localStorage).filter(k=>k.startsWith('wra:session:'+email+':')||k.startsWith('wra:session:'+anonId(email)+':')).length;
-  const html=[
-    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Delete User Account</div>',
-    '<div class="admin-modal-sub">This is permanent and cannot be undone.</div>',
-    '<div class="delete-confirm-box">',
-      '<div class="delete-confirm-title">Will permanently delete:</div>',
-      '<ul class="delete-confirm-list">',
-        '<li>Account credentials and login access</li>',
-        '<li>'+sessions+' recorded learning session'+(sessions!==1?'s':'')+'</li>',
-        '<li>All OTP codes and device tokens</li>',
-        '<li>All feature overrides and subscription data</li>',
-      '</ul>',
-      '<div style="margin-top:8px;font-size:.75rem;color:rgba(255,255,255,.45)">Email: '+maskEmail(email)+'</div>',
-      '<div style="font-size:.72rem;color:rgba(255,255,255,.25);font-family:monospace;margin-top:3px">'+anonId(email)+'</div>',
-    '</div>',
-    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.78rem;color:rgba(255,255,255,.65)">',
-      '<strong style="color:var(--sun)">After deletion:</strong> This email will be free to register again as a new account.',
-    '</div>',
-    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">DELETE</strong> to confirm:</div>',
-    '<div class="admin-field"><input type="text" id="deleteConfirmInput" placeholder="DELETE" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
-      '<button class="admin-btn" id="confirmDeleteBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" data-email="'+email+'" onclick="confirmDeleteUser(this.dataset.email)">&#128465; Delete Account</button>',
-    '</div>'
-  ].join('');
-  showAdminModal(html);
-  setTimeout(function(){
-    const inp=document.getElementById('deleteConfirmInput');
-    const btn=document.getElementById('confirmDeleteBtn');
-    if(inp&&btn){
-      inp.focus();
-      inp.addEventListener('input',function(){
-        const ok=inp.value.trim()==='DELETE';
-        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
-        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
-      });
-    }
-  },60);
-}
-function confirmDeleteUser(email){
-  const inp=document.getElementById('deleteConfirmInput');
-  if(!inp||inp.value.trim()!=='DELETE'){showToast('Please type DELETE');return;}
-  closeAdminModal();
-  deleteUser(email);
-  showToast('Account deleted. Email is free to re-register.');
-  setTimeout(function(){renderAdminPage('users');},400);
-}
-function adminSavePlan(){
-  const email=ADMIN.pendingPlanEmail;
-  const sel=document.getElementById('adminPlanSelect');
-  if(!email||!sel)return;
-  setUserPlan(email,sel.value,true);showToast('Plan updated');closeAdminModal();
-}
-function adminNotifPreview(val){
-  const p=document.getElementById('notifPreview');if(p)p.textContent=val;
-}
-function adminSendNotification(){
-  const msg=document.getElementById('notifMessage')?.value.trim();
-  if(!msg){showToast('Please enter a message');return;}
-  sendNotification(msg,null);
-  showToast('Notification queued for all users');
-  document.getElementById('notifMessage').value='';
-  adminNotifPreview('Your message will appear here...');
-}
-function adminToggleFlag(flag,value){
-  setGlobalFlag(flag,value);
-  const st=value?'enabled':'disabled';
-  showToast('Feature "'+( GLOBAL_FLAGS[flag]?.label||flag)+'" '+st);
-}
-function adminEditTierLimits(plan){
-  const p=PLANS[plan];
-  const html=[
-    '<div class="admin-modal-title">&#9999; Edit '+p.name+' Tier</div>',
-    '<div class="admin-modal-sub">Changes apply to all '+plan+' users immediately.</div>',
-    '<div class="admin-field"><label>Daily Search Limit</label><input type="number" id="editSearchLimit" value="'+(p.features.searchLimit>=999?'Unlimited':p.features.searchLimit)+'" placeholder="999 = unlimited"/></div>',
-    '<div class="admin-field"><label>Daily Root Limit</label><input type="number" id="editRootLimit" value="'+(p.features.rootLimit>=999?'Unlimited':p.features.rootLimit)+'" placeholder="999 = unlimited"/></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
-      '<button class="admin-btn primary" data-plan="'+plan+'" onclick="saveAdminTierLimits(this.dataset.plan)">Save Changes</button>',
-    '</div>'
-  ].join('');
-  showAdminModal(html);
-}
-function saveAdminTierLimits(plan){
-  const sl=parseInt(document.getElementById('editSearchLimit')?.value)||999;
-  const rl=parseInt(document.getElementById('editRootLimit')?.value)||999;
-  PLANS[plan].features.searchLimit=sl;PLANS[plan].features.rootLimit=rl;
-  addAuditLog('TIER_EDITED','Tier limits updated for '+plan,'system','admin');
-  showToast('Tier updated');closeAdminModal();renderAdminPage('subscriptions');
-}
-function filterAdminUsers(q){
-  document.querySelectorAll('#adminUsersTbody tr').forEach(function(r){
-    r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
-  });
-}
-function adminImpersonate(email,role){
-  const user=storeGet('user:'+email);if(!user)return;
-  addAuditLog('ADMIN_IMPERSONATE','Admin viewed app as '+role,maskEmail(email),'admin');
-  signIn(user);
-}
-
-// ── ADMIN PORTAL ──────────────────────────────────────────────────
-const ADMIN={page:'dashboard',pendingPlanEmail:''};
-
-function initAdminPortal(){
-  document.getElementById('adminScreen').classList.add('active');
-  checkNotifications();
-  renderAdminPage('dashboard');
-  addAuditLog('ADMIN_LOGIN','Admin portal accessed',maskEmail(A.currentUser.email),'admin');
-}
-
-function renderAdminPage(page){
-  ADMIN.page=page;
-  document.querySelectorAll('.admin-nav-item').forEach(function(el){
-    el.classList.toggle('active',el.dataset.page===page);
-  });
-  const main=document.getElementById('adminMainContent');
-  if(!main)return;
-  const renderers={
-    dashboard:renderAdminDashboard,users:renderAdminUsers,
-    subscriptions:renderAdminSubscriptions,flags:renderAdminFlags,
-    notifications:renderAdminNotifications,audit:renderAdminAudit
-  };
-  (renderers[page]||renderAdminDashboard)(main);
-}
-
-function renderAdminDashboard(el){
-  const users=getAllUsers();
-  const sessions=Object.keys(localStorage).filter(k=>k.startsWith('wra:session:')).length;
-  const plans={free:0,standard:0,premium:0};
-  users.forEach(function(u){plans[u.plan]=(plans[u.plan]||0)+1;});
-  const rev=((plans.standard*9.99)+(plans.premium*19.99)).toFixed(0);
-  const kpis=[
-    {icon:'&#128101;',val:users.length,lab:'Total Users'},
-    {icon:'&#128197;',val:sessions,lab:'Total Sessions'},
-    {icon:'&#10024;',val:plans.standard+plans.premium,lab:'Paid Users'},
-    {icon:'&#9989;',val:plans.free,lab:'Free Tier'},
-    {icon:'&#128683;',val:users.filter(function(u){return u.suspended;}).length,lab:'Suspended'},
-    {icon:'&#128176;',val:'\u00a3'+rev,lab:'Est. Monthly Revenue'},
-    {icon:'&#128203;',val:getAuditLogs(1000).length,lab:'Audit Events'},
-    {icon:'&#128272;',val:Object.keys(localStorage).filter(function(k){return k.startsWith('wra:otp:');}).length,lab:'Pending OTPs'}
-  ];
-  const kpiHtml=kpis.map(function(k){
-    return '<div class="admin-kpi"><div class="admin-kpi-icon">'+k.icon+'</div><div class="admin-kpi-val">'+k.val+'</div><div class="admin-kpi-lab">'+k.lab+'</div></div>';
-  }).join('');
-  const logs=getAuditLogs(10);
-  const logRows=logs.length?logs.map(function(l){
-    const t=new Date(l.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="audit-entry" style="padding:10px 18px"><div class="audit-time">'+t+'</div><div class="audit-action"><strong>'+l.action+'</strong> &mdash; '+l.detail+' <span style="color:rgba(255,255,255,.3)">'+l.target+'</span></div><span class="audit-badge '+l.type+'">'+l.type+'</span></div>';
-  }).join(''):'<div style="padding:20px;text-align:center;color:rgba(255,255,255,.3)">No activity yet</div>';
-  el.innerHTML='<div class="admin-page-title">&#128202; Dashboard</div><div class="admin-page-sub">System overview &mdash; all PII anonymised</div><div class="admin-kpi-grid">'+kpiHtml+'</div><div class="admin-table-wrap"><div class="admin-table-header"><div class="admin-table-title">&#128336; Recent Activity</div></div><div style="padding:4px 0">'+logRows+'</div></div>';
-}
-
-function renderAdminUsers(el){
-  const users=getAllUsers();
-  const rows=users.map(function(u){
-    const rClr=u.role==='admin'?'rgba(255,107,107,.2)':u.role==='parent'?'rgba(255,217,61,.15)':'rgba(155,93,229,.15)';
-    const tClr=u.role==='admin'?'var(--coral)':u.role==='parent'?'var(--sun)':'var(--violet)';
-    const rolePill='<span style="padding:2px 8px;border-radius:99px;font-size:.62rem;font-weight:700;background:'+rClr+';color:'+tClr+'">'+u.role+'</span>';
-    const planPill='<span class="plan-badge '+u.plan+'">'+u.plan+'</span>';
-    const status=u.suspended?'<span style="color:var(--coral)">Suspended</span>':'<span style="color:var(--mint)">Active</span>';
-    const date=new Date(u.createdAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
-    const actionBtns=[
-      '<button class="admin-action-btn view" data-email="'+u._email+'" onclick="adminViewUser(this.dataset.email)">View</button>',
-      u.suspended
-        ?'<button class="admin-action-btn restore" data-email="'+u._email+'" onclick="adminRestoreUser(this.dataset.email)">Restore</button>'
-        :'<button class="admin-action-btn suspend" data-email="'+u._email+'" onclick="adminSuspendUser(this.dataset.email)">Suspend</button>',
-      u.role!=='admin'?'<button class="admin-action-btn delete" data-email="'+u._email+'" onclick="adminDeleteUser(this.dataset.email)">&#128465; Delete</button>':'<span style="font-size:.62rem;color:rgba(255,255,255,.2)">Admin protected</span>'
-    ].join('');
-    return '<tr><td><span style="font-family:monospace;font-size:.68rem;color:rgba(255,255,255,.35)">'+u.anonId+'</span></td><td>'+u.maskedEmail+'</td><td>'+rolePill+'</td><td>'+planPill+'</td><td style="font-size:.72rem;color:rgba(255,255,255,.4)">'+date+'</td><td>'+status+'</td><td>'+actionBtns+'</td></tr>';
-  }).join('');
-  el.innerHTML=[
-    '<div class="admin-page-title">&#128101; Users</div>',
-    '<div class="admin-page-sub">All PII anonymised. Click View to see full details (logged).</div>',
-    '<div class="admin-table-wrap">',
-      '<div class="admin-table-header" style="flex-wrap:wrap;gap:8px">',
-        '<div class="admin-table-title">Registered Users ('+users.length+')</div>',
-        '<div style="display:flex;gap:8px;flex-wrap:wrap">',
-          '<input type="text" placeholder="Search..." oninput="filterAdminUsers(this.value)" style="padding:6px 12px;border-radius:var(--rs);border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:white;font-size:.75rem;outline:none;width:160px"/>',
-          '<button class="admin-action-btn delete" onclick="deleteAllUsers()" style="padding:6px 12px;font-size:.72rem">&#128721; Delete All Users</button>',
-          '<button class="admin-action-btn" onclick="wipeAllData()" style="background:rgba(255,60,60,.18);border-color:rgba(255,60,60,.4);color:#ff4444;padding:6px 12px;font-size:.72rem">&#128165; Wipe All Data</button>',
-        '</div>',
-      '</div>',
-      '<table class="admin-table"><thead><tr><th>Anon ID</th><th>Email</th><th>Role</th><th>Plan</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>',
-      '<tbody id="adminUsersTbody">'+rows+'</tbody></table>',
-    '</div>'
-  ].join('');
-}
-
-function renderAdminSubscriptions(el){
-  const users=getAllUsers();
-  const plans={free:0,standard:0,premium:0};
-  users.forEach(function(u){plans[u.plan]=(plans[u.plan]||0)+1;});
-  const rev=((plans.standard*9.99)+(plans.premium*19.99)).toFixed(2);
-  function tierCard(id,name,price,period,features,userCount,featured){
-    const fItems=features.map(function(f){return '<li class="'+(f.inc?'included':'excluded')+'">'+f.label+'</li>';}).join('');
-    return '<div class="tier-card'+(featured?' featured':'')+'"><div class="tier-name">'+name+'</div><div class="tier-price">\u00a3'+price+'</div><div class="tier-period">'+period+'</div><ul class="tier-features">'+fItems+'</ul><div style="font-size:.78rem;color:var(--sun);margin-bottom:10px">'+userCount+' users</div><button class="tier-edit-btn" data-plan="'+id+'" onclick="adminEditTierLimits(this.dataset.plan)">Edit Limits</button></div>';
-  }
-  const f=[{inc:true,label:'Word Search (20/day)'},{inc:true,label:'Root Learn (10/day)'},{inc:false,label:'Idioms Panel'},{inc:false,label:'Parent Dashboard'}];
-  const s=[{inc:true,label:'Unlimited Word Search'},{inc:true,label:'Unlimited Root Learn'},{inc:true,label:'Idioms Panel'},{inc:true,label:'Parent Dashboard'},{inc:true,label:'Email OTP'}];
-  const p=[{inc:true,label:'All Standard features'},{inc:true,label:'Up to 5 student accounts'},{inc:true,label:'Priority support'},{inc:true,label:'All future features'}];
-  el.innerHTML='<div class="admin-page-title">&#128179; Subscriptions</div><div class="admin-page-sub">Manage subscription tiers and pricing</div><div class="tier-grid">'+tierCard('free','Free','0','forever',f,plans.free,false)+tierCard('standard','Standard','9.99','per month',s,plans.standard,true)+tierCard('premium','Premium','19.99','per month',p,plans.premium,false)+'</div><div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:var(--r);padding:16px;margin-bottom:20px"><div style="font-weight:700;color:var(--sun);margin-bottom:4px">&#128176; Estimated Monthly Revenue</div><div style="font-family:monospace;font-size:1.4rem;color:white">\u00a3'+rev+'</div><div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:4px">Connect Stripe for real payment processing</div></div>';
-}
-
-function renderAdminFlags(el){
-  const cards=Object.entries(GLOBAL_FLAGS).map(function(entry){
-    const key=entry[0],flag=entry[1];
-    const checked=getGlobalFlag(key)?'checked':'';
-    return '<div class="feature-flag-card"><div class="feature-flag-info"><div class="feature-flag-name">'+flag.label+'</div><div class="feature-flag-desc">'+flag.desc+'</div></div><label class="toggle-switch"><input type="checkbox" '+checked+' data-flag="'+key+'" onchange="adminToggleFlag(this.dataset.flag,this.checked)"/><span class="toggle-slider"></span></label></div>';
-  }).join('');
-  el.innerHTML='<div class="admin-page-title">&#127897; Feature Flags</div><div class="admin-page-sub">Enable or disable features globally. Changes take effect immediately.</div><div class="feature-flag-grid">'+cards+'</div>';
-}
-
-function renderAdminNotifications(el){
-  el.innerHTML=[
-    '<div class="admin-page-title">&#128226; Send Notification</div>',
-    '<div class="admin-page-sub">Send in-app banners to users on their next page load.</div>',
-    '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:20px">',
-      '<div class="admin-field"><label>Message</label>',
-        '<textarea id="notifMessage" rows="3" placeholder="Enter notification message..." style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:white;border-radius:var(--rs);padding:10px;width:100%;font-size:.85rem;resize:vertical;outline:none" oninput="adminNotifPreview(this.value)"></textarea>',
-      '</div>',
-      '<div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:6px">Preview:</div>',
-      '<div class="notif-preview" id="notifPreview">Your message will appear here...</div>',
-      '<div class="admin-btn-row" style="margin-top:14px">',
-        '<button class="admin-btn primary" onclick="adminSendNotification()">Send to All Users</button>',
-      '</div>',
-    '</div>'
-  ].join('');
-}
-
-function renderAdminAudit(el){
-  const logs=getAuditLogs(100);
-  const rows=logs.length?logs.map(function(l){
-    const d=new Date(l.ts);
-    const dt=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="audit-entry"><div class="audit-time">'+dt+'</div><div class="audit-action"><strong>'+l.action+'</strong><br/><span style="font-size:.72rem;color:rgba(255,255,255,.45)">'+l.detail+'</span><br/><span style="font-size:.68rem;color:rgba(255,255,255,.25);font-family:monospace">'+l.target+'</span></div><span class="audit-badge '+l.type+'">'+l.type+'</span></div>';
-  }).join(''):'<div style="padding:40px;text-align:center;color:rgba(255,255,255,.3)">No events yet</div>';
-  el.innerHTML='<div class="admin-page-title">&#128203; Audit Log</div><div class="admin-page-sub">Append-only record. All users identified by anonymous ID only.</div><div class="admin-table-wrap"><div class="admin-table-header"><div class="admin-table-title">Recent Events ('+logs.length+')</div></div><div style="max-height:520px;overflow-y:auto;padding:4px 18px">'+rows+'</div></div>';
-}
-
-
