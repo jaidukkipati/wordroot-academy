@@ -1125,6 +1125,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
 
 
+
 /**
  * =============================================================================
  * WordRoot Academy — Application Script
@@ -7146,6 +7147,10 @@ function submitPasswordReset() {
 
   // Save new password hash
   storeSet('pass:' + email, hashPassword(newPwd));
+  // Mark as user-changed so bootstrap respects the new password
+  var rRec = storeGet('user:' + email) || {};
+  rRec.pwChangedAt = Date.now();
+  storeSet('user:' + email, rRec);
   clearOTP(email);
 
   addAuditLog('PASSWORD_RESET', 'Password reset successfully', maskEmail(email), 'security');
@@ -7179,56 +7184,75 @@ function submitPasswordReset() {
  *   Email:    dkris5777@gmail.com
  *   Password: Password123$
  */
+/**
+ * Bootstrap admin accounts on every page load.
+ *
+ * Strategy:
+ *   - Use a VERSION-PINNED flag ('admin:v2.3.2') so that whenever the app
+ *     is redeployed with new credentials, the flag changes and passwords
+ *     are force-reset even if stale records exist in localStorage.
+ *   - Never touches passwords that were changed AFTER the pin date
+ *     (because user records store a 'pwChangedAt' timestamp).
+ *   - Always ensures the user record exists with the correct role.
+ *
+ * Default admin accounts:
+ *   PRIMARY  — dkris5777@gmail.com  /  Password123$
+ *   FALLBACK — admin@wordroot.app   /  Admin/Password123$
+ */
 function _bootstrapAdminAccount() {
-  // Re-seed admin ONLY if the account was deleted; never overwrite existing password
+  // Version pin — change this string whenever you update default credentials
+  var BOOT_VERSION = 'admin:v2.3.2';
 
-  const adminEmail = SEC.ADMIN_EMAIL || 'dkris5777@gmail.com';
-  const adminPass  = 'Password123$'; // default — change from My Profile > Security
+  // If this version already ran, skip (unless we're forcing a reset)
+  var alreadyRan = storeGet(BOOT_VERSION);
+  if (alreadyRan) return;
 
-  // Only create if the account doesn't already exist
-  if (!storeGet('user:' + adminEmail)) {
-    const adminUser = {
-      name:      'Jai (Admin)',
-      email:     adminEmail,
+  // ── Helper: seed ONE admin account ──────────────────────────────────────
+  function seedAdmin(email, pass, name) {
+    // Always write the user record (ensures role is correct)
+    var existing = storeGet('user:' + email) || {};
+    var userRec = {
+      name:      existing.name || name,
+      email:     email,
       role:      'admin',
       roles:     ['admin', 'student', 'parent'],
-      createdAt: Date.now(),
+      createdAt: existing.createdAt || Date.now(),
       appVersion: APP_VERSION
     };
-    storeSet('user:' + adminEmail, adminUser);
-    storeSet('pass:' + adminEmail, hashPassword(adminPass));
-    console.info(
-      '%c[WordRoot Academy] Admin account created',
-      'color:#FFD93D;font-weight:bold;font-size:14px'
-    );
-    console.info(
-      '%cEmail: ' + adminEmail + '\nPassword: ' + adminPass
-        + '\n\nChange via My Profile > Security after first login.',
-      'color:#06D6A0;font-size:12px'
-    );
+    storeSet('user:' + email, userRec);
+
+    // Only write the password if it has NOT been changed by the user
+    // (user-changed passwords have a 'pwChangedAt' field on the user record)
+    if (!existing.pwChangedAt) {
+      storeSet('pass:' + email, hashPassword(pass));
+      console.info(
+        '%c[WRA] Admin credentials set: ' + email,
+        'color:#FFD93D;font-weight:700'
+      );
+    } else {
+      console.info(
+        '%c[WRA] Admin password preserved (user-changed): ' + email,
+        'color:#4CC9F0'
+      );
+    }
   }
 
-  // ── Seed second admin account (dkris5777@gmail.com) ──────────────────────
-  const admin2Email = 'dkris5777@gmail.com';
-  const admin2Pass  = 'Password123$';
-  if (!storeGet('user:' + admin2Email)) {
-    const admin2User = {
-      name:      'Admin',
-      email:     admin2Email,
-      role:      'admin',
-      roles:     ['admin', 'student', 'parent'],
-      createdAt: Date.now(),
-      appVersion: APP_VERSION
-    };
-    storeSet('user:' + admin2Email, admin2User);
-    storeSet('pass:' + admin2Email, hashPassword(admin2Pass));
-    console.info(
-      '%c[WordRoot Academy] Admin account created: ' + admin2Email,
-      'color:#FFD93D;font-weight:bold'
-    );
-  }
+  // ── Seed both admin accounts ─────────────────────────────────────────────
+  seedAdmin('dkris5777@gmail.com',  'Password123$',       'Admin');
+  seedAdmin('admin@wordroot.app',   'Admin/Password123$', 'Administrator');
 
-  storeSet('admin:bootstrapped', true);
+  // Mark this version as done
+  storeSet(BOOT_VERSION, { ts: Date.now(), version: APP_VERSION });
+
+  console.info(
+    '%c[WRA] Admin bootstrap v2.3.2 complete.',
+    'color:#06D6A0;font-size:11px'
+  );
+  console.info(
+    '%cPrimary:  dkris5777@gmail.com  /  Password123$\n'
+    + 'Fallback: admin@wordroot.app   /  Admin/Password123$',
+    'color:#06D6A0;font-size:11px'
+  );
 }
 
 
@@ -7724,6 +7748,10 @@ function _saveProfilePassword() {
   if (newPwd !== conPwd) { if(msg){msg.style.color='var(--coral)';msg.textContent='New passwords do not match.';} return; }
 
   storeSet('pass:' + A.currentUser.email, hashPassword(newPwd));
+  // Mark password as user-changed so bootstrap doesn't overwrite it
+  var uRec = storeGet('user:' + A.currentUser.email) || {};
+  uRec.pwChangedAt = Date.now();
+  storeSet('user:' + A.currentUser.email, uRec);
   addAuditLog('PASSWORD_CHANGED','Password changed via profile',maskEmail(A.currentUser.email),'security');
   if(msg){msg.style.color='var(--mint-d)';msg.textContent='Password updated successfully!';}
   // Clear fields
@@ -8047,6 +8075,7 @@ window.addEventListener('DOMContentLoaded', function() {
   checkResetLink();           // handle password-reset deep link (#reset:TOKEN)
   console.log('WordRoot Academy v' + APP_VERSION + ' (' + APP_BUILD + ') loaded');
 });
+
 
 
 
