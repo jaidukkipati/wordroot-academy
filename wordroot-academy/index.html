@@ -421,6 +421,220 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .fb-thread-item.user{background:rgba(155,93,229,.06);border-left:3px solid var(--violet)}
 .fb-thread-item.admin{background:rgba(6,214,160,.06);border-left:3px solid var(--mint)}
 
+
+/* ── 6-Step progress cards ── */
+.prog-card{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px;
+  border-radius:var(--rs);border:2px solid transparent;cursor:pointer;transition:all .2s;
+  background:var(--white);min-width:0}
+.prog-card.active{background:var(--ink);border-color:var(--ink)}
+.prog-card.done{background:rgba(6,214,160,.1);border-color:var(--mint)}
+.prog-card .prog-icon{font-size:1rem;line-height:1}
+.prog-card .prog-name{font-size:.55rem;font-weight:700;text-align:center;margin-top:2px;
+  color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;line-height:1.2}
+.prog-card.active .prog-name,.prog-card.active .prog-icon{color:white}
+.prog-card.done .prog-name{color:var(--mint-d)}
+
+/* ── Frayer Card ── */
+.frayer-card{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:8px;margin-bottom:12px}
+.frayer-cell{background:var(--white);border-radius:var(--rs);padding:12px 14px;
+  border:2px solid rgba(26,26,46,.07);position:relative}
+.frayer-cell-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--ink3);margin-bottom:6px;display:block}
+.frayer-word-center{text-align:center;padding:12px;background:var(--ink);color:white;
+  border-radius:var(--rs);margin-bottom:8px;font-family:Fraunces,serif}
+.frayer-word{font-size:1.4rem;font-weight:900;color:var(--sun)}
+.frayer-pron{font-size:.72rem;color:rgba(255,255,255,.5);font-family:monospace}
+.frayer-pos{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:2px}
+.frayer-cell.definition{border-color:rgba(76,201,240,.25)}
+.frayer-cell.characteristics{border-color:rgba(155,93,229,.25)}
+.frayer-cell.examples{border-color:rgba(6,214,160,.25)}
+.frayer-cell.non-examples{border-color:rgba(255,107,107,.25)}
+.frayer-tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.7rem;
+  font-weight:600;margin:2px;background:rgba(26,26,46,.06);color:var(--ink)}
+
+/* ── Morpheme labeller (Step Identify) ── */
+.morph-word-display{font-family:Fraunces,serif;font-size:2rem;font-weight:900;
+  color:var(--ink);text-align:center;letter-spacing:4px;margin:16px 0;
+  user-select:none;line-height:1.4}
+.morph-segment{display:inline-block;padding:4px 2px;border-radius:4px;cursor:pointer;
+  transition:all .2s;position:relative}
+.morph-segment.prefix{background:rgba(76,201,240,.15);color:var(--sky-d)}
+.morph-segment.root-seg{background:rgba(255,107,107,.15);color:var(--coral)}
+.morph-segment.suffix{background:rgba(6,214,160,.15);color:var(--mint-d)}
+.morph-segment.unselected{background:rgba(26,26,46,.06);color:var(--ink3)}
+.morph-choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.morph-choice{padding:6px 14px;border-radius:99px;border:2px solid rgba(26,26,46,.12);
+  background:var(--white);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;
+  font-family:sans-serif;color:var(--ink)}
+.morph-choice.prefix-choice:hover,.morph-choice.prefix-choice.sel{background:var(--sky);color:white;border-color:var(--sky)}
+.morph-choice.root-choice:hover,.morph-choice.root-choice.sel{background:var(--coral);color:white;border-color:var(--coral)}
+.morph-choice.suffix-choice:hover,.morph-choice.suffix-choice.sel{background:var(--mint);color:white;border-color:var(--mint)}
+.morph-legend{display:flex;gap:10px;justify-content:center;font-size:.7rem;margin-top:8px}
+.morph-legend span{display:flex;align-items:center;gap:4px}
+
+/* ── Cloze sentence completion (Step Identify activity B) ── */
+.cloze-sentence{font-size:.95rem;color:var(--ink);line-height:1.8;margin-bottom:12px;
+  background:rgba(255,217,61,.06);border-radius:var(--rs);padding:14px 16px;
+  border:1px solid rgba(255,217,61,.2)}
+.cloze-blank{display:inline-block;min-width:100px;border-bottom:2px solid var(--violet);
+  color:var(--violet);font-weight:700;padding:0 4px;text-align:center}
+.cloze-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cloze-opt{padding:10px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);
+  background:var(--white);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;
+  font-family:sans-serif;text-align:left}
+.cloze-opt:hover:not([disabled]){border-color:var(--violet);background:rgba(155,93,229,.05)}
+.cloze-opt.correct{background:#DCFCE7;border-color:var(--mint);color:#166534}
+.cloze-opt.wrong{background:#FEE2E2;border-color:var(--coral);color:#991B1B}
+
+/* ── Pre/Post test banner ── */
+.pretest-banner{background:linear-gradient(135deg,rgba(76,201,240,.1),rgba(155,93,229,.1));
+  border:1.5px solid rgba(155,93,229,.2);border-radius:var(--rs);padding:12px 16px;
+  margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pretest-score{font-family:Fraunces,serif;font-size:1.4rem;font-weight:900;color:var(--violet)}
+.pretest-label{font-size:.7rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px}
+.delta-badge{padding:4px 10px;border-radius:99px;font-size:.78rem;font-weight:700}
+.delta-badge.gain{background:rgba(6,214,160,.15);color:var(--mint-d)}
+.delta-badge.same{background:rgba(26,26,46,.08);color:var(--ink3)}
+
+/* ── Spiral Review trigger card ── */
+.spiral-trigger{background:linear-gradient(135deg,var(--violet),var(--sky));
+  border-radius:var(--r);padding:16px 20px;color:white;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  cursor:pointer;transition:transform .2s;box-shadow:0 4px 20px rgba(155,93,229,.3)}
+.spiral-trigger:hover{transform:translateY(-2px)}
+.spiral-title{font-family:Fraunces,serif;font-size:1.1rem;font-weight:900}
+.spiral-sub{font-size:.75rem;color:rgba(255,255,255,.7);margin-top:2px}
+
+/* ── Morpheme Builder game ── */
+.morph-builder-wrap{background:var(--paper2);border-radius:var(--r);padding:18px;
+  border:2px solid rgba(26,26,46,.06)}
+.morph-builder-slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+  min-height:52px;margin:14px 0;padding:10px;background:var(--white);
+  border-radius:var(--rs);border:2px dashed rgba(26,26,46,.12)}
+.morph-slot{min-width:60px;padding:8px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.1);
+  background:var(--paper2);font-family:monospace;font-size:.82rem;font-weight:700;
+  color:var(--ink3);text-align:center;cursor:pointer;transition:all .2s}
+.morph-slot.filled{border-color:var(--violet);background:rgba(155,93,229,.08);color:var(--violet)}
+.morph-bank{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.morph-tile{padding:7px 12px;border-radius:var(--rs);font-family:monospace;font-size:.82rem;
+  font-weight:800;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.morph-tile.prefix-tile{background:rgba(76,201,240,.1);color:var(--sky-d);border-color:rgba(76,201,240,.3)}
+.morph-tile.root-tile{background:rgba(255,107,107,.1);color:var(--coral);border-color:rgba(255,107,107,.3)}
+.morph-tile.suffix-tile{background:rgba(6,214,160,.1);color:var(--mint-d);border-color:rgba(6,214,160,.3)}
+.morph-tile:hover:not(.used){transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.morph-tile.used{opacity:.3;cursor:default;transform:none}
+.morph-tile.selected-tile{outline:3px solid var(--violet);outline-offset:2px}
+.morph-result{text-align:center;padding:12px;border-radius:var(--rs);margin-top:8px;
+  font-family:Fraunces,serif;font-size:1.1rem;font-weight:900;animation:slideUp .3s ease}
+.morph-result.correct{background:#DCFCE7;color:#166534}
+.morph-result.wrong{background:#FEE2E2;color:#991B1B}
+.morph-result.valid-combo{background:rgba(255,217,61,.1);color:var(--sun-d)}
+
+
+/* ── Step 7 colour ── */
+.stab.s7.on .snum{background:var(--violet);color:white}
+
+/* ── Done/completed step tab (green tick after passing) ── */
+.stab.done .snum{background:var(--mint);color:white;position:relative}
+.stab.done .snum::after{content:'\2713';position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;font-size:.7rem}
+
+/* ── Cloze sentence display ── */
+.cloze-sentence{font-size:.95rem;line-height:1.7;color:var(--ink);
+  background:rgba(255,217,61,.06);border-left:3px solid var(--sun);
+  padding:12px 16px;border-radius:0 var(--rs) var(--rs) 0;margin-bottom:8px;
+  font-style:italic}
+.cloze-blank{display:inline-block;min-width:90px;border-bottom:2.5px solid var(--coral);
+  color:var(--coral);font-style:normal;font-weight:700;text-align:center;
+  padding:0 4px;margin:0 2px}
+.cloze-opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cloze-opt{padding:8px 16px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);
+  background:var(--white);font-size:.85rem;font-weight:600;cursor:pointer;
+  font-family:sans-serif;color:var(--ink);transition:all .18s}
+.cloze-opt:hover{border-color:var(--violet);background:rgba(155,93,229,.06)}
+.cloze-opt.correct{border-color:var(--mint);background:rgba(6,214,160,.1);color:var(--mint-d)}
+.cloze-opt.wrong{border-color:var(--coral);background:rgba(255,107,107,.08);color:var(--coral)}
+
+/* ── Pre/Post-test banner ── */
+.pretest-banner{display:flex;align-items:center;gap:10px;
+  background:rgba(155,93,229,.06);border:1px solid rgba(155,93,229,.2);
+  border-radius:var(--rs);padding:10px 14px;margin-bottom:12px}
+
+/* ── Morpheme Builder tiles ── */
+.mb-bank{display:flex;flex-wrap:wrap;gap:6px;padding:10px;
+  background:rgba(26,26,46,.03);border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.07)}
+.mb-tile{padding:8px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);
+  background:var(--white);font-size:.88rem;font-weight:700;cursor:pointer;
+  font-family:'Fira Mono',monospace;transition:all .18s;text-align:center;min-width:52px;
+  user-select:none}
+.mb-tile:hover{border-color:var(--violet);transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(155,93,229,.15)}
+.mb-prefix{border-color:rgba(76,201,240,.3);background:rgba(76,201,240,.05)}
+.mb-root  {border-color:rgba(255,107,107,.3);background:rgba(255,107,107,.05)}
+.mb-suffix{border-color:rgba(6,214,160,.3); background:rgba(6,214,160,.05)}
+.mb-used  {opacity:.3;cursor:default;text-decoration:line-through}
+.mb-placed{padding:6px 12px;border-radius:var(--rs);font-size:.88rem;font-weight:700;
+  font-family:'Fira Mono',monospace}
+
+/* ── Morpheme Builder slot area ── */
+.mb-slots{display:flex;gap:8px;align-items:center;justify-content:center;
+  padding:14px;background:rgba(155,93,229,.03);border-radius:var(--r);
+  border:2px dashed rgba(155,93,229,.2);min-height:64px;margin-bottom:4px}
+.mb-slot{min-width:70px;min-height:48px;border-radius:var(--rs);
+  border:2.5px dashed rgba(26,26,46,.15);background:var(--white);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:border-color .2s;padding:4px}
+.mb-slot:hover{border-color:var(--violet)}
+
+/* ── Morpheme Builder targets ── */
+.mb-target{padding:6px 12px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.1);
+  background:var(--white);font-size:.8rem;color:var(--ink3);font-family:'Fira Mono',monospace}
+.mb-target.mb-solved{border-color:var(--mint);background:rgba(6,214,160,.07);
+  color:var(--mint-d);font-weight:700}
+
+/* ── Frayer card layout (Deep Dive step) ── */
+.frayer-card{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.frayer-cell{padding:12px 14px;border-radius:var(--rs);background:var(--white);
+  border:1.5px solid rgba(26,26,46,.07)}
+.frayer-cell-label{display:block;font-size:.62rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.frayer-word-center{text-align:center;padding:10px;margin:8px 0}
+.frayer-word{font-family:Fraunces,serif;font-size:1.5rem;font-weight:900;color:var(--ink)}
+.frayer-pron{font-size:.75rem;color:var(--ink3);margin-top:2px}
+.frayer-pos{font-size:.7rem;color:var(--ink3);font-style:italic}
+.frayer-tag{display:inline-block;padding:2px 8px;border-radius:99px;
+  background:rgba(155,93,229,.08);border:1px solid rgba(155,93,229,.15);
+  font-size:.72rem;font-weight:600;color:var(--violet);margin:2px}
+
+/* ── Learning delta screen ── */
+.bq-fb.correct{background:rgba(6,214,160,.08);border:1.5px solid rgba(6,214,160,.25);
+  color:var(--mint-d);padding:10px 14px;border-radius:var(--rs);font-size:.82rem;line-height:1.5}
+.bq-fb.wrong{background:rgba(255,107,107,.07);border:1.5px solid rgba(255,107,107,.2);
+  color:var(--coral);padding:10px 14px;border-radius:var(--rs);font-size:.82rem;line-height:1.5}
+
+/* ── Spiral Review trigger card ── */
+.spiral-trigger{background:linear-gradient(135deg,rgba(155,93,229,.1),rgba(76,201,240,.08));
+  border:2px solid rgba(155,93,229,.2);border-radius:var(--r);padding:16px 20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;transition:all .2s}
+.spiral-trigger:hover{border-color:var(--violet);background:rgba(155,93,229,.12);
+  transform:translateY(-1px);box-shadow:0 4px 16px rgba(155,93,229,.15)}
+.spiral-title{font-family:Fraunces,serif;font-size:1.1rem;font-weight:900;color:var(--ink)}
+.spiral-sub{font-size:.78rem;color:var(--ink3);margin-top:3px}
+
+/* ── Pre/Post score delta table in Stats ── */
+.delta-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.delta-table th{text-align:left;padding:6px 10px;background:rgba(26,26,46,.04);
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);
+  border-bottom:1.5px solid rgba(26,26,46,.08)}
+.delta-table td{padding:8px 10px;border-bottom:1px solid rgba(26,26,46,.05)}
+.delta-badge{display:inline-block;padding:2px 8px;border-radius:99px;
+  font-size:.68rem;font-weight:700}
+.delta-badge.up{background:rgba(6,214,160,.12);color:var(--mint-d)}
+.delta-badge.same{background:rgba(26,26,46,.06);color:var(--ink3)}
+.delta-badge.down{background:rgba(255,107,107,.1);color:var(--coral)}
+
 </style>
 </head>
 <body>
@@ -669,11 +883,13 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <button class="ftab" onclick="setFamily('Greek',this)">⚗️ Greek</button>
         <button class="ftab" onclick="setFamily('Anglo-Saxon',this)">⚔️ Anglo-Saxon</button>
       </div>
-      <div class="prog-row">
-        <div class="prog-card active" id="pc1" onclick="goStep(1)"><div class="prog-icon">📖</div><div class="prog-name">Root Learn</div></div>
-        <div class="prog-card" id="pc2" onclick="goStep(2)"><div class="prog-icon">🔗</div><div class="prog-name">Combine</div></div>
-        <div class="prog-card" id="pc3" onclick="goStep(3)"><div class="prog-icon">✍️</div><div class="prog-name">Sentences</div></div>
-        <div class="prog-card" id="pc4" onclick="goStep(4)"><div class="prog-icon">🧪</div><div class="prog-name">Quiz</div></div>
+      <div class="prog-row" style="display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px">
+        <div class="prog-card active" id="pc1" onclick="goStep(1)"><div class="prog-icon">📖</div><div class="prog-name">Explore</div></div>
+        <div class="prog-card" id="pc2" onclick="goStep(2)"><div class="prog-icon">🏷️</div><div class="prog-name">Identify</div></div>
+        <div class="prog-card" id="pc3" onclick="goStep(3)"><div class="prog-icon">🔗</div><div class="prog-name">Build</div></div>
+        <div class="prog-card" id="pc4" onclick="goStep(4)"><div class="prog-icon">✍️</div><div class="prog-name">Context</div></div>
+        <div class="prog-card" id="pc5" onclick="goStep(5)"><div class="prog-icon">🃏</div><div class="prog-name">Deep Dive</div></div>
+        <div class="prog-card" id="pc6" onclick="goStep(6)"><div class="prog-icon">🧪</div><div class="prog-name">Quiz</div></div>
       </div>
       <div class="main-card" id="mainCard">
         <div class="card-top" id="cardTop" data-emoji="📖">
@@ -681,11 +897,17 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <div class="root-title" id="rTitle">—</div>
           <div class="root-meaning">means: <strong id="rMeaning">—</strong></div>
         </div>
-        <div class="step-tabs">
-          <button class="stab s1 on" id="stab1" onclick="goStep(1)"><div class="snum">1</div><br/>Explore</button>
-          <button class="stab s2" id="stab2" onclick="goStep(2)"><div class="snum">2</div><br/>Build</button>
-          <button class="stab s3" id="stab3" onclick="goStep(3)"><div class="snum">3</div><br/>Context</button>
-          <button class="stab s4" id="stab4" onclick="goStep(4)"><div class="snum">4</div><br/>Quiz</button>
+        <!-- 7-step curriculum sequence (Word Roots pedagogy):
+             Pre-test auto-gates entry. Post-test auto-runs after step 7.
+             1 Explore → 2 Identify → 3 Build → 4 Cloze → 5 Context → 6 Deep Dive → 7 Quiz -->
+        <div class="step-tabs" style="display:flex;gap:2px;padding:8px 10px;overflow-x:auto">
+          <button class="stab s1 on" id="stab1" onclick="goStep(1)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">1</div><br/>Explore</button>
+          <button class="stab s2"    id="stab2" onclick="goStep(2)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">2</div><br/>Identify</button>
+          <button class="stab s3"    id="stab3" onclick="goStep(3)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">3</div><br/>Build</button>
+          <button class="stab s4"    id="stab4" onclick="goStep(4)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">4</div><br/>Cloze</button>
+          <button class="stab s5"    id="stab5" onclick="goStep(5)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">5</div><br/>Context</button>
+          <button class="stab s6"    id="stab6" onclick="goStep(6)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">6</div><br/>Deep&nbsp;Dive</button>
+          <button class="stab s7"    id="stab7" onclick="goStep(7)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">7</div><br/>Quiz</button>
         </div>
         <div class="step-content" id="stepContent">
           <div class="loading-state"><div class="spinner"></div><div class="loading-text">Loading your first root...</div></div>
@@ -744,38 +966,119 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       </div>
     </div>
     <div id="panel-stats" style="display:none">
-      <div class="stats-g">
-        <div class="stat-c"><div class="stat-icon">📚</div><div class="stat-val" id="ss-roots">0</div><div class="stat-lab">Roots Done</div></div>
-        <div class="stat-c"><div class="stat-icon">🔤</div><div class="stat-val" id="ss-words">0</div><div class="stat-lab">Words Explored</div></div>
-        <div class="stat-c"><div class="stat-icon">🎯</div><div class="stat-val" id="ss-acc">0%</div><div class="stat-lab">Quiz Accuracy</div></div>
-        <div class="stat-c"><div class="stat-icon">🔥</div><div class="stat-val" id="ss-streak">1</div><div class="stat-lab">Day Streak</div></div>
+      <!-- Spiral Review trigger — shown after 3+ roots completed -->
+      <div id="spiralTriggerCard" style="display:none">
+        <div class="spiral-trigger" onclick="startSpiralReview()">
+          <div>
+            <div class="spiral-title">&#128260; Spiral Review</div>
+            <div class="spiral-sub" id="spiralSubtitle">Review everything you have studied so far</div>
+          </div>
+          <div style="font-size:1.8rem;color:var(--violet)">&#8594;</div>
+        </div>
       </div>
+      <!-- KPI grid -->
+      <div class="stats-g">
+        <div class="stat-c"><div class="stat-icon">&#128218;</div><div class="stat-val" id="ss-roots">0</div><div class="stat-lab">Roots Done</div></div>
+        <div class="stat-c"><div class="stat-icon">&#128288;</div><div class="stat-val" id="ss-words">0</div><div class="stat-lab">Words Found</div></div>
+        <div class="stat-c"><div class="stat-icon">&#127919;</div><div class="stat-val" id="ss-acc">0%</div><div class="stat-lab">Quiz Accuracy</div></div>
+        <div class="stat-c"><div class="stat-icon">&#128293;</div><div class="stat-val" id="ss-streak">1</div><div class="stat-lab">Day Streak</div></div>
+      </div>
+      <!-- Monthly goal bar -->
       <div class="month-bar-wrap">
         <div class="mb-label"><span>Monthly Goal</span><span id="ss-month">0 / 1000 roots</span></div>
         <div class="mb-track"><div class="mb-fill" id="ss-mbar" style="width:0%"></div></div>
       </div>
+      <!-- Pre → Post learning delta table -->
+      <div class="main-card" style="margin-top:12px">
+        <div style="padding:14px 18px">
+          <div style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px">
+            &#128200; Learning Progress
+          </div>
+          <div style="font-size:.72rem;color:var(--ink3);margin-bottom:12px">
+            Before vs after scores for each root you have studied
+          </div>
+          <div id="deltaTableWrap">
+            <div style="text-align:center;color:var(--ink3);font-size:.78rem;padding:20px;font-style:italic">
+              Complete your first root to see your learning progress here.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- ═══════════ PARENT DASHBOARD ═══════════ -->
+    <!-- Search panel -->
+    <div id="panel-search" style="display:none">
+      <div id="rootSuggestion" style="display:none;margin-bottom:12px"></div>
+      <div class="search-bar">
+        <div class="sentence-warning" id="sentenceWarning" style="display:none">
+          &#9888;&#65039; Please enter a single word — Word Search works with one word at a time.
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" class="search-input" id="searchInput"
+            placeholder="Search any English word&#8230;" autocomplete="off"
+            oninput="onSearchInput(this.value)"
+            onkeydown="if(event.key===&#39;Enter&#39;)doSearch()"/>
+          <button class="search-btn" id="searchBtn" onclick="doSearch()">Search &#8594;</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <label style="font-size:.72rem;color:var(--ink3);white-space:nowrap">Accent:</label>
+          <select id="accentSelect" style="flex:1;padding:5px 8px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.12);font-size:.75rem;background:var(--white);color:var(--ink);outline:none">
+            <option value="en-GB">&#127468;&#127463; British</option>
+            <option value="en-US">&#127482;&#127480; American</option>
+            <option value="en-AU">&#127462;&#127482; Australian</option>
+            <option value="en-IN">&#127470;&#127475; Indian</option>
+            <option value="en-ZA">&#127487;&#127462; South African</option>
+          </select>
+        </div>
+      </div>
+      <div id="searchResult" style="margin-top:12px">
+        <div style="text-align:center;padding:40px 20px;color:var(--ink3)">
+          <div style="font-size:2rem;margin-bottom:8px">&#128269;</div>
+          <div style="font-size:.9rem">Type any English word to explore its roots, etymology, and meaning.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History panel -->
+    <div id="panel-history" style="display:none">
+      <div class="main-card">
+        <div style="padding:18px 22px">
+          <div style="font-family:&#39;Fraunces&#39;,serif;font-size:1.2rem;font-weight:700;margin-bottom:4px">&#128218; Recent Activity</div>
+          <div style="font-size:.75rem;color:var(--ink3);margin-bottom:16px">Your last 5 word searches and 5 roots studied</div>
+          <div id="historyList">
+            <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No activity yet &#8212; start searching or learning!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end s-wrap -->
+</div><!-- end studentScreen -->
+
+<!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; PARENT DASHBOARD &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
 <div id="parentScreen" class="screen">
   <div class="pd-wrap">
     <div class="pd-header">
-      <div><div class="pd-title">👁 Parent Dashboard</div><div class="pd-sub" id="pdWelcome">Monitoring your learner's progress</div></div>
+      <div><div class="pd-title">&#128065; Parent Dashboard</div><div class="pd-sub" id="pdWelcome">Monitoring your learner&#39;s progress</div></div>
       <button class="pd-logout" onclick="doLogout()">Sign Out</button>
     </div>
     <div id="pdStudentSelector"></div>
     <div id="pdContent">
-      <div class="pd-no-data"><div>📊</div><p>Select a student above to view their progress.</p></div>
+      <div class="pd-no-data"><div>&#128202;</div><p>Select a student above to view their progress.</p></div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="version-badge" id="versionBadge">v1.0.0</div>
+<div class="version-badge" id="versionBadge">v2.3.0</div>
 
 <script>
+
+
+
+
+
+
 /**
  * =============================================================================
  * WordRoot Academy — Application Script
@@ -1986,213 +2289,35 @@ function clearErr(){document.getElementById('authErr').style.display='none'}
 /**
  * Handle the register form submission. Validates, hashes password, stores user.
  */
-/**
- * Handle the Create Account form submission.
- *
- * Student flow:
- *   - Validates name, email, password, policy
- *   - Optionally links to a parent by email (auto-links bidirectionally)
- *   - Creates account and signs in
- *
- * Parent flow:
- *   - Validates parent details
- *   - Requires Child 1 (name, email, password) — auto-creates child account
- *   - Optionally creates Child 2 account the same way
- *   - Stores child list; enforces max-2-edits rule post-registration
- *   - Signs in as parent
- */
-function doRegister() {
-  const name   = (document.getElementById('regName')?.value   || '').trim();
-  const email  = (document.getElementById('regEmail')?.value  || '').trim().toLowerCase();
-  const pass   = (document.getElementById('regPassword')?.value || '');
-  const plan   = (document.getElementById('regPlan')?.value   || 'free');
-  const role   = A.authRole || 'student';
-
-  // ── Basic validation ──────────────────────────────────────────────────────
-  if (!name || !email || !pass) { showErr('Please fill in your name, email and password.'); return; }
-  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
-  const pwErr = validatePassword(pass);
-  if (pwErr) { showErr(pwErr); return; }
-  if (storeGet('user:' + email)) { showErr('An account with this email already exists.'); return; }
-
-  const children = []; // will hold child email strings
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // PARENT-SPECIFIC VALIDATION AND CHILD ACCOUNT CREATION
-  // ══════════════════════════════════════════════════════════════════════════
-  if (role === 'parent') {
-    // Child 1 is required for parent registration
-    const c1name  = (document.getElementById('child1Name')?.value  || '').trim();
-    const c1email = (document.getElementById('child1Email')?.value || '').trim().toLowerCase();
-    const c1pass  = (document.getElementById('child1Pass')?.value  || '');
-
-    if (!c1name || !c1email || !c1pass) {
-      showErr('Please fill in Child 1 details — name, email and password are required.');
-      return;
-    }
-    if (!/^[^@]+@[^@]+\.[^@]+$/.test(c1email)) {
-      showErr('Child 1 email address is not valid.');
-      return;
-    }
-    if (c1pass.length < 6) {
-      showErr('Child 1 password must be at least 6 characters.');
-      return;
-    }
-    if (c1email === email) {
-      showErr('Child 1 email cannot be the same as the parent email.');
-      return;
-    }
-
-    // Create Child 1 account (or verify it does not already belong to another parent)
-    const existingC1 = storeGet('user:' + c1email);
-    if (existingC1 && existingC1.linkedParent && existingC1.linkedParent !== email) {
-      showErr('Child 1 (' + c1email + ') is already linked to a different parent account.');
-      return;
-    }
-    _createChildAccount(c1email, c1name, c1pass, email);
-    children.push(c1email);
-
-    // Child 2 — optional
-    const c2sec   = document.getElementById('child2Section');
-    const c2shown = c2sec && c2sec.style.display !== 'none';
-    if (c2shown) {
-      const c2name  = (document.getElementById('child2Name')?.value  || '').trim();
-      const c2email = (document.getElementById('child2Email')?.value || '').trim().toLowerCase();
-      const c2pass  = (document.getElementById('child2Pass')?.value  || '');
-
-      if (c2name || c2email || c2pass) {
-        // Only validate if the parent started filling it in
-        if (!c2name || !c2email || !c2pass) {
-          showErr('Please complete all Child 2 details, or remove Child 2 to continue.');
-          return;
-        }
-        if (!/^[^@]+@[^@]+\.[^@]+$/.test(c2email)) {
-          showErr('Child 2 email address is not valid.');
-          return;
-        }
-        if (c2pass.length < 6) {
-          showErr('Child 2 password must be at least 6 characters.');
-          return;
-        }
-        if (c2email === email || c2email === c1email) {
-          showErr('Child 2 email must be different from parent and Child 1 emails.');
-          return;
-        }
-        const existingC2 = storeGet('user:' + c2email);
-        if (existingC2 && existingC2.linkedParent && existingC2.linkedParent !== email) {
-          showErr('Child 2 (' + c2email + ') is already linked to a different parent account.');
-          return;
-        }
-        _createChildAccount(c2email, c2name, c2pass, email);
-        children.push(c2email);
-      }
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // STUDENT: optional parent link
-  // ══════════════════════════════════════════════════════════════════════════
-  let linkedParent = null;
-  if (role === 'student') {
-    const parentEmailInp = document.getElementById('regParentEmail');
-    linkedParent = parentEmailInp ? parentEmailInp.value.trim().toLowerCase() : '';
-    if (linkedParent && !/^[^@]+@[^@]+\.[^@]+$/.test(linkedParent)) {
-      showErr('Parent email address is not valid. Leave it blank if you do not want to link.');
-      return;
-    }
-    if (linkedParent && !storeGet('user:' + linkedParent)) {
-      // Parent not registered yet — store as pending, will auto-link when parent joins
-      linkedParent = linkedParent; // keep for storage
-    }
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // CREATE THE ACCOUNT
-  // ══════════════════════════════════════════════════════════════════════════
-  const user = {
-    name,
-    email,
-    role,
-    roles:           [role],
-    createdAt:       Date.now(),
-    linkedParent:    linkedParent || null,      // student → parent link
-    linkedChildren:  children,                  // parent → child list
-    childEditCount:  0,                         // parent: tracks post-reg changes (max 2)
-    appVersion:      APP_VERSION
-  };
-
-  storeSet('user:' + email, user);
-  storeSet('pass:' + email, hashPassword(pass));
-
-  // Save plan
-  if (plan && plan !== 'free') setUserPlan(email, plan, false);
-
-  // For parent: persist child list in the children store
-  if (children.length) {
-    setParentChildren(email, children);
-    // Auto-link each child back to this parent
-    children.forEach(function(cEmail) {
-      const cu = storeGet('user:' + cEmail);
-      if (cu) { cu.linkedParent = email; storeSet('user:' + cEmail, cu); }
-    });
-  }
-
-  // If student provided a parent email, try to auto-link to existing parent
-  if (role === 'student' && linkedParent) {
-    const parentUser = storeGet('user:' + linkedParent);
-    if (parentUser && parentUser.role === 'parent') {
-      const existingChildren = getParentChildren(linkedParent);
-      if (!existingChildren.includes(email) && existingChildren.length < 3) {
-        existingChildren.push(email);
-        setParentChildren(linkedParent, existingChildren);
-        parentUser.linkedChildren = existingChildren;
-        storeSet('user:' + linkedParent, parentUser);
-      }
-    }
-  }
-
-  addAuditLog('USER_REGISTERED', 'New ' + role + ' account registered', maskEmail(email), 'system');
+function doRegister(){
+    // ── Update XP display ──
+    // ── Read form inputs ──
+  const name=document.getElementById('regName').value.trim();
+    // ── Update XP display ──
+    // ── Read and normalise form inputs ──
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
+    // ── Update XP display ──
+  const pass=document.getElementById('regPassword').value;
+    // ── Update XP display ──
+  const linked=document.getElementById('regLinkedStudent').value.trim().toLowerCase();
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(!name||!email||!pass){showErr('Please fill all required fields.');return}
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return}
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(storeGet('user:'+email)){showErr('An account with this email already exists.');return}
+    // ── Build user record ──
+  const user={name,email,role:A.authRole,createdAt:Date.now(),linkedStudent:linked||null,appVersion:APP_VERSION};
+    // ── Persist credentials and user record ──
+  storeSet('user:'+email,user);
+    // ── Persist credentials and user record ──
+  storeSet('pass:'+email,btoa(pass));
   showToast('Account created! Signing you in...');
   clearErr();
-  setTimeout(function() { signIn(user); }, 600);
+    // Student: sign in directly without OTP
+    // ── Sign in immediately after registration ──
+  setTimeout(()=>signIn(user),600);
 }
-
-/**
- * Create a child account on behalf of a parent.
- * The child signs in with these credentials independently.
- * Their account is linked back to the parent email.
- *
- * @param {string} childEmail
- * @param {string} childName
- * @param {string} childPass  - Plaintext password set by parent
- * @param {string} parentEmail
- */
-function _createChildAccount(childEmail, childName, childPass, parentEmail) {
-  const existing = storeGet('user:' + childEmail);
-  if (!existing) {
-    // New account
-    const childUser = {
-      name:         childName,
-      email:        childEmail,
-      role:         'student',
-      roles:        ['student'],
-      createdAt:    Date.now(),
-      linkedParent: parentEmail,
-      createdByParent: true,
-      appVersion:   APP_VERSION
-    };
-    storeSet('user:' + childEmail, childUser);
-    storeSet('pass:' + childEmail, hashPassword(childPass));
-    addAuditLog('CHILD_ACCOUNT_CREATED', 'Child account created by parent ' + maskEmail(parentEmail), maskEmail(childEmail), 'system');
-  } else {
-    // Account exists — update the password and link
-    storeSet('pass:' + childEmail, hashPassword(childPass));
-    existing.linkedParent = parentEmail;
-    storeSet('user:' + childEmail, existing);
-    addAuditLog('CHILD_ACCOUNT_LINKED', 'Existing account linked to parent', maskEmail(childEmail), 'system');
-  }
-}
-
 
 /**
  * Handle the login form submission. Checks credentials, rate limits, OTP for admin/parent.
@@ -2387,7 +2512,6 @@ function signIn(user){
  * Clear auth state and return to login screen.
  */
 function doLogout(){
-  hideFABs(); // Remove floating buttons on logout
   A.currentUser=null;A.currentRole=null;
   clearInterval(A.timerInt);A.timerOn=false;
     // ── Update nav tab active state ──
@@ -2648,8 +2772,6 @@ function renderAdminPage(page){
     notifications:renderAdminNotifications,audit:renderAdminAudit
   };
   (renderers[page]||renderAdminDashboard)(main);
-  if(page==='feedback') renderAdminFeedback();
-  if(page==='settings') renderAdminSettings();
 }
 
 /**
@@ -3134,28 +3256,35 @@ function setFamily(f,el){
  * @param {number} n
  */
 // MISSING: function goStep — implement here
-function goStep(){}
+// goStep implemented below in REBUILT IMPLEMENTATIONS
+/**
+ * Advance to next step; post-test gates completion after step 7.
+ */
+function nextStep(){
+  if(A.step < 7){ goStep(A.step+1); return; }
+  _runPosttest(A.currentRoot); // post-test before mastery banner
+}
 
-// MISSING: function nextStep — implement here
-function nextStep(){}
-
-// MISSING: function prevStep — implement here
-function prevStep(){}
+/**
+ * Go back one step.
+ */
+function prevStep(){ if(A.step>1) goStep(A.step-1); }
 
 /**
  * Update step tab and progress card visual states to match A.step.
  */
 function updateStepUI(){
-  for(let i=1;i<=4;i++){
-      // ── Update XP display ──
-    document.getElementById('stab'+i).className=`stab s${i}`+(i===A.step?' on':'');
-      // ── Update XP display ──
-    const pc=document.getElementById('pc'+i);if(pc)pc.className='prog-card'+(i===A.step?' active':'');
+  const TOTAL=7; // 7-step curriculum sequence
+  for(let i=1;i<=TOTAL;i++){
+    const stab=document.getElementById('stab'+i);
+    if(stab) stab.className='stab s'+i+(i===A.step?' on':'')+(i<A.step?' done':'');
+    const pc=document.getElementById('pc'+i);
+    if(pc) pc.className='prog-card'+(i===A.step?' active':i<A.step?' done':'');
   }
-    // ── Update XP display ──
-  document.getElementById('prevBtn').disabled=A.step===1;
-    // ── Update XP display ──
-  document.getElementById('nextBtn').textContent=A.step===4?'✅ Complete':'Next →';
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
+  if(prevBtn) prevBtn.disabled=(A.step===1);
+  if(nextBtn) nextBtn.textContent=A.step===TOTAL?'Finish →':'Next →';
 }
 
 /**
@@ -3262,14 +3391,15 @@ function updateTimerUI(){
  * Called by goStep(), nextStep(), setCardHeader().
  */
 function renderStep(){
-    // ── Update XP display ──
-  const r=A.currentRoot,c=document.getElementById('stepContent');
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!r)return;
-  if(A.step===1)renderStep1(r,c);
-  else if(A.step===2)renderStep2(r,c);
-  else if(A.step===3)renderStep3(r,c);
-  else renderStep4(r,c);
+  const r=A.currentRoot, c=document.getElementById('stepContent');
+  if(!r||!c) return;
+  if     (A.step===1) renderStep1(r,c);           // Explore
+  else if(A.step===2) renderStepIdentify(r,c);    // Identify morphemes
+  else if(A.step===3) renderStep2(r,c);           // Build combinations
+  else if(A.step===4) renderStepCloze(r,c);       // Cloze sentence
+  else if(A.step===5) renderStep3(r,c);           // Context sentences
+  else if(A.step===6) renderStepDeepDive(r,c);    // Frayer deep dive
+  else                renderStep4(r,c);           // Quiz (step 7)
 }
 
 /**
@@ -3360,11 +3490,12 @@ function renderStep4(r,c){
   // Randomly pick mode on first visit: 50% word finder, 25% sudoku, 25% quiz
   if(!BQ.mode){
     var rnd=Math.random();
-    BQ.mode=rnd<0.5?'finder':rnd<0.75?'sudoku':'quiz';
+    BQ.mode=rnd<0.4?'finder':rnd<0.6?'sudoku':rnd<0.8?'morpheme':'quiz';
   }
-  if(BQ.mode==='finder')  buildWordFinder(r,c);
-  else if(BQ.mode==='sudoku') buildSudoku(r,c);
-  else                    startBigQuiz(r,c);
+  if(BQ.mode==='finder')        buildWordFinder(r,c);
+  else if(BQ.mode==='sudoku')    buildSudoku(r,c);
+  else if(BQ.mode==='morpheme')  buildMorphemeBuilder(r,c);
+  else                           startBigQuiz(r,c);
 }
 
 /**
@@ -4905,17 +5036,11 @@ function initParentDashboardMulti(){
       : '';
       // ── Render table with search input ──
       // ── Render child selector with names and pricing ──
-    var maxEdits = _getAdminSetting('parentMaxChildEdits', 2);
-    var editsLeft = Math.max(0, maxEdits - (u.childEditCount || 0));
-    var editNote = '<span style="margin-left:8px;font-size:.68rem;color:'+(editsLeft>0?'var(--ink3)':'var(--coral)')+'">('+(editsLeft>0?editsLeft+' child change'+(editsLeft===1?'':'s')+' remaining':'no changes left')+')</span>';
-    sel.innerHTML='<div class="pd-section-title">Your Children ('+students.length+')'+priceLine+editNote+'</div>'
+    sel.innerHTML='<div class="pd-section-title">Your Children ('+students.length+')'+priceLine+'</div>'
       +'<div class="student-select">'
       +students.map(function(s,i){
           // Row: status badge, masked email, role, plan, date, action buttons
-        const removeBtn = u.childEditCount < _getAdminSetting('parentMaxChildEdits', 2)
-          ? ' <button onclick="parentRemoveChild(\''+s.email+'\')" title="Remove child" style="background:none;border:none;cursor:pointer;color:rgba(255,107,107,.7);font-size:.8rem;margin-left:4px;padding:0">✕</button>'
-          : '';
-        return '<span style="display:inline-flex;align-items:center"><button class="stu-btn'+(i===0?' active':'')+'" data-email="'+s.email+'" onclick="selectStudentBtn(this)">'+s.name+'</button>'+removeBtn+'</span>';
+        return '<button class="stu-btn'+(i===0?' active':'')+'" data-email="'+s.email+'" onclick="selectStudentBtn(this)">'+s.name+'</button>';
       }).join('')
       +'</div>';
   }
@@ -4961,125 +5086,30 @@ function selectStudentBtn(btn){
   loadStudentDashboard(btn.dataset.email);
 }
 
-/**
- * Add a child to the parent's account from the dashboard.
- * Enforces: max 3 children, max 2 post-registration edits.
- * Admin can override both limits from the admin portal.
- */
-function parentAddChild() {
-  const u = A.currentUser;
-  if (!u) return;
-
-  // ── Check edit limit (admin-configurable, default 2) ──────────────────────
-  const maxEdits  = _getAdminSetting('parentMaxChildEdits', 2);
-  const editCount = u.childEditCount || 0;
-  if (editCount >= maxEdits) {
-    showToast('You have used all ' + maxEdits + ' allowed child changes. Contact support for help.');
-    return;
-  }
-
-  // ── Check child count limit (admin-configurable, default 3) ──────────────
-  const maxChildren = _getAdminSetting('parentMaxChildren', 3);
-  const inp   = document.getElementById('addChildInput');
-  const email = inp ? inp.value.trim().toLowerCase() : '';
-  if (!email) { showToast('Enter a child email address'); return; }
-  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showToast('Invalid email address'); return; }
-
-  const existing = getParentChildren(u.email || '');
-  if (existing.length >= maxChildren) {
-    showToast('Maximum ' + maxChildren + ' children per account'); return;
-  }
-  if (existing.includes(email)) { showToast('This child is already linked'); return; }
-
-  // ── Require child to already have an account ───────────────────────────────
-  const childUser = storeGet('user:' + email);
-  if (!childUser) {
-    showToast('No account found for ' + email + '. Ask the student to register first, or create their account below.');
-    return;
-  }
-  if (childUser.linkedParent && childUser.linkedParent !== u.email) {
-    showToast('This student is already linked to a different parent account.');
-    return;
-  }
-
-  // ── Link the child ────────────────────────────────────────────────────────
+function parentAddChild(){
+    // ── Update XP display ──
+  var inp=document.getElementById('addChildInput');
+  var email=inp&&inp.value.trim().toLowerCase();
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(!email){showToast('Enter an email address');return;}
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)){showToast('Invalid email address');return;}
+    // Current parent user object
+  var u=A.currentUser;
+  var existing=getParentChildren(u.email||'');
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(existing.length>=3){showToast('Maximum 3 children per account');return;}
+    // Row: status badge, masked email, role, plan, date, action buttons
+  if(existing.includes(email)){showToast('Already added');return;}
   existing.push(email);
-  setParentChildren(u.email || '', existing);
-
-  // Update parent user record and increment edit counter
-  u.linkedChildren = existing;
-  u.childEditCount = editCount + 1;
-  storeSet('user:' + (u.email || ''), u);
-
-  // Update child to link back to this parent
-  childUser.linkedParent = u.email;
-  storeSet('user:' + email, childUser);
-
-  if (inp) inp.value = '';
-  const editsLeft = maxEdits - (editCount + 1);
-  showToast('Child linked! ' + (editsLeft > 0 ? editsLeft + ' change' + (editsLeft === 1 ? '' : 's') + ' remaining.' : 'No more changes allowed.'));
-  addAuditLog('CHILD_LINKED', 'Child ' + maskEmail(email) + ' linked to parent', maskEmail(u.email || ''), 'system');
+  setParentChildren(u.email||'', existing);
+  // Update user object
+  u.linkedChildren=existing;
+    // ── Persist credentials and user record ──
+  storeSet('user:'+(u.email||''), u);
+  if(inp)inp.value='';
+  showToast('Child added! They need to register as a Student.');
   initParentDashboardMulti();
-}
-
-/**
- * Remove a child from the parent's account.
- * Also counts as one edit. Admin can allow unlimited removals via setting.
- * @param {string} childEmail
- */
-function parentRemoveChild(childEmail) {
-  const u = A.currentUser;
-  if (!u) return;
-
-  const maxEdits  = _getAdminSetting('parentMaxChildEdits', 2);
-  const editCount = u.childEditCount || 0;
-  if (editCount >= maxEdits) {
-    showToast('No more child changes allowed. Contact support.');
-    return;
-  }
-
-  if (!confirm('Remove ' + childEmail + ' from your account? This uses one of your remaining changes.')) return;
-
-  const existing = getParentChildren(u.email || '').filter(e => e !== childEmail);
-  setParentChildren(u.email || '', existing);
-  u.linkedChildren = existing;
-  u.childEditCount = editCount + 1;
-  storeSet('user:' + (u.email || ''), u);
-
-  // Unlink child
-  const childUser = storeGet('user:' + childEmail);
-  if (childUser && childUser.linkedParent === u.email) {
-    delete childUser.linkedParent;
-    storeSet('user:' + childEmail, childUser);
-  }
-
-  showToast('Child removed. ' + (maxEdits - (editCount + 1)) + ' change(s) remaining.');
-  addAuditLog('CHILD_UNLINKED', 'Child ' + maskEmail(childEmail) + ' removed', maskEmail(u.email || ''), 'system');
-  initParentDashboardMulti();
-}
-
-/**
- * Read an admin-configurable setting, with a fallback default.
- * Admin sets these via the admin portal (stored as global flags / overrides).
- * @param {string} key     - Setting key
- * @param {*}      defVal  - Default value if not set
- * @returns {*}
- */
-function _getAdminSetting(key, defVal) {
-  try {
-    const v = localStorage.getItem('wra:adminsetting:' + key);
-    return v !== null ? JSON.parse(v) : defVal;
-  } catch { return defVal; }
-}
-
-/**
- * Set an admin-configurable setting (admin portal only).
- * @param {string} key
- * @param {*} value
- */
-function _setAdminSetting(key, value) {
-  localStorage.setItem('wra:adminsetting:' + key, JSON.stringify(value));
-  addAuditLog('ADMIN_SETTING_CHANGED', key + ' set to ' + value, maskEmail(A.currentUser?.email || 'admin'), 'admin');
 }
 
 function selectStudent(email,btn){
@@ -5253,19 +5283,83 @@ function restartSession(){
 /**
  * Update the stats tab with cumulative totals across all sessions.
  */
+/**
+ * Update the Stats tab with cumulative session totals and pre/post delta table.
+ * Called by showPanel("stats").
+ */
 function updateStudentStats(){
-  const r=A.sessionData;
-    // ── Update XP display ──
-  document.getElementById('ss-roots').textContent=r.roots.filter(x=>!x.skipped).length;
-    // ── Update XP display ──
-  document.getElementById('ss-words').textContent=r.words.length;
-  const acc=r.quizT>0?Math.round((r.quizC/r.quizT)*100):0;
-    // ── Update XP display ──
-  document.getElementById('ss-acc').textContent=acc+'%';
-    // ── Update XP display ──
-  document.getElementById('ss-month').textContent=r.roots.filter(x=>!x.skipped).length+' / 1000 roots';
-    // ── Update XP display ──
-  document.getElementById('ss-mbar').style.width=Math.min((r.roots.filter(x=>!x.skipped).length/1000)*100,100)+'%';
+  const r = A.sessionData;
+
+  // KPI cells
+  document.getElementById('ss-roots').textContent  = r.roots.filter(x=>!x.skipped).length;
+  document.getElementById('ss-words').textContent  = r.words.length;
+  const acc = r.quizT>0 ? Math.round((r.quizC/r.quizT)*100) : 0;
+  document.getElementById('ss-acc').textContent    = acc+'%';
+  document.getElementById('ss-month').textContent  = r.roots.filter(x=>!x.skipped).length+' / 1000 roots';
+  const mPct = Math.min((r.roots.filter(x=>!x.skipped).length/1000)*100, 100);
+  document.getElementById('ss-mbar').style.width   = mPct+'%';
+
+  // Spiral Review card — show after 3+ roots
+  const spiral = document.getElementById('spiralTriggerCard');
+  const studied = r.roots.filter(x=>!x.skipped);
+  if (spiral) {
+    spiral.style.display = studied.length >= 3 ? 'block' : 'none';
+    const sub = document.getElementById('spiralSubtitle');
+    if (sub) sub.textContent = studied.length
+      + ' root' + (studied.length!==1?'s':'') + ' to review — '
+      + Math.round(acc) + '% quiz accuracy';
+  }
+
+  // Pre → Post learning delta table
+  const wrap = document.getElementById('deltaTableWrap');
+  if (!wrap || !A.currentUser) return;
+  const uid = anonId(A.currentUser.email||'');
+
+  // Gather all roots that have at least a pre-test score
+  const deltaRows = studied.map(function(rootRec){
+    let pre=0, post=null;
+    try {
+      const ps = storeGet('pretest:'  + uid + ':' + rootRec.root);
+      const pt = storeGet('posttest:' + uid + ':' + rootRec.root);
+      pre  = ps ? (ps.score||0) : 0;
+      post = pt ? (pt.score||0) : null;
+    } catch(e){}
+    return { root:rootRec.root, meaning:rootRec.meaning, pre, post };
+  }).filter(function(d){ return d.pre > 0 || d.post !== null; });
+
+  if (!deltaRows.length) {
+    wrap.innerHTML = '<div style="text-align:center;color:var(--ink3);font-size:.78rem;'
+      + 'padding:20px;font-style:italic">Complete your first root to see progress here.</div>';
+    return;
+  }
+
+  // Render delta table
+  const rows = deltaRows.map(function(d){
+    const delta   = d.post !== null ? d.post - d.pre : null;
+    const badgeCls= delta === null ? 'same' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'same';
+    const badgeTxt= delta === null ? 'In progress'
+                  : delta > 0 ? '+' + delta + ' learned'
+                  : delta < 0 ? delta + ' dropped'
+                  : 'No change';
+    const postDisp= d.post !== null ? d.post + '/3' : '—';
+    return '<tr>'
+      + '<td><strong>' + d.root + '</strong>'
+        + '<div style="font-size:.68rem;color:var(--ink3)">' + (d.meaning||'') + '</div></td>'
+      + '<td style="text-align:center">' + d.pre + '/3</td>'
+      + '<td style="text-align:center">' + postDisp + '</td>'
+      + '<td><span class="delta-badge ' + badgeCls + '">' + badgeTxt + '</span></td>'
+      + '</tr>';
+  }).join('');
+
+  wrap.innerHTML = '<table class="delta-table">'
+    + '<thead><tr>'
+      + '<th>Root</th>'
+      + '<th style="text-align:center">Before</th>'
+      + '<th style="text-align:center">After</th>'
+      + '<th>Progress</th>'
+    + '</tr></thead>'
+    + '<tbody>' + rows + '</tbody>'
+    + '</table>';
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -5308,55 +5402,17 @@ function showToast(msg){
 
 /**
  * Set the registration role (student or parent).
- * Shows/hides the relevant registration section for each role.
+ * Called by the role toggle buttons on the register form.
  * @param {"student"|"parent"} role
- * @param {HTMLElement} btn - The clicked button
+ * @param {HTMLElement} btn - The clicked button element
  */
 function setRegRole(role, btn) {
   A.authRole = role;
   document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-
-  // Show the right section and hide the other
-  const studentSec = document.getElementById('studentRegSection');
-  const parentSec  = document.getElementById('parentRegSection');
-  if (studentSec) studentSec.style.display = role === 'student' ? 'block' : 'none';
-  if (parentSec)  parentSec.style.display  = role === 'parent'  ? 'block' : 'none';
-
-  // Parent plan must be at least standard (they need dashboard access)
-  if (role === 'parent') {
-    const paidCard = document.getElementById('planPaid');
-    const freeCard = document.getElementById('planFree');
-    const planInp  = document.getElementById('regPlan');
-    if (paidCard && freeCard && planInp) {
-      selectPlan('standard', paidCard);
-      freeCard.style.opacity = '0.4';
-      freeCard.style.pointerEvents = 'none';
-      freeCard.title = 'Parents require a paid plan to access the dashboard';
-    }
-  } else {
-    const freeCard = document.getElementById('planFree');
-    if (freeCard) { freeCard.style.opacity = ''; freeCard.style.pointerEvents = ''; freeCard.title = ''; }
-  }
-}
-
-/**
- * Toggle the optional Child 2 section on the parent registration form.
- */
-function toggleChild2() {
-  const sec = document.getElementById('child2Section');
-  const btn = document.getElementById('child2Toggle')?.querySelector('button');
-  if (!sec) return;
-  const showing = sec.style.display !== 'none';
-  sec.style.display = showing ? 'none' : 'block';
-  if (btn) btn.textContent = showing ? '+ Add Child 2 now (optional — can do later)' : '− Remove Child 2';
-  // Clear fields when hiding
-  if (showing) {
-    ['child2Name','child2Email','child2Pass'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-  }
+  // Show parent link field only for parent registrations
+  const parentField = document.getElementById('parentLinkField');
+  if (parentField) parentField.style.display = role === 'parent' ? 'block' : 'none';
 }
 
 /**
@@ -5900,7 +5956,7 @@ function adminReplyToFeedback(idx) {
   const item = all[idx];
   if (!item) return;
 
-  const reply = window.prompt('Reply to this feedback:\n' + item.message.substring(0, 80) + '\n\nEnter your reply:');
+  const reply = window.prompt('Your reply to this feedback:\n' + item.message.substring(0, 80) + '\n\nEnter reply:');
   if (!reply?.trim()) return;
 
   item.replies = item.replies || [];
@@ -5915,157 +5971,1082 @@ function adminReplyToFeedback(idx) {
 
 
 // ═════════════════════════════════════════════════════════════════════════════
-// MODULE 12c · ADMIN SETTINGS (v2.2.0)
-// Admin-configurable app behaviour. All settings are stored in localStorage
-// under wra:adminsetting:* and read by _getAdminSetting() throughout the app.
+// MODULE 14b · STEP 4 — CLOZE SENTENCE (v2.3.0)
+// Dedicated step 4: student completes a literary sentence by choosing the
+// correct word from four options. Mirrors the Word Roots curriculum exactly.
+// Previously this was a fallback inside Step 2 — now it is a first-class step.
 // ═════════════════════════════════════════════════════════════════════════════
 
 /**
- * All configurable admin settings with labels, descriptions, types and defaults.
- * Add new settings here — they appear automatically in the admin portal.
+ * Render Step 4: Complete the Sentence (Cloze).
+ * Shows a literary sentence with the target word blanked out.
+ * Student picks from 4 options — the correct word, and 3 distractors
+ * from the same root family.
+ * @param {object} r - ROOT_DATABASE entry
+ * @param {Element} c - stepContent container
  */
-const ADMIN_SETTINGS_SCHEMA = [
-  {
-    group: 'Parent & Children',
-    settings: [
-      { key:'parentMaxChildren',    label:'Max children per parent',         type:'number', min:1, max:10, default:3,
-        desc:'Maximum number of children a parent can link to their account.' },
-      { key:'parentMaxChildEdits',  label:'Max child changes post-registration', type:'number', min:0, max:10, default:2,
-        desc:'How many times a parent can add or remove children after registering. 0 = no changes allowed after signup.' },
-      { key:'requireChildPassword', label:'Require password when adding child', type:'toggle', default:true,
-        desc:'When a parent adds a child from the dashboard, must they set a password? (always required at registration).' },
-    ]
-  },
-  {
-    group: 'Student Registration',
-    settings: [
-      { key:'allowStudentSelfReg',  label:'Allow student self-registration', type:'toggle', default:true,
-        desc:'Students can create their own accounts. If disabled, only admins/parents can create student accounts.' },
-      { key:'requireParentOnReg',   label:'Require parent email at student registration', type:'toggle', default:false,
-        desc:'Force students to provide a parent email when registering.' },
-    ]
-  },
-  {
-    group: 'Daily Usage Limits (Free Plan)',
-    settings: [
-      { key:'freeSearchLimit',  label:'Word searches per day (free)',   type:'number', min:1, max:100, default:5,
-        desc:'How many word searches a free-plan user can do per day.' },
-      { key:'freeRootLimit',    label:'Root lessons per day (free)',    type:'number', min:1, max:100, default:5,
-        desc:'How many new roots a free-plan user can study per day.' },
-    ]
-  },
-  {
-    group: 'Features',
-    settings: [
-      { key:'claudeEnabled',   label:'Claude AI word analysis',        type:'toggle', default:true,
-        desc:'Enable Claude AI-powered word analysis for paid users. Requires ANTHROPIC_API_KEY to be set.' },
-      { key:'feedbackEnabled', label:'User feedback form',             type:'toggle', default:true,
-        desc:'Show the feedback floating button to all logged-in users.' },
-      { key:'idiomsEnabled',   label:'Idioms explorer (paid only)',    type:'toggle', default:true,
-        desc:'Show the idioms floating button to paid users.' },
-    ]
-  },
-];
+function renderStepCloze(r, c) {
+  // Build a question pool from all sentences in this root
+  const sentences = (r.sentences || []);
+  if (!sentences.length) {
+    // No sentences available — skip to next step automatically
+    c.innerHTML = '<div style="text-align:center;padding:30px;color:var(--ink3)">'
+      + '<div style="font-size:1.5rem;margin-bottom:8px">📝</div>'
+      + 'No sentences available for this root yet.<br/>'
+      + '<button class="bq-submit" style="margin-top:12px" onclick="goStep(5)">Continue →</button>'
+      + '</div>';
+    return;
+  }
+
+  // Pick a random sentence each time (seeded so it changes on retry)
+  const seed = (A._clozeIdx || 0);
+  const sentence = sentences[seed % sentences.length];
+  const targetWord = sentence.word;
+
+  // Blank the target word (case-insensitive, whole-word match)
+  const blanked = sentence.sentence.replace(
+    new RegExp('\\b' + targetWord + '\\b', 'i'),
+    '<span class="cloze-blank">__________</span>'
+  );
+
+  // Build 3 wrong options from other branch words
+  const wrongs = (r.branches || [])
+    .filter(function(b){ return b.word !== targetWord; })
+    .sort(function(){ return Math.random() - 0.5; })
+    .slice(0, 3)
+    .map(function(b){ return b.word; });
+
+  // If fewer than 3 wrong options, add from related roots in DB
+  if (wrongs.length < 3 && typeof ROOT_DATABASE !== 'undefined') {
+    const extra = ROOT_DATABASE
+      .filter(function(root){ return root.origin === r.origin && root.root !== r.root; })
+      .flatMap(function(root){ return (root.branches||[]).map(function(b){return b.word;}); })
+      .sort(function(){ return Math.random() - 0.5; })
+      .slice(0, 3 - wrongs.length);
+    wrongs.push.apply(wrongs, extra);
+  }
+
+  if (wrongs.length < 3) {
+    // Still not enough — skip step
+    goStep(5); return;
+  }
+
+  const opts = [targetWord].concat(wrongs).sort(function(){ return Math.random() - 0.5; });
+
+  // Track attempts on this step
+  A._clozeAnswered = false;
+
+  c.innerHTML = '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.8px;color:var(--sun-d);margin-bottom:10px">'
+    + '📝 Step 4: Complete the Sentence</div>'
+    + '<div style="font-size:.78rem;color:var(--ink3);margin-bottom:14px;line-height:1.5">'
+    + 'Choose the word from root <strong style="color:var(--coral)">'
+    + r.root + '</strong> (' + r.meaning + ') that best completes the sentence.</div>'
+    + '<div class="cloze-sentence">' + blanked + '</div>'
+    + '<div style="font-size:.7rem;color:var(--ink3);margin-bottom:14px;font-style:italic">'
+    + '— ' + (sentence.author || 'Literary source') + '</div>'
+    + '<div class="cloze-opts">'
+    + opts.map(function(o){
+        return '<button class="cloze-opt" data-ans="' + encodeURIComponent(o) + '"'
+          + ' data-correct="' + encodeURIComponent(targetWord) + '"'
+          + ' onclick="clozeStepAnswer(this)">' + o + '</button>';
+      }).join('')
+    + '</div>'
+    + '<div id="clozeFb" style="min-height:40px;margin-top:10px"></div>';
+}
 
 /**
- * Render the admin settings panel.
- * Settings are grouped by category and rendered as number inputs or toggles.
- * Changes save immediately to localStorage.
+ * Handle a Cloze step answer.
+ * Awards XP, shows feedback, enables Next → after a short delay.
+ * @param {HTMLButtonElement} btn
  */
-function renderAdminSettings() {
-  const el = document.getElementById('adminMainContent');
-  if (!el) return;
+function clozeStepAnswer(btn) {
+  if (A._clozeAnswered) return;
+  A._clozeAnswered = true;
 
-  let html = '<div style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:900;'
-    + 'color:var(--sun);margin-bottom:4px">App Settings</div>'
-    + '<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:24px">'
-    + 'These settings take effect immediately. Changes are logged to the audit log.</div>';
+  const chosen  = decodeURIComponent(btn.dataset.ans || '');
+  const correct = decodeURIComponent(btn.dataset.correct || '');
+  const ok = chosen === correct;
 
-  ADMIN_SETTINGS_SCHEMA.forEach(function(group) {
-    html += '<div style="margin-bottom:24px">'
-      + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;'
-        + 'letter-spacing:1.2px;color:rgba(255,255,255,.3);margin-bottom:10px;'
-        + 'padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)">'
-        + group.group + '</div>';
+  // Award XP
+  A.sessionData.quizT++;
+  if (ok) { A.sessionData.quizC++; A.sessionData.xp += 15; showToast('Correct! +15 XP'); }
+  else    { A.sessionData.xp += 5; showToast('Not quite. +5 XP'); }
+  document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+  saveSession();
 
-    group.settings.forEach(function(s) {
-      const current = _getAdminSetting(s.key, s.default);
-
-      if (s.type === 'toggle') {
-        html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;'
-          + 'padding:12px 14px;background:rgba(255,255,255,.03);border-radius:var(--rs);'
-          + 'margin-bottom:6px;border:1px solid rgba(255,255,255,.05);gap:12px">'
-          + '<div style="flex:1">'
-            + '<div style="font-size:.85rem;font-weight:600;color:rgba(255,255,255,.85)">' + s.label + '</div>'
-            + '<div style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:3px;line-height:1.4">' + s.desc + '</div>'
-          + '</div>'
-          + '<div style="flex-shrink:0">'
-            + '<label style="display:flex;align-items:center;cursor:pointer;gap:6px">'
-              + '<input type="checkbox" ' + (current ? 'checked' : '') + ' '
-                + 'data-key="' + s.key + '" onchange="_saveAdminSetting(this.dataset.key,this.checked)" '
-                + 'style="width:16px;height:16px;cursor:pointer"/>'
-              + '<span style="font-size:.75rem;color:' + (current ? 'var(--mint-d)' : 'rgba(255,255,255,.3)') + '">'
-                + (current ? 'On' : 'Off') + '</span>'
-            + '</label>'
-          + '</div>'
-          + '</div>';
-      } else if (s.type === 'number') {
-        html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;'
-          + 'padding:12px 14px;background:rgba(255,255,255,.03);border-radius:var(--rs);'
-          + 'margin-bottom:6px;border:1px solid rgba(255,255,255,.05);gap:12px">'
-          + '<div style="flex:1">'
-            + '<div style="font-size:.85rem;font-weight:600;color:rgba(255,255,255,.85)">' + s.label + '</div>'
-            + '<div style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:3px;line-height:1.4">' + s.desc + '</div>'
-          + '</div>'
-          + '<div style="flex-shrink:0">'
-            + '<input type="number" value="' + current + '" '
-              + 'min="' + (s.min||0) + '" max="' + (s.max||999) + '" '
-              + 'data-key="' + s.key + '" data-def="' + s.default + '" onchange="_saveAdminSetting(this.dataset.key,parseInt(this.value)||parseInt(this.dataset.def))" '
-              + 'style="width:64px;padding:6px 8px;border-radius:var(--rs);'
-                + 'border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);'
-                + 'color:white;font-size:.85rem;text-align:center;outline:none"/>'
-          + '</div>'
-          + '</div>';
-      }
-    });
-
-    html += '</div>';
+  // Visual feedback on buttons
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  document.querySelectorAll('.cloze-opt').forEach(function(b){
+    b.setAttribute('disabled', 'true');
+    if (decodeURIComponent(b.dataset.ans||'') === correct) b.classList.add('correct');
   });
 
-  // Reset all to defaults button
-  html += '<div style="margin-top:8px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">'
-    + '<button onclick="resetAdminSettings()" '
-      + 'style="padding:8px 16px;background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);'
-        + 'color:var(--coral);border-radius:var(--rs);cursor:pointer;font-size:.78rem;'
-        + 'font-weight:700;font-family:sans-serif">'
-      + 'Reset all settings to defaults</button>'
+  // Feedback message + auto-advance
+  const fb = document.getElementById('clozeFb');
+  if (fb) {
+    fb.innerHTML = '<div class="quiz-fb ' + (ok ? 'correct' : 'wrong') + '">'
+      + (ok
+        ? '&#127881; Correct! <strong>' + correct + '</strong> fits perfectly here.'
+        : 'The answer is <strong>' + correct + '</strong>. '
+          + 'Root <strong style="color:var(--coral)">' + (A.currentRoot?.root||'') + '</strong>'
+          + ' = "' + (A.currentRoot?.meaning||'') + '"')
+      + '</div>'
+      + '<button class="bq-submit" style="margin-top:10px" onclick="goStep(5)">Next →</button>';
+  }
+
+  // Cycle to next sentence for if student replays this step
+  A._clozeIdx = ((A._clozeIdx || 0) + 1) % Math.max(1, (A.currentRoot?.sentences?.length||1));
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MODULE 15c · POST-TEST (v2.3.0)
+// 3-question test shown after Step 7 (Quiz) completes.
+// Same format as pre-test — MCQ on branch word meanings.
+// Score stored and delta (post minus pre) recorded for parent dashboard.
+// ═════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Run the post-test after completing all 7 steps.
+ * Tests the same 3 words as the pre-test to give a clean before/after delta.
+ * @param {object} root - ROOT_DATABASE entry
+ */
+function _runPosttest(root) {
+  const c = document.getElementById('stepContent');
+  if (!c) return;
+
+  const branches = (root.branches || []).slice(0, 3);
+  if (!branches.length) { completeRoot(); return; }
+
+  const allBranches = root.branches || [];
+  let qIdx = 0, correct = 0;
+
+  function showQ() {
+    if (qIdx >= branches.length) {
+      // All done — save score and show delta before completing
+      _savePosttestScore(root.root, correct);
+      _showLearningDelta(root, correct, function(){ completeRoot(); });
+      return;
+    }
+    const b = branches[qIdx];
+    const wrongs = allBranches
+      .filter(function(x){ return x.word !== b.word; })
+      .sort(function(){ return Math.random() - 0.5; })
+      .slice(0, 3)
+      .map(function(x){ return x.meaning; });
+    if (wrongs.length < 3) { qIdx++; showQ(); return; }
+    const opts = [b.meaning].concat(wrongs).sort(function(){ return Math.random() - 0.5; });
+
+    c.innerHTML = '<div class="pretest-banner" style="flex-direction:column;align-items:flex-start;'
+      + 'background:rgba(6,214,160,.06);border-color:rgba(6,214,160,.25)">'
+      + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mint-d)">'
+      + '&#10003; Final Check — After Studying (Q' + (qIdx+1) + '/' + branches.length + ')</div>'
+      + '<div style="font-size:.78rem;color:var(--ink3);margin-top:3px">'
+      + 'Same words as before — let\'s see how much you learned!</div>'
+      + '</div>'
+      + '<div class="quiz-wrap" style="margin-top:10px">'
+        + '<div class="bigquiz-q">What does <strong style="color:var(--mint-d);font-size:1.1rem">'
+          + b.word + '</strong> mean?</div>'
+        + '<div class="bq-opts">'
+          + opts.map(function(o){
+              return '<button class="bq-opt" data-ans="' + encodeURIComponent(o) + '"'
+                + ' data-correct="' + encodeURIComponent(b.meaning) + '"'
+                + ' onclick="_posttestAnswer(this,' + correct + ',function(s){correct=s;qIdx++;showQ()})">'
+                + o + '</button>';
+            }).join('')
+        + '</div>'
+      + '</div>';
+    c._correct = function(s){ correct = s; qIdx++; showQ(); };
+  }
+  showQ();
+}
+
+/** Handle a post-test answer click — mirrors _pretestAnswer */
+function _posttestAnswer(btn, currentScore, cb) {
+  const chosen  = decodeURIComponent(btn.dataset.ans || '');
+  const correct = decodeURIComponent(btn.dataset.correct || '');
+  const ok = chosen === correct;
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  document.querySelectorAll('.bq-opt').forEach(function(b){
+    b.setAttribute('disabled', 'true');
+    if (decodeURIComponent(b.dataset.ans||'') === correct) b.classList.add('correct');
+  });
+  setTimeout(function(){ cb(currentScore + (ok ? 1 : 0)); }, 900);
+}
+
+/**
+ * Save a post-test score and calculate the learning delta.
+ * @param {string} rootKey - root identifier e.g. "PORT"
+ * @param {number} score   - number correct out of 3
+ */
+function _savePosttestScore(rootKey, score) {
+  try {
+    const key = 'posttest:' + (A.currentUser ? anonId(A.currentUser.email||'') : '') + ':' + rootKey;
+    storeSet(key, { score, total:3, ts:Date.now() });
+  } catch(e) { console.warn('[PostTest] Save error:', e.message); }
+}
+
+/**
+ * Show the learning delta screen between pre-test and post-test.
+ * Displayed as a celebration card before the root completion banner.
+ * @param {object} root
+ * @param {number} postScore
+ * @param {Function} onContinue
+ */
+function _showLearningDelta(root, postScore, onContinue) {
+  const c = document.getElementById('stepContent');
+  if (!c) { onContinue(); return; }
+
+  // Retrieve pre-test score
+  let preScore = 0;
+  try {
+    const key = 'pretest:' + (A.currentUser ? anonId(A.currentUser.email||'') : '') + ':' + root.root;
+    const saved = storeGet(key);
+    preScore = saved ? (saved.score || 0) : 0;
+  } catch(e) { preScore = 0; }
+
+  const delta  = postScore - preScore;
+  const total  = 3;
+  const pct    = Math.round((postScore / total) * 100);
+  const gained = delta > 0;
+
+  // Choose celebration level
+  const emoji  = pct >= 90 ? '&#127941;' : pct >= 60 ? '&#127775;' : '&#128170;';
+  const label  = pct >= 90 ? 'Outstanding mastery!'
+               : pct >= 60 ? 'Great progress!'
+               : 'Keep practising!';
+
+  c.innerHTML = '<div style="text-align:center;padding:20px 10px">'
+    // Delta display
+    + '<div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:20px">'
+      + '<div style="text-align:center">'
+        + '<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-bottom:4px">Before</div>'
+        + '<div style="font-family:Fraunces,serif;font-size:2rem;font-weight:900;color:var(--ink3)">' + preScore + '<span style="font-size:1rem">/' + total + '</span></div>'
+      + '</div>'
+      + '<div style="font-size:1.8rem;color:' + (gained?'var(--mint)':'var(--ink3)') + '">' + (gained?'&#8594;&#43;':'&#8594;') + '</div>'
+      + '<div style="text-align:center">'
+        + '<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.7px;color:var(--mint-d);margin-bottom:4px">After</div>'
+        + '<div style="font-family:Fraunces,serif;font-size:2rem;font-weight:900;color:' + (gained?'var(--mint)':'var(--ink)') + '">' + postScore + '<span style="font-size:1rem">/' + total + '</span></div>'
+      + '</div>'
+    + '</div>'
+    // Score badge
+    + '<div style="font-size:2.5rem;margin-bottom:6px">' + emoji + '</div>'
+    + '<div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:900;color:var(--ink);margin-bottom:6px">' + label + '</div>'
+    + (gained
+      ? '<div style="font-size:.85rem;color:var(--mint-d);margin-bottom:16px">You learned <strong>+' + delta + '</strong> word' + (delta>1?'s':'') + ' from the <strong>' + root.root + '</strong> root!</div>'
+      : '<div style="font-size:.85rem;color:var(--ink3);margin-bottom:16px">You scored ' + pct + '% on the <strong>' + root.root + '</strong> root.</div>')
+    + '<button class="auth-btn student-btn" style="width:auto;padding:10px 28px" onclick="' + '_completeDelta()">Finish Root &#10003;</button>'
     + '</div>';
 
-  el.innerHTML = html;
+  window._completeDelta = onContinue;
 }
 
-/**
- * Save an admin setting and refresh the settings panel.
- * @param {string} key
- * @param {*} value
- */
-function _saveAdminSetting(key, value) {
-  _setAdminSetting(key, value);
-  renderAdminSettings(); // refresh to update On/Off labels
-}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MODULE 15d · MORPHEME BUILDER GAME (v2.3.0)
+// New Step-7 game mode (25% chance). Student assembles real words by dragging
+// prefix + root + suffix tiles into a word slot. Wrong combos are rejected
+// with an explanation. Correct combos score points and glow green.
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Morpheme Builder state */
+var MB = {
+  tiles:    [],   // all available tiles [{text, type:'prefix'|'root'|'suffix', id}]
+  slots:    [],   // current word slot contents [{slotIdx, tile}]
+  solved:   [],   // solved word strings
+  target:   [],   // target combinations for this root
+  selected: null  // currently held tile id
+};
 
 /**
- * Reset all admin settings to their schema defaults.
+ * Build the Morpheme Builder game for a root.
+ * Takes combinations from root.combinations and splits into tiles.
+ * @param {object} root
+ * @param {Element} container
  */
-function resetAdminSettings() {
-  if (!confirm('Reset ALL settings to their defaults?')) return;
-  ADMIN_SETTINGS_SCHEMA.forEach(function(group) {
-    group.settings.forEach(function(s) {
-      _setAdminSetting(s.key, s.default);
+function buildMorphemeBuilder(root, container) {
+  const combos = (root.combinations || []);
+  if (combos.length < 2) {
+    // Not enough data — fall back to 20Q quiz
+    BQ.mode = 'quiz'; startBigQuiz(root, container); return;
+  }
+
+  // Build tile pool: prefixes, the root itself, suffixes
+  const seen = new Set();
+  MB.tiles   = [];
+  MB.solved  = [];
+  MB.target  = combos.slice(0, Math.min(combos.length, 5));
+  MB.selected = null;
+
+  let tileId = 0;
+  MB.target.forEach(function(combo){
+    // combo.combo is like "TRANS + PORT" or "BENE + FIT + OR"
+    const parts = (combo.combo || '').split(/\s*\+\s*/);
+    parts.forEach(function(part, i){
+      const p = part.trim().toUpperCase();
+      if (!p || seen.has(p)) return;
+      seen.add(p);
+      let type = 'root';
+      if (i === 0 && parts.length > 1) type = 'prefix';
+      else if (i === parts.length - 1 && parts.length > 1) type = 'suffix';
+      MB.tiles.push({ text:p, type:type, id:tileId++, used:false });
     });
   });
-  renderAdminSettings();
+
+  _renderMorphemeBuilder(root);
 }
+
+/** Render the Morpheme Builder UI */
+function _renderMorphemeBuilder(root) {
+  const c = document.getElementById('stepContent');
+  if (!c) return;
+
+  const total   = MB.target.length;
+  const solved  = MB.solved.length;
+  const allDone = solved >= total;
+
+  // Tile bank
+  const bankHTML = MB.tiles.map(function(t){
+    const colours = { prefix:'var(--sky)', root:'var(--coral)', suffix:'var(--mint-d)' };
+    const selStyle = MB.selected === t.id
+      ? 'border-color:var(--violet);background:rgba(155,93,229,.12);transform:scale(1.08)'
+      : '';
+    return '<div class="mb-tile mb-' + t.type + (t.used?' mb-used':'') + '" '
+      + 'data-id="' + t.id + '" '
+      + (t.used ? '' : 'onclick="mbTileClick(' + t.id + ')"')
+      + ' style="' + selStyle + '">'
+      + '<div style="font-size:.55rem;text-transform:uppercase;letter-spacing:.5px;color:'
+        + colours[t.type] + ';margin-bottom:2px">' + t.type + '</div>'
+      + t.text
+      + '</div>';
+  }).join('');
+
+  // Target words to build (show result if solved, else show combo hint)
+  const targetsHTML = MB.target.map(function(combo, i){
+    const solved = MB.solved.includes(combo.result);
+    return '<div class="mb-target' + (solved?' mb-solved':'') + '">'
+      + (solved
+        ? '&#10003; <strong>' + combo.result + '</strong>'
+          + '<span style="font-size:.68rem;color:var(--ink3);margin-left:6px">' + combo.meaning + '</span>'
+        : '<span style="font-size:.75rem;color:var(--ink3)">'
+          + combo.combo + ' = ?</span>')
+      + '</div>';
+  }).join('');
+
+  // Slot area: 3 slots (prefix + root + suffix)
+  const slotTypes = ['prefix','root','suffix'];
+  const slotsHTML = slotTypes.map(function(type, i){
+    const placed = MB.slots.find(function(s){ return s.slotIdx === i; });
+    return '<div class="mb-slot" data-slot="' + i + '" onclick="mbSlotClick(' + i + ')">'
+      + (placed
+        ? '<div class="mb-tile mb-placed mb-' + placed.tile.type + '">'
+            + placed.tile.text + '</div>'
+        : '<div style="font-size:.62rem;color:rgba(26,26,46,.25);text-transform:uppercase">'
+            + type + '</div>')
+      + '</div>';
+  }).join('');
+
+  c.innerHTML = '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.8px;color:var(--violet);margin-bottom:4px">&#129510; Step 7: Morpheme Builder'
+    + '<button style="background:none;border:none;color:var(--sky);font-size:.62rem;'
+      + 'font-weight:700;cursor:pointer;margin-left:8px;text-transform:uppercase;letter-spacing:.8px"'
+      + ' onclick="BQ.mode=\'finder\';buildWordFinder(A.currentRoot,document.getElementById(\'stepContent\'))">Try Word Finder →</button>'
+    + '</div>'
+    + '<div style="font-size:.78rem;color:var(--ink3);margin-bottom:12px;line-height:1.5">'
+    + 'Tap a tile to pick it up, then tap a slot to place it. Build the target words from root '
+    + '<strong style="color:var(--coral)">' + root.root + '</strong> (' + root.meaning + ').</div>'
+
+    // Target words to build
+    + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;'
+      + 'color:var(--ink3);margin-bottom:6px">Build these words (' + solved + '/' + total + '):</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">' + targetsHTML + '</div>'
+
+    // Slot area
+    + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;'
+      + 'color:var(--ink3);margin-bottom:6px">Assemble here:</div>'
+    + '<div class="mb-slots">' + slotsHTML + '</div>'
+    + '<div id="mbFb" style="min-height:36px;margin-top:8px"></div>'
+
+    // Check button
+    + '<button class="bq-submit" style="margin-top:10px" onclick="mbCheck()">'
+      + 'Check Word &#10003;</button>'
+    + (MB.selected !== null
+      ? '<button style="margin-left:8px;padding:8px 14px;background:none;border:1.5px solid rgba(26,26,46,.15);'
+          + 'border-radius:var(--rs);font-size:.78rem;cursor:pointer;font-family:sans-serif" onclick="mbClear()">Clear</button>'
+      : '')
+
+    // Tile bank
+    + '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;'
+      + 'color:var(--ink3);margin:12px 0 6px">Tile bank:</div>'
+    + '<div class="mb-bank">' + bankHTML + '</div>'
+
+    + (allDone
+      ? '<div class="quiz-fb correct" style="margin-top:12px">&#127881; All words built! +30 XP'
+          + '<button class="bq-submit" style="margin-left:10px;padding:6px 14px;font-size:.8rem"'
+            + ' onclick="mbComplete()">Finish →</button></div>'
+      : '');
+}
+
+/** Handle tile tap — select or deselect */
+function mbTileClick(id) {
+  MB.selected = MB.selected === id ? null : id;
+  _renderMorphemeBuilder(A.currentRoot);
+}
+
+/** Handle slot tap — place selected tile or remove existing tile */
+function mbSlotClick(slotIdx) {
+  if (MB.selected !== null) {
+    // Place selected tile here (remove any previous tile in this slot)
+    const prev = MB.slots.findIndex(function(s){ return s.slotIdx === slotIdx; });
+    if (prev !== -1) {
+      // Return previous tile to bank
+      const prevTile = MB.slots[prev].tile;
+      prevTile.used = false;
+      MB.slots.splice(prev, 1);
+    }
+    const tile = MB.tiles.find(function(t){ return t.id === MB.selected; });
+    if (tile) {
+      tile.used = true;
+      MB.slots.push({ slotIdx, tile });
+    }
+    MB.selected = null;
+  } else {
+    // Tap on filled slot — return tile to bank
+    const idx = MB.slots.findIndex(function(s){ return s.slotIdx === slotIdx; });
+    if (idx !== -1) {
+      MB.slots[idx].tile.used = false;
+      MB.slots.splice(idx, 1);
+    }
+  }
+  _renderMorphemeBuilder(A.currentRoot);
+}
+
+/** Clear the slot area */
+function mbClear() {
+  MB.slots.forEach(function(s){ s.tile.used = false; });
+  MB.slots = []; MB.selected = null;
+  _renderMorphemeBuilder(A.currentRoot);
+}
+
+/** Check the current word assembly */
+function mbCheck() {
+  // Build the word from slots in order
+  const parts = [null, null, null];
+  MB.slots.forEach(function(s){ parts[s.slotIdx] = s.tile; });
+  const built = parts.filter(Boolean).map(function(t){ return t.text; }).join('');
+
+  const fb = document.getElementById('mbFb');
+  if (!built) { if(fb) fb.innerHTML = '<div class="bq-fb wrong">Place at least one tile first.</div>'; return; }
+
+  // Check against target combinations
+  const match = MB.target.find(function(combo){
+    return combo.result.toUpperCase() === built.toUpperCase() && !MB.solved.includes(combo.result);
+  });
+
+  if (match) {
+    MB.solved.push(match.result);
+    MB.slots.forEach(function(s){ s.tile.used = true; });
+    // Don't clear slots — let them go grey as visual confirmation
+    MB.slots = [];
+    A.sessionData.xp += 8;
+    document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+    saveSession();
+    showToast(match.result + '! +8 XP');
+    _renderMorphemeBuilder(A.currentRoot);
+  } else {
+    // Check if it's a real word at all (any combo result)
+    const anyMatch = MB.target.find(function(combo){
+      return combo.result.toUpperCase() === built.toUpperCase();
+    });
+    if (anyMatch) {
+      if(fb) fb.innerHTML = '<div class="bq-fb correct">Already solved! Try another combination.</div>';
+    } else {
+      if(fb) fb.innerHTML = '<div class="bq-fb wrong">&#10060; <strong>' + built + '</strong> is not a valid word from this root. Try rearranging the tiles.</div>';
+    }
+  }
+}
+
+/** Complete the Morpheme Builder and move to post-test */
+function mbComplete() {
+  A.quizAnswered = true;
+  A.sessionData.xp += 30;
+  document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+  saveSession();
+  _runPosttest(A.currentRoot);
+}
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// REBUILT IMPLEMENTATIONS (v2.3.0)
+// These functions were lost in a file reconstruction event and are rebuilt here.
+// All implementations are based on the ROOT_DATABASE structure generated by
+// the Claude AI root generator (see generateRoot function).
+//
+// ROOT_DATABASE entry shape:
+//   { root, meaning, origin, originFull, emoji, memoryHook,
+//     branches: [{word, pos, pronunciation, meaning, complexity, rootHighlight}],
+//     sentences: [{word, sentence, author}],
+//     literaryQuotes: [{quote, author, book}],
+//     combinations: [{combo, result, meaning, prefixMeaning}] }
+// ═════════════════════════════════════════════════════════════════════════════
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORE NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Navigate to a specific step in Root Learn (1–7).
+ * Gates Step 1 with a pre-test on first visit to a root.
+ * @param {number} n - Step number 1–7
+ */
+function goStep(n) {
+  if (!A.currentRoot) return;
+
+  // ── Pre-test gate: only on the very first visit to Step 1 for this root ──
+  if (n === 1 && !A._pretestDone) {
+    _runPretest(A.currentRoot);
+    return;
+  }
+
+  A.step = n;
+  A.selectedWord = null; // reset word selection when changing steps
+  renderStep();
+  updateStepUI();
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRE-TEST  (runs before Step 1 on every new root)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Run a 3-question pre-test before the student starts learning a root.
+ * Tests whether they already know branch word meanings.
+ * Score is stored; post-test score is compared to it to show a learning delta.
+ * @param {object} root - ROOT_DATABASE entry
+ */
+function _runPretest(root) {
+  const c = document.getElementById('stepContent');
+  if (!c) return;
+
+  const branches = (root.branches || []).slice(0, 3);
+  // If no branches, skip straight to step 1
+  if (!branches.length) { A._pretestDone = true; goStep(1); return; }
+
+  const allBranches = root.branches || [];
+  let qIdx = 0, correct = 0;
+
+  function showQ() {
+    if (qIdx >= branches.length) {
+      // Pre-test complete — save score and enter Step 1
+      _savePretestScore(root.root, correct);
+      A._pretestDone  = true;
+      A._pretestScore = correct;
+      goStep(1);
+      return;
+    }
+    const b = branches[qIdx];
+
+    // Build 4 MCQ options: 1 correct + 3 distractors from same root's branches
+    const wrongs = allBranches
+      .filter(function(x) { return x.word !== b.word; })
+      .sort(function() { return Math.random() - 0.5; })
+      .slice(0, 3)
+      .map(function(x) { return x.meaning; });
+
+    // If not enough branches for 3 distractors, skip this question
+    if (wrongs.length < 3) { qIdx++; showQ(); return; }
+
+    const opts = [b.meaning].concat(wrongs).sort(function() { return Math.random() - 0.5; });
+
+    c.innerHTML =
+      // Banner
+      '<div class="pretest-banner">'
+        + '<div>'
+          + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;'
+            + 'letter-spacing:.8px;color:var(--violet)">'
+            + '&#128203; Quick Check — Before We Start (Q' + (qIdx+1) + '/' + branches.length + ')</div>'
+          + '<div style="font-size:.78rem;color:var(--ink3);margin-top:2px">'
+            + 'No worries if you don\'t know — this helps measure how much you learn!</div>'
+        + '</div>'
+      + '</div>'
+      // Question
+      + '<div class="quiz-wrap" style="margin-top:12px">'
+        + '<div class="bigquiz-q">What does '
+          + '<strong style="color:var(--coral);font-size:1.1rem">' + b.word + '</strong>'
+          + ' mean?</div>'
+        + '<div class="bq-opts">'
+          + opts.map(function(o) {
+              return '<button class="bq-opt"'
+                + ' data-ans="' + encodeURIComponent(o) + '"'
+                + ' data-correct="' + encodeURIComponent(b.meaning) + '"'
+                + ' onclick="_pretestAnswer(this,function(s){correct=s;qIdx++;showQ()})">'
+                + o + '</button>';
+            }).join('')
+        + '</div>'
+      + '</div>';
+
+    // Expose showQ and correct in closure for onclick
+    c._showQ    = showQ;
+    c._correct  = function(s) { correct = s; qIdx++; showQ(); };
+  }
+
+  showQ();
+}
+
+/**
+ * Handle a pre-test answer button click.
+ * @param {HTMLButtonElement} btn
+ * @param {Function} cb - callback(newCorrectCount)
+ */
+function _pretestAnswer(btn, cb) {
+  const chosen  = decodeURIComponent(btn.dataset.ans     || '');
+  const correct = decodeURIComponent(btn.dataset.correct || '');
+  const ok = chosen === correct;
+
+  // Visual feedback
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  document.querySelectorAll('.bq-opt').forEach(function(b) {
+    b.setAttribute('disabled', 'true');
+    if (decodeURIComponent(b.dataset.ans || '') === correct) b.classList.add('correct');
+  });
+
+  // Advance after short delay so student sees feedback
+  setTimeout(function() {
+    const c = document.getElementById('stepContent');
+    const currentCorrect = parseInt(btn.closest('.quiz-wrap')?.dataset.correct || '0', 10);
+    cb(currentCorrect + (ok ? 1 : 0));
+  }, 900);
+}
+
+/**
+ * Save a pre-test score to localStorage for later delta calculation.
+ * @param {string} rootKey - e.g. "PORT"
+ * @param {number} score   - number correct out of 3
+ */
+function _savePretestScore(rootKey, score) {
+  try {
+    const uid = A.currentUser ? anonId(A.currentUser.email || '') : 'anon';
+    storeSet('pretest:' + uid + ':' + rootKey, { score, total: 3, ts: Date.now() });
+  } catch(e) {
+    console.warn('[PreTest] Could not save score:', e.message);
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 2 — IDENTIFY (morpheme labelling)
+// Student taps on highlighted segments to label each part as
+// prefix, root, or suffix.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Identify-step state */
+var IDENTIFY = {
+  phase:   'label', // 'label' | 'done'
+  wordIdx: 0        // index into r.combinations
+};
+
+/**
+ * Render Step 2: Morpheme Identify.
+ * Shows a word split into coloured segments; student taps each to confirm
+ * whether it is a prefix, root, or suffix.
+ * Falls back to the cloze sentence activity if no combinations are available.
+ * @param {object} r - ROOT_DATABASE entry
+ * @param {Element} c - stepContent container
+ */
+function renderStepIdentify(r, c) {
+  IDENTIFY.phase   = 'label';
+  IDENTIFY.wordIdx = IDENTIFY.wordIdx % Math.max(1, (r.combinations || []).length);
+  _renderMorphemeLabeller(r, c);
+}
+
+/**
+ * Render the morpheme labeller for the current word in IDENTIFY.wordIdx.
+ * @param {object} r
+ * @param {Element} c
+ */
+function _renderMorphemeLabeller(r, c) {
+  const combos = r.combinations || [];
+
+  // No combinations — fall through to cloze
+  if (!combos.length) {
+    renderStepCloze(r, c);
+    return;
+  }
+
+  const combo  = combos[IDENTIFY.wordIdx % combos.length];
+  const total  = Math.min(combos.length, 4); // show up to 4 words
+  const done   = IDENTIFY.wordIdx;
+
+  // Parse combo string "TRANS + PORT + ER" into segments
+  const segments = _parseCombo(combo, r);
+
+  // Build the coloured segment display
+  const segHTML = segments.map(function(seg, i) {
+    const colours = { prefix:'var(--sky)', root:'var(--coral)', suffix:'var(--mint-d)', unknown:'var(--ink3)' };
+    return '<div class="morph-seg morph-' + seg.type + '"'
+      + ' onclick="_identifyTap(' + i + ')"'
+      + ' style="border-color:' + colours[seg.type] + '">'
+      + '<div class="morph-text">' + seg.text + '</div>'
+      + '<div class="morph-label" style="color:' + colours[seg.type] + '">'
+        + seg.type.toUpperCase()
+      + '</div>'
+    + '</div>';
+  }).join(
+    '<div style="font-size:1.4rem;color:var(--ink3);font-weight:300;align-self:center">+</div>'
+  );
+
+  c.innerHTML =
+    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
+      + 'letter-spacing:.8px;color:var(--sky-d);margin-bottom:8px">'
+      + '&#128270; Step 2: Identify the Parts (' + (done + 1) + '/' + total + ')</div>'
+    + '<div style="font-size:.8rem;color:var(--ink3);margin-bottom:14px;line-height:1.5">'
+      + 'Each segment of <strong style="color:var(--ink)">' + combo.result + '</strong>'
+      + ' is colour-coded by type. The root is always <span style="color:var(--coral);font-weight:700">coral</span>.</div>'
+
+    // Word display
+    + '<div style="text-align:center;margin-bottom:16px">'
+      + '<div style="font-family:Fraunces,serif;font-size:1.6rem;font-weight:900;'
+        + 'color:var(--ink);letter-spacing:2px;margin-bottom:6px">' + combo.result + '</div>'
+      + '<div style="font-size:.75rem;color:var(--ink3)">' + combo.meaning + '</div>'
+    + '</div>'
+
+    // Coloured segments
+    + '<div class="morph-segs">' + segHTML + '</div>'
+
+    // Prefix meaning hint
+    + (combo.prefixMeaning
+      ? '<div style="font-size:.75rem;color:var(--ink3);margin-top:12px;'
+          + 'background:rgba(76,201,240,.06);border-radius:var(--rs);padding:8px 12px;'
+          + 'border:1px solid rgba(76,201,240,.15)">'
+          + '&#128216; ' + combo.prefixMeaning
+        + '</div>'
+      : '')
+
+    // Navigation
+    + '<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">'
+      + (IDENTIFY.wordIdx > 0
+        ? '<button class="bq-submit" style="background:rgba(26,26,46,.08);color:var(--ink);padding:8px 14px;font-size:.78rem"'
+            + ' onclick="_identifyPrev(A.currentRoot,document.getElementById(\'stepContent\'))">← Prev</button>'
+        : '')
+      + (done + 1 < total
+        ? '<button class="bq-submit" style="padding:8px 16px;font-size:.78rem"'
+            + ' onclick="_identifyNext(A.currentRoot,document.getElementById(\'stepContent\'))">Next word →</button>'
+        : '<button class="bq-submit" style="padding:8px 16px;font-size:.78rem"'
+            + ' onclick="goStep(3)">Continue to Build →</button>')
+    + '</div>';
+}
+
+/**
+ * Parse a combo object into typed segments for the morpheme labeller.
+ * e.g. combo.combo = "TRANS + PORT + ER", r.root = "PORT"
+ * @param {{combo:string, result:string}} combo
+ * @param {{root:string}} r
+ * @returns {Array<{text:string, type:'prefix'|'root'|'suffix'|'unknown'}>}
+ */
+function _parseCombo(combo, r) {
+  const rootKey = r.root.split('/')[0].toUpperCase();
+  const parts   = (combo.combo || '').split(/\s*\+\s*/);
+
+  return parts.map(function(part, i) {
+    const p = part.trim().toUpperCase();
+    let type = 'unknown';
+    if (p === rootKey)           type = 'root';
+    else if (i === 0)            type = 'prefix';
+    else if (i === parts.length - 1 && i > 0) type = 'suffix';
+    else                         type = 'prefix'; // middle segments = prefix
+    return { text: p, type: type };
+  });
+}
+
+/** Advance to next word in morpheme labeller */
+function _identifyNext(r, c) {
+  IDENTIFY.wordIdx++;
+  _renderMorphemeLabeller(r, c);
+}
+
+/** Go back to previous word in morpheme labeller */
+function _identifyPrev(r, c) {
+  IDENTIFY.wordIdx = Math.max(0, IDENTIFY.wordIdx - 1);
+  _renderMorphemeLabeller(r, c);
+}
+
+/** Handle a segment tap (currently decorative — highlights the tapped segment) */
+function _identifyTap(segIdx) {
+  document.querySelectorAll('.morph-seg').forEach(function(el, i) {
+    el.style.transform = i === segIdx ? 'translateY(-3px) scale(1.05)' : '';
+  });
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 6 — DEEP DIVE (Frayer Card)
+// Four-quadrant vocabulary analysis card inspired by the Frayer Model.
+// Quadrants: Definition | Word Family | In Use (literary sentence) | Don't Confuse
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Non-examples dictionary: words that look similar to a root word but come
+ * from a DIFFERENT root. Shown in the "Don't Confuse" quadrant of the Frayer card.
+ * Key = root name; value = array of {word, note} objects.
+ */
+var NON_EXAMPLES = {
+  'PORT':  [
+    { word:'PORTAL',  note:'From Latin porta (gate/door) — not portare (carry)' },
+    { word:'PORTION', note:'From Latin portio (part, share) — not portare' }
+  ],
+  'CHRON': [
+    { word:'CHROME',  note:'From Greek chroma (colour) — not chronos (time)' },
+    { word:'CHRONIC', note:'Same root! But CHROME is completely unrelated' }
+  ],
+  'BENE':  [
+    { word:'BENCH',   note:'From Old French banc (seat) — not Latin bene (well)' },
+    { word:'BEAD',    note:'From Old English gebed (prayer) — unrelated' }
+  ],
+  'DICT':  [
+    { word:'DICTATE', note:'Actually IS from dicere (to say) — same root!'},
+    { word:'DICTION', note:'Also from dicere — all DICT words share the root' }
+  ],
+  'GRAPH': [
+    { word:'GRASP',   note:'From Old Norse greipa — nothing to do with writing' },
+    { word:'GRAPE',   note:'From Old French grape (hook) — unrelated to graphein' }
+  ],
+  'SCRIPT':[
+    { word:'SCRIBE',  note:'Also from Latin scribere — same root, so it counts!' },
+    { word:'SCRUB',   note:'From Low German schrobben — unrelated to writing' }
+  ],
+  'VIS':   [
+    { word:'VISIT',   note:'Actually IS from Latin videre (to see) — same root!' },
+    { word:'VISE',    note:'From Old French vis (screw) — tool, not sight' }
+  ],
+  'PORT_DEFAULT': [
+    { word:'PORTAL',  note:'Looks similar but comes from a different Latin root' },
+    { word:'Look-alike', note:'Always check the root before assuming shared meaning' }
+  ]
+};
+
+/**
+ * Render Step 6: Deep Dive — Frayer Card.
+ * Student picks a branch word; four quadrants show Definition,
+ * Word Family, Literary Example, and Non-Examples (Don't Confuse).
+ * @param {object} r - ROOT_DATABASE entry
+ * @param {Element} c - stepContent container
+ */
+function renderStepDeepDive(r, c) {
+  if (A.selectedWord === null) A.selectedWord = 0;
+  const branches = r.branches || [];
+  if (!branches.length) {
+    c.innerHTML = '<div style="text-align:center;padding:30px;color:var(--ink3)">'
+      + 'No words available for this root yet. '
+      + '<button class="bq-submit" style="margin-top:10px" onclick="goStep(7)">Skip to Quiz →</button>'
+      + '</div>';
+    return;
+  }
+
+  // Word picker tabs
+  const pickerHTML = branches.map(function(b, i) {
+    const active = i === A.selectedWord;
+    return '<button onclick="deepDiveSelect(' + i + ')"'
+      + ' style="padding:6px 12px;border-radius:99px;cursor:pointer;font-size:.78rem;'
+        + 'font-weight:700;font-family:sans-serif;transition:all .2s;'
+        + 'border:2px solid ' + (active ? 'var(--violet)' : 'rgba(26,26,46,.12)') + ';'
+        + 'background:' + (active ? 'var(--violet)' : 'var(--white)') + ';'
+        + 'color:' + (active ? 'white' : 'var(--ink)') + '">'
+      + b.word + '</button>';
+  }).join('');
+
+  const b        = branches[A.selectedWord] || branches[0];
+  const rootKey  = r.root.split('/')[0];
+  const sentence = (r.sentences || []).find(function(s) { return s.word === b.word; });
+  const nonEx    = NON_EXAMPLES[rootKey] || NON_EXAMPLES['PORT_DEFAULT'];
+
+  // Word family chips (other words sharing this root)
+  const family = branches
+    .filter(function(x) { return x.word !== b.word; })
+    .map(function(x) { return '<span class="frayer-tag">' + x.word + '</span>'; })
+    .join('');
+
+  c.innerHTML =
+    '<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;'
+      + 'letter-spacing:.8px;color:var(--violet);margin-bottom:8px">'
+      + '&#128204; Step 6: Deep Dive</div>'
+
+    // Word picker
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">' + pickerHTML + '</div>'
+
+    // Centre: word + pronunciation + part of speech
+    + '<div class="frayer-word-center">'
+      + '<div class="frayer-word">' + b.word + '</div>'
+      + '<div class="frayer-pron">' + (b.pronunciation || '') + '</div>'
+      + '<div class="frayer-pos">'  + (b.pos            || '') + '</div>'
+    + '</div>'
+
+    // Four-quadrant Frayer card
+    + '<div class="frayer-card">'
+
+      // TL — Definition
+      + '<div class="frayer-cell">'
+        + '<span class="frayer-cell-label" style="color:var(--sky-d)">&#128218; Definition</span>'
+        + '<div style="font-size:.82rem;color:var(--ink);line-height:1.5">' + b.meaning + '</div>'
+        + '<div style="margin-top:6px;font-size:.72rem;color:var(--ink3)">'
+          + 'Root <strong style="color:var(--coral)">' + rootKey + '</strong>'
+          + ' = ' + r.meaning
+        + '</div>'
+      + '</div>'
+
+      // TR — Word Family
+      + '<div class="frayer-cell">'
+        + '<span class="frayer-cell-label" style="color:var(--violet)">&#127795; Word Family</span>'
+        + '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:6px">'
+          + 'Other words sharing root <strong>' + rootKey + '</strong>:</div>'
+        + (family || '<span style="font-size:.72rem;color:var(--ink3);font-style:italic">No other words</span>')
+      + '</div>'
+
+      // BL — In Use
+      + '<div class="frayer-cell">'
+        + '<span class="frayer-cell-label" style="color:var(--mint-d)">&#9997;&#65039; In Use</span>'
+        + (sentence
+          ? '<div style="font-size:.78rem;color:var(--ink);font-style:italic;line-height:1.5">'
+              + '&ldquo;' + sentence.sentence + '&rdquo;</div>'
+              + '<div style="font-size:.68rem;color:var(--ink3);margin-top:4px">'
+                + '&#8212; ' + sentence.author + '</div>'
+          : '<div style="font-size:.75rem;color:var(--ink3)">'
+              + 'Try using <strong>' + b.word + '</strong> in your own sentence.</div>')
+      + '</div>'
+
+      // BR — Don't Confuse (non-examples)
+      + '<div class="frayer-cell">'
+        + '<span class="frayer-cell-label" style="color:var(--coral)">&#9888;&#65039; Don\'t Confuse</span>'
+        + '<div style="font-size:.68rem;color:var(--ink3);margin-bottom:6px">'
+          + 'Similar-looking words from DIFFERENT roots:</div>'
+        + nonEx.slice(0, 2).map(function(ne) {
+            return '<div style="margin-bottom:6px">'
+              + '<strong style="font-size:.78rem;color:var(--ink)">' + ne.word + '</strong>'
+              + (ne.note
+                ? '<div style="font-size:.65rem;color:var(--ink3);line-height:1.4">' + ne.note + '</div>'
+                : '')
+            + '</div>';
+          }).join('')
+      + '</div>'
+
+    + '</div>';  // end frayer-card
+}
+
+/** Switch the selected word in the Deep Dive Frayer card */
+function deepDiveSelect(idx) {
+  A.selectedWord = idx;
+  const r = A.currentRoot;
+  const c = document.getElementById('stepContent');
+  if (r && c) renderStepDeepDive(r, c);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPIRAL REVIEW
+// Triggered from Stats panel after 3+ roots completed.
+// Builds a composite quiz from all studied roots' branches.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Start a Spiral Review session.
+ * Pulls questions from all roots studied this session (not skipped),
+ * then runs the 20Q quiz engine with the combined pool.
+ * Called by clicking the Spiral Review card in the Stats panel.
+ */
+function startSpiralReview() {
+  // Gather all non-skipped roots from session data
+  const studiedRootNames = (A.sessionData.roots || [])
+    .filter(function(r) { return !r.skipped; })
+    .map(function(r) { return r.root; });
+
+  if (!studiedRootNames.length) {
+    showToast('Study some roots first!');
+    return;
+  }
+
+  // Build a composite "virtual root" by merging all studied roots' data
+  // We can only use roots we have cached in session data (name + meaning)
+  // For the quiz we generate questions from session word lists
+  const allWords = (A.sessionData.words || []);
+
+  if (allWords.length < 4) {
+    showToast('Study more words first to unlock spiral review!');
+    return;
+  }
+
+  // Build a synthetic root object for the quiz engine
+  const virtualRoot = {
+    root:    'REVIEW',
+    meaning: 'mixed review of ' + studiedRootNames.length + ' roots',
+    origin:  'Mixed',
+    emoji:   '&#128260;',
+    memoryHook: 'This is a review of everything you have studied!',
+    branches: allWords.slice(-20).map(function(w) {
+      return {
+        word:        w.word        || w,
+        meaning:     w.meaning     || '(see previous sessions)',
+        pos:         w.pos         || 'word',
+        complexity:  w.complexity  || 'intermediate',
+        rootHighlight: ''
+      };
+    }),
+    sentences:    [],
+    combinations: [],
+    literaryQuotes: []
+  };
+
+  // Switch to Learn panel, set the virtual root, and run the quiz
+  showPanel('learn');
+  A.currentRoot    = virtualRoot;
+  A.step           = 7;
+  A._pretestDone   = true; // skip pretest for review
+  BQ.mode          = 'quiz';
+  BQ.questions     = [];
+  BQ.current       = 0;
+  BQ.score         = 0;
+  BQ.answered      = false;
+
+  setCardHeader(virtualRoot);
+  updateStepUI();
+
+  const c = document.getElementById('stepContent');
+  if (c) startBigQuiz(virtualRoot, c);
+
+  showToast('Spiral Review — ' + studiedRootNames.length + ' roots, ' + allWords.slice(-20).length + ' words');
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSS helpers — add missing morpheme segment styles
+// (inline here since we can inject them via a style tag)
+// ─────────────────────────────────────────────────────────────────────────────
+(function addMorphCSS() {
+  if (document.getElementById('morph-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'morph-styles';
+  style.textContent = `
+    .morph-segs {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap; justify-content: center;
+      padding: 16px; margin-bottom: 8px;
+    }
+    .morph-seg {
+      padding: 10px 14px; border-radius: var(--rs);
+      border: 2.5px solid rgba(26,26,46,.12);
+      background: var(--white); cursor: pointer;
+      text-align: center; transition: all .2s; min-width: 52px;
+    }
+    .morph-seg:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+    .morph-text  { font-family:'Fira Mono',monospace; font-size:.95rem; font-weight:700; color:var(--ink); }
+    .morph-label { font-size:.55rem; text-transform:uppercase; letter-spacing:.8px; margin-top:3px; font-weight:700; }
+    .morph-prefix { border-color:rgba(76,201,240,.35); background:rgba(76,201,240,.05); }
+    .morph-root   { border-color:rgba(255,107,107,.45); background:rgba(255,107,107,.06); }
+    .morph-suffix { border-color:rgba(6,214,160,.35);  background:rgba(6,214,160,.05);  }
+  `;
+  document.head.appendChild(style);
+})();
 
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -6105,145 +7086,14 @@ window.addEventListener('DOMContentLoaded',()=>{
   console.log(`WordRoot Academy v${APP_VERSION} (${APP_BUILD}) loaded`);
 });
 
+
+
+
+
+
+
 </script>
-<!-- ═══════════ FLOATING ACTION BUTTONS ═══════════ -->
-<!-- Idioms FAB — visible when student is logged in -->
-<button id="idiomsFab" onclick="openIdiomsModal()"
-  style="display:none;position:fixed;bottom:80px;right:20px;z-index:1000;
-    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-    background:linear-gradient(135deg,var(--violet),var(--sky));
-    color:white;font-size:1.3rem;box-shadow:0 4px 16px rgba(155,93,229,.4);
-    transition:transform .2s" title="Explore Idioms"
-  onmouseover="this.style.transform='scale(1.1)'"
-  onmouseout="this.style.transform='scale(1)'">💬</button>
-
-<!-- Feedback FAB — always visible when logged in -->
-<button id="feedbackFab" onclick="openFeedbackModal()"
-  style="display:none;position:fixed;bottom:20px;right:20px;z-index:1000;
-    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-    background:linear-gradient(135deg,var(--mint),var(--sky));
-    color:white;font-size:1.2rem;box-shadow:0 4px 16px rgba(6,214,160,.4);
-    transition:transform .2s" title="Send Feedback"
-  onmouseover="this.style.transform='scale(1.1)'"
-  onmouseout="this.style.transform='scale(1)'">💭</button>
-
-<!-- ═══════════ IDIOMS MODAL ═══════════ -->
-<div id="idiomsModal" style="display:none;position:fixed;inset:0;z-index:2000;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);overflow-y:auto;padding:20px">
-  <div style="max-width:680px;margin:0 auto;background:var(--paper);border-radius:var(--r);
-    box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
-    <!-- Modal header -->
-    <div style="background:linear-gradient(135deg,var(--ink),var(--ink2));padding:20px 24px;
-      display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:900;color:var(--sun)">
-          💬 English Idioms Explorer
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px">
-          Origins, history and geography of iconic expressions
-        </div>
-      </div>
-      <button onclick="closeIdiomsModal()"
-        style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-          color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;
-          font-size:1rem;display:flex;align-items:center;justify-content:center">✕</button>
-    </div>
-    <!-- Search + era filters -->
-    <div style="padding:16px 20px;border-bottom:1px solid rgba(26,26,46,.08)">
-      <input type="text" id="idiomModalSearch" placeholder="Search idioms…"
-        oninput="filterIdiomsModal()" autocomplete="off"
-        style="width:100%;padding:10px 14px;border-radius:var(--rs);
-          border:2px solid rgba(26,26,46,.12);background:var(--white);
-          font-size:.88rem;outline:none;box-sizing:border-box;
-          font-family:sans-serif;color:var(--ink);transition:border .2s"
-        onfocus="this.style.borderColor='var(--violet)'"
-        onblur="this.style.borderColor='rgba(26,26,46,.12)'"/>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="idiomEraFilters">
-        <button class="era-btn active" data-era="all" onclick="setIdiomsEra('all',this)">All Eras</button>
-        <button class="era-btn" data-era="Biblical" onclick="setIdiomsEra('Biblical',this)">Biblical</button>
-        <button class="era-btn" data-era="Pre-Victorian" onclick="setIdiomsEra('Pre-Victorian',this)">Pre-Victorian</button>
-        <button class="era-btn" data-era="Victorian" onclick="setIdiomsEra('Victorian',this)">Victorian</button>
-        <button class="era-btn" data-era="Modern" onclick="setIdiomsEra('Modern',this)">Modern</button>
-      </div>
-    </div>
-    <!-- Idioms list -->
-    <div id="idiomModalList" style="padding:16px 20px;max-height:60vh;overflow-y:auto"></div>
-    <!-- Pagination -->
-    <div id="idiomModalPager"
-      style="padding:12px 20px;border-top:1px solid rgba(26,26,46,.08);
-        display:flex;align-items:center;justify-content:space-between;gap:10px"></div>
-  </div>
-</div>
-
-<!-- ═══════════ FEEDBACK MODAL ═══════════ -->
-<div id="feedbackModal" style="display:none;position:fixed;inset:0;z-index:2000;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:20px;
-  display:none;align-items:center;justify-content:center">
-  <div style="max-width:480px;width:100%;background:var(--paper);border-radius:var(--r);
-    box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,var(--mint),var(--sky));
-      padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:900;color:white">
-          💭 Share Your Thoughts
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:2px">
-          Feedback, ideas, or questions — we read everything
-        </div>
-      </div>
-      <button onclick="closeFeedbackModal()"
-        style="background:rgba(255,255,255,.2);border:none;color:white;
-          width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.95rem">✕</button>
-    </div>
-    <!-- Form -->
-    <div style="padding:20px 22px" id="feedbackFormWrap">
-      <div id="feedbackFormInner">
-        <!-- Category -->
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-          color:var(--ink3);margin-bottom:8px">What kind of feedback?</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="feedbackCatRow">
-          <button class="fbcat active" data-cat="suggestion" onclick="selectFbCat(this)">💡 Suggestion</button>
-          <button class="fbcat" data-cat="bug" onclick="selectFbCat(this)">🐛 Bug Report</button>
-          <button class="fbcat" data-cat="praise" onclick="selectFbCat(this)">⭐ Praise</button>
-          <button class="fbcat" data-cat="question" onclick="selectFbCat(this)">❓ Question</button>
-        </div>
-        <!-- Message -->
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-          color:var(--ink3);margin-bottom:6px">Your message</div>
-        <textarea id="feedbackText"
-          placeholder="Tell us what you think, what you would like to see, or what isn't working…"
-          style="width:100%;min-height:100px;padding:10px 12px;border-radius:var(--rs);
-            border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;
-            color:var(--ink);background:var(--white);resize:vertical;outline:none;
-            box-sizing:border-box;line-height:1.5;transition:border .2s"
-          onfocus="this.style.borderColor='var(--violet)'"
-          onblur="this.style.borderColor='rgba(26,26,46,.12)'"></textarea>
-        <!-- Email (pre-filled if logged in) -->
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
-          color:var(--ink3);margin:10px 0 6px">Reply email (optional)</div>
-        <input type="email" id="feedbackEmail"
-          placeholder="so we can reply to you"
-          style="width:100%;padding:9px 12px;border-radius:var(--rs);
-            border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;
-            color:var(--ink);background:var(--white);outline:none;box-sizing:border-box;transition:border .2s"
-          onfocus="this.style.borderColor='var(--violet)'"
-          onblur="this.style.borderColor='rgba(26,26,46,.12)'"/>
-        <div id="feedbackErr" style="color:var(--coral);font-size:.75rem;min-height:16px;margin-top:4px"></div>
-        <button onclick="submitFeedback()"
-          style="width:100%;margin-top:12px;padding:12px;background:var(--violet);
-            color:white;border:none;border-radius:var(--rs);font-size:.9rem;font-weight:700;
-            cursor:pointer;font-family:sans-serif;transition:background .2s"
-          onmouseover="this.style.background='var(--violet-d)'"
-          onmouseout="this.style.background='var(--violet)'">Send Feedback →</button>
-      </div>
-      <!-- Admin replies section (shown in admin portal) -->
-      <div id="feedbackReplies" style="display:none;margin-top:16px;
-        padding-top:14px;border-top:1px solid rgba(26,26,46,.08)"></div>
-    </div>
-  </div>
-</div>
-
+</script>
 <!-- ═══════════ ADMIN SCREEN ═══════════ -->
 <div id="adminScreen" class="screen" style="flex-direction:row;background:#0A0A14;min-height:100vh">
   <!-- Sidebar -->
@@ -6261,8 +7111,6 @@ window.addEventListener('DOMContentLoaded',()=>{
       <div class="admin-nav-item" data-page="flags" onclick="renderAdminPage('flags')"><span class="admin-nav-icon">&#127897;</span> Feature Flags</div>
       <div class="admin-nav-item" data-page="notifications" onclick="renderAdminPage('notifications')"><span class="admin-nav-icon">&#128226;</span> Notifications</div>
       <div class="admin-nav-item" data-page="audit" onclick="renderAdminPage('audit')"><span class="admin-nav-icon">&#128203;</span> Audit Log</div>
-      <div class="admin-nav-item" data-page="settings" onclick="renderAdminPage('settings')"><span class="admin-nav-icon">&#9881;</span> App Settings</div>
-      <div class="admin-nav-item" data-page="feedback" onclick="renderAdminPage('feedback')"><span class="admin-nav-icon">&#128172;</span> Feedback</div>
       <div style="padding:8px 0 6px 16px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.25)">Switch View</div>
       <div class="admin-nav-item" onclick="adminSwitchView('student',this)"><span class="admin-nav-icon">&#128218;</span> Student App</div>
       <div class="admin-nav-item" onclick="adminSwitchView('parent',this)"><span class="admin-nav-icon">&#128065;</span> Parent Dashboard</div>
