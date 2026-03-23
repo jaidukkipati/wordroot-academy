@@ -1124,6 +1124,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
 
 
+
 /**
  * =============================================================================
  * WordRoot Academy — Application Script
@@ -1315,7 +1316,7 @@ function storeList(prefix){
  * Lockout/OTP durations are in milliseconds.
  */
 const SEC={
-  ADMIN_EMAIL:'admin@wordroot.app',  // ← change to your real email
+  ADMIN_EMAIL:'dkris5777@gmail.com', // primary admin account
   AES_KEY:'wra-aes-256-2025-key-x',
   SALT_ROUNDS:12,
   MAX_LOGIN_ATTEMPTS:5,
@@ -7175,19 +7176,19 @@ function submitPasswordReset() {
  * Credentials printed to console — admin MUST change password after first login.
  *
  * Default credentials:
- *   Email:    admin@wordroot.app
- *   Password: Admin@2025!
+ *   Email:    dkris5777@gmail.com
+ *   Password: Password123$
  */
 function _bootstrapAdminAccount() {
   // Re-seed admin ONLY if the account was deleted; never overwrite existing password
 
-  const adminEmail = SEC.ADMIN_EMAIL || 'admin@wordroot.app';
-  const adminPass  = 'Admin/Password123$'; // default — change on first login
+  const adminEmail = SEC.ADMIN_EMAIL || 'dkris5777@gmail.com';
+  const adminPass  = 'Password123$'; // default — change from My Profile > Security
 
   // Only create if the account doesn't already exist
   if (!storeGet('user:' + adminEmail)) {
     const adminUser = {
-      name:      'Administrator',
+      name:      'Jai (Admin)',
       email:     adminEmail,
       role:      'admin',
       roles:     ['admin', 'student', 'parent'],
@@ -7202,8 +7203,28 @@ function _bootstrapAdminAccount() {
     );
     console.info(
       '%cEmail: ' + adminEmail + '\nPassword: ' + adminPass
-        + '\n\nChange this password immediately after first login!',
+        + '\n\nChange via My Profile > Security after first login.',
       'color:#06D6A0;font-size:12px'
+    );
+  }
+
+  // ── Seed second admin account (dkris5777@gmail.com) ──────────────────────
+  const admin2Email = 'dkris5777@gmail.com';
+  const admin2Pass  = 'Password123$';
+  if (!storeGet('user:' + admin2Email)) {
+    const admin2User = {
+      name:      'Admin',
+      email:     admin2Email,
+      role:      'admin',
+      roles:     ['admin', 'student', 'parent'],
+      createdAt: Date.now(),
+      appVersion: APP_VERSION
+    };
+    storeSet('user:' + admin2Email, admin2User);
+    storeSet('pass:' + admin2Email, hashPassword(admin2Pass));
+    console.info(
+      '%c[WordRoot Academy] Admin account created: ' + admin2Email,
+      'color:#FFD93D;font-weight:bold'
     );
   }
 
@@ -7383,7 +7404,7 @@ function showPrivacyNote() {
       + 'is the account identifier. No additional data about the child is collected '
       + 'beyond their learning progress, which is stored on the parent\'s device.'),
     _privacySection('&#9993;&#65039; Contact',
-      'Questions? Email <strong>' + (SEC.ADMIN_EMAIL||'admin@wordroot.app') + '</strong>. '
+      'Questions? Email <strong>' + (SEC.ADMIN_EMAIL||'dkris5777@gmail.com') + '</strong>. '
       + 'We respond to all GDPR queries within 72 hours.'),
   ].join('');
 
@@ -7681,7 +7702,7 @@ function _renderProfileSecurity(el, user) {
       ? '<div style="margin-top:16px;padding:10px 12px;background:rgba(255,217,61,.07);'
           + 'border:1px solid rgba(255,217,61,.2);border-radius:var(--rs);font-size:.72rem;'
           + 'color:var(--ink3);line-height:1.5">'
-          + '&#128274; The admin account default password (<strong>Admin/Password123$</strong>) '
+          + '&#128274; The admin account default password (<strong>Password123$</strong>) '
           + 'is rebuilt on first load if the account does not exist. Once you change the password '
           + 'here the default is no longer active. Keep your new password safe — '
           + 'there is no recovery email for admin accounts in dev mode.</div>'
@@ -8026,6 +8047,7 @@ window.addEventListener('DOMContentLoaded', function() {
   checkResetLink();           // handle password-reset deep link (#reset:TOKEN)
   console.log('WordRoot Academy v' + APP_VERSION + ' (' + APP_BUILD + ') loaded');
 });
+
 
 
 
