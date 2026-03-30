@@ -31,8 +31,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
   radial-gradient(ellipse 600px 400px at 90% 80%,rgba(155,93,229,.08) 0%,transparent 60%),
   radial-gradient(ellipse 500px 400px at 50% 50%,rgba(6,214,160,.06) 0%,transparent 70%);
   pointer-events:none}
-.screen{position:relative;z-index:1;display:none;min-height:100vh}
-.screen.active{display:flex}
+.screen{position:relative;z-index:1;display:none!important;min-height:100vh}
+.screen.active{display:flex!important}
 /* ── AUTH ── */
 #authScreen{align-items:center;justify-content:center;padding:20px}
 .auth-box{width:100%;max-width:440px;background:var(--white);border-radius:24px;box-shadow:var(--shl);overflow:hidden}
@@ -652,234 +652,199 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 <!-- ═══════════ AUTH SCREEN ═══════════ -->
 <div id="authScreen" class="screen active">
   <div class="auth-box">
+
+    <!-- Header / Hero -->
     <div class="auth-hero">
       <div class="auth-logo">Word<span>Root</span> Academy</div>
-      <div class="auth-tagline">Master etymology, unlock vocabulary, think deeply</div>
+      <div class="auth-tagline">Master etymology · unlock vocabulary · think deeply</div>
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
-        <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+        <button class="auth-tab"        onclick="switchAuthTab('register')">Create Account</button>
       </div>
     </div>
-    <div class="auth-body">
-      <div id="authErr" class="auth-err"></div>
 
-      <!-- ── LOGIN ── -->
-      <form id="loginForm" onsubmit="doLogin();return false" autocomplete="on">
+    <div class="auth-body">
+
+      <!-- Error display -->
+      <div id="authErr" class="auth-err" style="display:none"></div>
+
+      <!-- ═══ SIGN IN FORM ═══ -->
+      <form id="loginForm" onsubmit="doLogin();return false" autocomplete="on" style="display:block">
 
         <div class="field">
           <label for="loginEmail">Email address</label>
           <input type="email" id="loginEmail" name="username"
-            autocomplete="username"
-            placeholder="you@example.com"
+            autocomplete="username" placeholder="you@example.com"
             onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
         </div>
 
         <div class="field">
           <label for="loginPassword">Password</label>
           <input type="password" id="loginPassword" name="password"
-            autocomplete="current-password"
-            placeholder="Your password"
+            autocomplete="current-password" placeholder="Your password"
             onkeydown="if(event.key==='Enter')doLogin()"/>
         </div>
 
-        <!-- Save email + Stay signed in -->
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="saveUserId" name="saveUserId"
-              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"
+            <input type="checkbox" id="saveUserId" style="accent-color:var(--violet)"
               onchange="saveUserIdPref(this.checked)"/>
             <span style="font-size:.78rem;color:var(--ink3)">Save my email address</span>
           </label>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="rememberMe" name="remember"
-              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"/>
+            <input type="checkbox" id="rememberMe" style="accent-color:var(--violet)"/>
             <span style="font-size:.78rem;color:var(--ink3)">Stay signed in for 30 days</span>
           </label>
         </div>
 
-        <button type="submit" class="auth-btn student-btn" id="loginBtn">
-          Sign In &#8594;
-        </button>
+        <button type="submit" class="auth-btn student-btn" id="loginBtn">Sign In &#8594;</button>
 
-        <div style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--ink3)">
+        <p style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--ink3)">
           No account?
           <a href="#" onclick="switchAuthTab('register');return false"
             style="color:var(--violet);font-weight:600">Create one free</a>
-        </div>
+        </p>
       </form>
 
-      <!-- ── GDPR privacy strip ── -->
-      <div style="margin-top:16px;padding:10px 12px;background:rgba(6,214,160,.05);
-        border:1px solid rgba(6,214,160,.18);border-radius:var(--rs);font-size:.68rem;
-        color:var(--ink3);line-height:1.55">
-        <strong style="color:var(--mint-d)">&#128274; Your privacy, guaranteed.</strong>
-        WordRoot Academy stores your data only on this device — nothing is sent to any server.
-        We collect no personal information, no analytics, and no cookies beyond what is needed
-        to keep you signed in. Your password is one-way hashed (never stored in readable form).
-        You can delete all your data at any time from Settings.
-        <a href="#" onclick="showPrivacyNote();return false"
-          style="color:var(--violet);font-weight:600">Full privacy notice</a>
-      </div>
-
-      <!-- ── REGISTER: name, email, password, role (student/parent), plan ── -->
       <!-- ═══ REGISTER FORM ═══ -->
       <div id="registerForm" style="display:none">
 
-        <!-- ── Your details ── -->
-        <div class="field"><label>Full Name</label>
-          <input type="text" id="regName" placeholder="Your name"/>
-        </div>
-        <div class="field"><label>Email</label>
-          <input type="email" id="regEmail" placeholder="you@example.com"/>
+        <div class="field">
+          <label>Full name</label>
+          <input type="text" id="regName" autocomplete="name" placeholder="Your name"/>
         </div>
 
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" id="regEmail" autocomplete="email" placeholder="you@example.com"/>
+        </div>
 
-        <!-- ── Role: Student or Parent ── -->
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="regPassword" name="new-password"
+            autocomplete="new-password" placeholder="Min 6 characters"/>
+        </div>
+
+        <!-- Role -->
         <div class="field" style="margin-bottom:14px">
           <label style="margin-bottom:8px;display:block">I am registering as…</label>
           <div class="role-toggle">
-            <button class="role-btn student active" id="regRoleStudent"
-              onclick="setRegRole('student',this)">📚 Student</button>
-            <button class="role-btn parent" id="regRoleParent"
-              onclick="setRegRole('parent',this)">👁 Parent / Monitor</button>
+            <button type="button" class="role-btn student active" id="regRoleStudent"
+              onclick="setRegRole('student',this)">&#128218; Student</button>
+            <button type="button" class="role-btn parent" id="regRoleParent"
+              onclick="setRegRole('parent',this)">&#128065; Parent / Monitor</button>
           </div>
-          <div style="font-size:.68rem;color:var(--ink3);margin-top:6px">
-            Administrators are created by an existing admin — not via self-registration.
-          </div>
+          <p style="font-size:.68rem;color:var(--ink3);margin-top:6px">
+            Admins are created by an existing admin only.
+          </p>
         </div>
 
-        <!-- ══════════════════════════════════════════════
-             STUDENT SECTION: optional parent email
-        ══════════════════════════════════════════════ -->
+        <!-- Student section -->
         <div id="studentRegSection" style="display:block">
           <div style="background:rgba(76,201,240,.06);border:1px solid rgba(76,201,240,.15);
             border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
-            <div style="font-size:.75rem;font-weight:700;color:var(--sky-d);margin-bottom:8px">
-              👁 Parent / Guardian details <span style="font-weight:400;color:var(--ink3)">(optional)</span>
-            </div>
-            <div style="font-size:.72rem;color:var(--ink3);margin-bottom:10px;line-height:1.4">
-              If your parent has an account, enter their email so they can monitor your progress.
-            </div>
+            <p style="font-size:.75rem;font-weight:700;color:var(--sky-d);margin-bottom:6px">
+              &#128065; Parent / Guardian <span style="font-weight:400;color:var(--ink3)">(optional)</span>
+            </p>
             <div class="field" style="margin-bottom:0">
               <label style="font-size:.75rem">Parent email</label>
-              <input type="email" id="regParentEmail" placeholder="parent@example.com"
-                style="font-size:.82rem;padding:8px 10px"/>
+              <input type="email" id="regParentEmail" placeholder="parent@example.com"/>
             </div>
           </div>
         </div>
 
-        <!-- ══════════════════════════════════════════════
-             PARENT SECTION: child 1 (required) + child 2 (optional)
-        ══════════════════════════════════════════════ -->
+        <!-- Parent section -->
         <div id="parentRegSection" style="display:none">
           <div style="background:rgba(255,107,107,.05);border:1px solid rgba(255,107,107,.18);
             border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
-            <div style="font-size:.75rem;font-weight:700;color:var(--coral);margin-bottom:4px">
-              📚 Your Children's Accounts
+            <p style="font-size:.75rem;font-weight:700;color:var(--coral);margin-bottom:10px">
+              &#128218; Child 1 <span style="font-size:.65rem;font-weight:400">(required)</span>
+            </p>
+            <div class="field" style="margin-bottom:8px">
+              <label style="font-size:.75rem">Child name</label>
+              <input type="text" id="child1Name" placeholder="Child's full name"/>
             </div>
-            <div style="font-size:.7rem;color:var(--ink3);margin-bottom:12px;line-height:1.4">
-              Add Child 1 now (required). Child 2 can be added now or later from your dashboard.
-              <br/>Child accounts are created automatically — they sign in with the email and
-              password you set here.
+            <div class="field" style="margin-bottom:8px">
+              <label style="font-size:.75rem">Child email</label>
+              <input type="email" id="child1Email" placeholder="child@example.com"/>
             </div>
-
-            <!-- Child 1 — required when parent registers -->
-            <div style="margin-bottom:12px;padding:12px;background:var(--white);
-              border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.08)">
-              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;
-                letter-spacing:.7px;color:var(--coral);margin-bottom:8px">
-                Child 1 <span style="color:var(--coral);font-size:.65rem">(required)</span>
-              </div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child name</label>
-                <input type="text" id="child1Name" placeholder="Child full name"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child email</label>
-                <input type="email" id="child1Email" placeholder="child1@example.com"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
-              <div class="field" style="margin-bottom:0">
-                <label style="font-size:.75rem">Child password
-                  <span style="font-weight:400;color:var(--ink3)">(they use this to sign in)</span>
-                </label>
-              </div>
+            <div class="field" style="margin-bottom:12px">
+              <label style="font-size:.75rem">Child password</label>
+              <input type="password" id="child1Pass" placeholder="Child's password"/>
             </div>
 
-            <!-- Child 2 — optional, can add later -->
-            <div id="child2Toggle" style="margin-bottom:4px">
+            <!-- Child 2 toggle -->
+            <div id="child2Toggle">
               <button type="button" onclick="toggleChild2()"
                 style="background:none;border:1.5px dashed rgba(26,26,46,.2);
                   border-radius:var(--rs);padding:8px 14px;width:100%;cursor:pointer;
-                  font-size:.78rem;color:var(--ink3);font-family:sans-serif;
-                  transition:all .2s"
-                onmouseover="this.style.borderColor='var(--violet)';this.style.color='var(--violet)'"
-                onmouseout="this.style.borderColor='rgba(26,26,46,.2)';this.style.color='var(--ink3)'">
-                + Add Child 2 now (optional — can do later)
+                  font-size:.78rem;color:var(--ink3);font-family:sans-serif">
+                + Add Child 2 (optional)
               </button>
             </div>
-            <div id="child2Section" style="display:none;padding:12px;background:var(--white);
-              border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.08)">
-              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;
-                letter-spacing:.7px;color:var(--ink3);margin-bottom:8px">Child 2 (optional)</div>
+            <div id="child2Section" style="display:none;margin-top:10px">
               <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child name</label>
-                <input type="text" id="child2Name" placeholder="Child full name"
-                  style="font-size:.82rem;padding:8px 10px"/>
+                <label style="font-size:.75rem">Child 2 name</label>
+                <input type="text" id="child2Name" placeholder="Child's full name"/>
               </div>
               <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child email</label>
-                <input type="email" id="child2Email" placeholder="child2@example.com"
-                  style="font-size:.82rem;padding:8px 10px"/>
+                <label style="font-size:.75rem">Child 2 email</label>
+                <input type="email" id="child2Email" placeholder="child2@example.com"/>
               </div>
-              
+              <div class="field" style="margin-bottom:0">
+                <label style="font-size:.75rem">Child 2 password</label>
+                <input type="password" id="child2Pass" placeholder="Child's password"/>
+              </div>
             </div>
-          </div>
-          <div style="font-size:.68rem;color:var(--ink3);margin-bottom:12px;
-            background:rgba(255,217,61,.06);border-radius:var(--rs);padding:8px 10px;
-            border:1px solid rgba(255,217,61,.15)">
-            ⚠️ Children can be added or changed up to <strong>2 times</strong> after registration.
-            Choose carefully — contact support if you need an extra change.
           </div>
         </div>
 
-        <!-- ── Plan selection ── -->
-        <div class="field" style="margin-bottom:6px">
-          <label style="margin-bottom:8px;display:block">Choose your plan</label>
-          <div id="planCards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <!-- Plan -->
+        <div class="field" style="margin-bottom:12px">
+          <label style="margin-bottom:8px;display:block">Plan</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="plan-pick active" id="planFree" onclick="selectPlan('free',this)">
-              <div style="font-weight:800;font-size:.92rem;color:var(--ink)">Free</div>
-              <div style="font-size:.65rem;color:var(--ink3);margin-top:2px">£0 / month</div>
-              <div style="font-size:.68rem;color:var(--ink3);margin-top:5px;line-height:1.4">
-                Word Search · Root Learn<br/>5 searches/day · 5 roots/day
+              <div style="font-weight:800;font-size:.92rem">Free</div>
+              <div style="font-size:.65rem;color:var(--ink3)">£0 / month</div>
+              <div style="font-size:.68rem;color:var(--ink3);margin-top:4px;line-height:1.4">
+                5 searches/day · 5 roots/day
               </div>
             </div>
             <div class="plan-pick" id="planPaid" onclick="selectPlan('standard',this)">
               <div style="font-weight:800;font-size:.92rem;color:var(--violet)">Premium</div>
-              <div style="font-size:.65rem;color:var(--ink3);margin-top:2px">£9.99 / month</div>
-              <div style="font-size:.68rem;color:var(--ink3);margin-top:5px;line-height:1.4">
-                Unlimited · Idioms · Parent Dashboard<br/>Claude AI · Priority support
+              <div style="font-size:.65rem;color:var(--ink3)">£9.99 / month</div>
+              <div style="font-size:.68rem;color:var(--ink3);margin-top:4px;line-height:1.4">
+                Unlimited · AI · Idioms
               </div>
             </div>
           </div>
           <input type="hidden" id="regPlan" value="free"/>
-          <div style="font-size:.68rem;color:var(--ink3);margin-top:6px">
-            🔒 No payment needed now — upgrade anytime.
-          </div>
         </div>
 
-        <button class="auth-btn student-btn" id="regBtn" onclick="doRegister()" style="margin-top:10px">
-          Create Account →
+        <button type="button" class="auth-btn student-btn" id="regBtn"
+          onclick="doRegister()" style="width:100%">
+          Create Account &#8594;
         </button>
-        <div style="text-align:center;margin-top:10px;font-size:.78rem;color:var(--ink3)">
-          Already registered? <a href="#" onclick="switchAuthTab('login');return false"
+        <p style="text-align:center;margin-top:10px;font-size:.78rem;color:var(--ink3)">
+          Have an account?
+          <a href="#" onclick="switchAuthTab('login');return false"
             style="color:var(--violet);font-weight:600">Sign in</a>
-        </div>
+        </p>
       </div>
-    </div>
-  </div>
-</div>
+
+      <!-- Privacy notice -->
+      <div style="margin-top:16px;padding:10px 12px;background:rgba(6,214,160,.05);
+        border:1px solid rgba(6,214,160,.18);border-radius:var(--rs);font-size:.68rem;
+        color:var(--ink3);line-height:1.55">
+        &#128274; <strong style="color:var(--mint-d)">Your data never leaves this device.</strong>
+        No server. No tracking. No ads.
+        <a href="#" onclick="showPrivacyNote();return false"
+          style="color:var(--violet);font-weight:600">Privacy notice</a>
+      </div>
+
+    </div><!-- auth-body -->
+  </div><!-- auth-box -->
+</div><!-- authScreen -->
 
 <!-- ═══════════ STUDENT SCREEN ═══════════ -->
 <div id="studentScreen" class="screen">
@@ -1035,51 +1000,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
       </div>
     </div>
 
-    <!-- Search panel -->
-    <div id="panel-search" style="display:none">
-      <div id="rootSuggestion" style="display:none;margin-bottom:12px"></div>
-      <div class="search-bar">
-        <div class="sentence-warning" id="sentenceWarning" style="display:none">
-          &#9888;&#65039; Please enter a single word — Word Search works with one word at a time.
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" class="search-input" id="searchInput"
-            placeholder="Search any English word&#8230;" autocomplete="off"
-            oninput="onSearchInput(this.value)"
-            onkeydown="if(event.key===&#39;Enter&#39;)doSearch()"/>
-          <button class="search-btn" id="searchBtn" onclick="doSearch()">Search &#8594;</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <label style="font-size:.72rem;color:var(--ink3);white-space:nowrap">Accent:</label>
-          <select id="accentSelect" style="flex:1;padding:5px 8px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.12);font-size:.75rem;background:var(--white);color:var(--ink);outline:none">
-            <option value="en-GB">&#127468;&#127463; British</option>
-            <option value="en-US">&#127482;&#127480; American</option>
-            <option value="en-AU">&#127462;&#127482; Australian</option>
-            <option value="en-IN">&#127470;&#127475; Indian</option>
-            <option value="en-ZA">&#127487;&#127462; South African</option>
-          </select>
-        </div>
-      </div>
-      <div id="searchResult" style="margin-top:12px">
-        <div style="text-align:center;padding:40px 20px;color:var(--ink3)">
-          <div style="font-size:2rem;margin-bottom:8px">&#128269;</div>
-          <div style="font-size:.9rem">Type any English word to explore its roots, etymology, and meaning.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- History panel -->
-    <div id="panel-history" style="display:none">
-      <div class="main-card">
-        <div style="padding:18px 22px">
-          <div style="font-family:&#39;Fraunces&#39;,serif;font-size:1.2rem;font-weight:700;margin-bottom:4px">&#128218; Recent Activity</div>
-          <div style="font-size:.75rem;color:var(--ink3);margin-bottom:16px">Your last 5 word searches and 5 roots studied</div>
-          <div id="historyList">
-            <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No activity yet &#8212; start searching or learning!</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </div><!-- end s-wrap -->
 </div><!-- end studentScreen -->
@@ -1326,15 +1246,6 @@ function _seedAdmin(email, defaultPass, name, forceReset) {
   }
 }
 
-// ─── Storage helpers (direct localStorage with wra: prefix) ────────────────
-// These bypass storeGet/storeSet to avoid any prefix confusion
-function _authGet(key) {
-  try { var v = localStorage.getItem('wra:' + key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
-}
-function _authSet(key, val) {
-  try { localStorage.setItem('wra:' + key, JSON.stringify(val)); } catch(e) {}
-}
-
 // ─── Auth UI helpers ─────────────────────────────────────────────────────────
 function showErr(msg) {
   var el = document.getElementById('authErr');
@@ -1389,7 +1300,7 @@ function doLogin() {
   if (!email || !pass) { showErr('Please enter your email and password.'); return; }
 
   // Read directly from localStorage with wra: prefix
-  var user   = _authGet('user:' + email);
+  var user   = storeGet('user:' + email);
   var stored = localStorage.getItem('wra:pass:' + email);
 
   if (!user || !stored) {
@@ -1480,7 +1391,7 @@ function doRegister() {
   if (!name)  { showErr('Please enter your name.'); return; }
   if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
   if (!pass || pass.length < 6) { showErr('Password must be at least 6 characters.'); return; }
-  if (_authGet('user:' + email)) { showErr('An account already exists with that email.'); return; }
+  if (storeGet('user:' + email)) { showErr('An account already exists with that email.'); return; }
 
   // Parent: create child accounts
   var children = [];
@@ -1513,7 +1424,7 @@ function doRegister() {
     linkedChildren: children, childEditCount: 0
   };
 
-  _authSet('user:' + email, newUser);
+  storeSet('user:' + email, newUser);
   localStorage.setItem('wra:pass:' + email, hashPassword(pass));
 
   if (typeof addAuditLog === 'function')
@@ -1529,7 +1440,7 @@ function _createChildRec(email, name, pass, parentEmail) {
   if (typeof _createChildAccount === 'function') {
     _createChildAccount(email, name, pass, parentEmail);
   } else {
-    _authSet('user:' + email, { name:name, email:email, role:'student', roles:['student'], linkedParent:parentEmail, createdAt:Date.now() });
+    storeSet('user:' + email, { name:name, email:email, role:'student', roles:['student'], linkedParent:parentEmail, createdAt:Date.now() });
     localStorage.setItem('wra:pass:' + email, hashPassword(pass));
   }
 }
@@ -2780,14 +2691,9 @@ function adminImpersonate(email,role){
  * Verifies admin role, initialises sidebar, renders default page.
  */
 function initAdminPortal(){
-    // ── Update XP display ──
-  var adminScr = document.getElementById('adminScreen');
-  if (adminScr) adminScr.classList.add('active');
-    // ── Check for any pending admin notifications ──
+  // signIn() already activated adminScreen — just render content
   checkNotifications();
   renderAdminPage('dashboard');
-    // ── Log registration event ──
-    // ── Log sign-in event ──
   addAuditLog('ADMIN_LOGIN','Admin portal accessed',maskEmail(A.currentUser.email),'admin');
 }
 
