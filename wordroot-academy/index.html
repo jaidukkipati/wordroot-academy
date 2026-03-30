@@ -663,37 +663,59 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
       <!-- ── LOGIN ── -->
       <form id="loginForm" onsubmit="doLogin();return false" autocomplete="on">
-        <!-- autocomplete="username" tells browsers this is the username/email field -->
-        <div class="field"><label for="loginEmail">Email</label>
+
+        <div class="field">
+          <label for="loginEmail">Email address</label>
           <input type="email" id="loginEmail" name="username"
-            autocomplete="username email"
+            autocomplete="username"
             placeholder="you@example.com"
-            onkeydown="if(event.key==='Enter')doLogin()"/>
+            onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
         </div>
+
         <div class="field">
           <label for="loginPassword">Password</label>
-          <!-- autocomplete="current-password" enables browser save-password prompt -->
-          <input type="password" id="loginPassword" name="password"
-            autocomplete="current-password"
-            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-            onkeydown="if(event.key==='Enter')doLogin()"/>
+          <div style="position:relative">
+            <input type="password" id="loginPassword" name="password"
+              autocomplete="current-password"
+              placeholder="Your password"
+              style="padding-right:44px"
+              onkeydown="if(event.key==='Enter')doLogin()"/>
+            <!-- Show/hide password toggle -->
+            <button type="button" onclick="toggleLoginPwd()"
+              id="loginPwdToggle"
+              title="Show / hide password"
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
+                background:none;border:none;cursor:pointer;font-size:1rem;
+                color:var(--ink3);padding:4px;line-height:1">&#128065;</button>
+          </div>
           <div style="text-align:right;margin-top:5px">
             <a href="#" onclick="forgotPassword();return false"
               style="font-size:.72rem;color:var(--violet);font-weight:600">Forgot password?</a>
           </div>
         </div>
-        <!-- Remember me — extends device token to 30 days -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <input type="checkbox" id="rememberMe" name="remember"
-            style="width:16px;height:16px;cursor:pointer;accent-color:var(--violet)"/>
-          <label for="rememberMe" style="font-size:.78rem;color:var(--ink3);cursor:pointer">
-            Remember me for 30 days
+
+        <!-- Save user ID + Remember me -->
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="saveUserId" name="saveUserId"
+              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"
+              onchange="saveUserIdPref(this.checked)"/>
+            <span style="font-size:.78rem;color:var(--ink3)">Save my email address</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="rememberMe" name="remember"
+              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"/>
+            <span style="font-size:.78rem;color:var(--ink3)">Stay signed in for 30 days</span>
           </label>
         </div>
-        <!-- Hidden submit lets browsers trigger save-password on sign-in -->
-        <button type="submit" class="auth-btn student-btn" id="loginBtn">Sign In &#8594;</button>
+
+        <button type="submit" class="auth-btn student-btn" id="loginBtn">
+          Sign In &#8594;
+        </button>
+
         <div style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--ink3)">
-          No account? <a href="#" onclick="switchAuthTab('register');return false"
+          No account?
+          <a href="#" onclick="switchAuthTab('register');return false"
             style="color:var(--violet);font-weight:600">Create one free</a>
         </div>
       </form>
@@ -1115,7 +1137,99 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 <div class="toast" id="toast"></div>
 <div class="version-badge" id="versionBadge">v2.3.0</div>
 
+
+<!-- ═══════════ FLOATING ACTION BUTTONS ═══════════ -->
+<button id="idiomsFab" onclick="openIdiomsModal()"
+  style="display:none;position:fixed;bottom:80px;right:20px;z-index:1000;
+    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--violet),var(--sky));
+    color:white;font-size:1.3rem;box-shadow:0 4px 16px rgba(155,93,229,.4);
+    transition:transform .2s" title="Explore Idioms"
+  onmouseover="this.style.transform='scale(1.1)'"
+  onmouseout="this.style.transform='scale(1)'">&#128172;</button>
+
+<button id="feedbackFab" onclick="openFeedbackModal()"
+  style="display:none;position:fixed;bottom:20px;right:20px;z-index:1000;
+    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--mint),var(--sky));
+    color:white;font-size:1.2rem;box-shadow:0 4px 16px rgba(6,214,160,.4);
+    transition:transform .2s" title="Send Feedback"
+  onmouseover="this.style.transform='scale(1.1)'"
+  onmouseout="this.style.transform='scale(1)'">&#128172;</button>
+
+<!-- ═══════════ IDIOMS MODAL ═══════════ -->
+<div id="idiomsModal" style="display:none;position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);overflow-y:auto;padding:20px">
+  <div style="max-width:680px;margin:0 auto;background:var(--paper);border-radius:var(--r);
+    box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--ink),var(--ink2));padding:20px 24px;
+      display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:900;color:var(--sun)">
+          &#128172; English Idioms Explorer</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px">Origins, history and geography of iconic expressions</div>
+      </div>
+      <button onclick="closeIdiomsModal()"
+        style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+          color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">&#10005;</button>
+    </div>
+    <div style="padding:16px 20px;border-bottom:1px solid rgba(26,26,46,.08)">
+      <input type="text" id="idiomModalSearch" placeholder="Search idioms&#8230;" oninput="filterIdiomsModal()" autocomplete="off"
+        style="width:100%;padding:10px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);background:var(--white);font-size:.88rem;outline:none;box-sizing:border-box;font-family:sans-serif;color:var(--ink)"/>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="idiomEraFilters">
+        <button class="era-btn active" onclick="setIdiomsEra('all',this)">All Eras</button>
+        <button class="era-btn" onclick="setIdiomsEra('Biblical',this)">Biblical</button>
+        <button class="era-btn" onclick="setIdiomsEra('Pre-Victorian',this)">Pre-Victorian</button>
+        <button class="era-btn" onclick="setIdiomsEra('Victorian',this)">Victorian</button>
+        <button class="era-btn" onclick="setIdiomsEra('Modern',this)">Modern</button>
+      </div>
+    </div>
+    <div id="idiomModalList" style="padding:16px 20px;max-height:60vh;overflow-y:auto"></div>
+    <div id="idiomModalPager" style="padding:12px 20px;border-top:1px solid rgba(26,26,46,.08);display:flex;align-items:center;justify-content:space-between;gap:10px"></div>
+  </div>
+</div>
+
+<!-- ═══════════ FEEDBACK MODAL ═══════════ -->
+<div id="feedbackModal" style="display:none;position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:20px;align-items:center;justify-content:center">
+  <div style="max-width:480px;width:100%;background:var(--paper);border-radius:var(--r);box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--mint),var(--sky));padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:900;color:white">&#128173; Share Your Thoughts</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:2px">Feedback, ideas, or questions</div>
+      </div>
+      <button onclick="closeFeedbackModal()" style="background:rgba(255,255,255,.2);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.95rem">&#10005;</button>
+    </div>
+    <div style="padding:20px 22px" id="feedbackFormWrap">
+      <div id="feedbackFormInner">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-bottom:8px">Category</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="fbcat active" data-cat="suggestion" onclick="selectFbCat(this)">&#128161; Suggestion</button>
+          <button class="fbcat" data-cat="bug" onclick="selectFbCat(this)">&#128027; Bug</button>
+          <button class="fbcat" data-cat="praise" onclick="selectFbCat(this)">&#11088; Praise</button>
+          <button class="fbcat" data-cat="question" onclick="selectFbCat(this)">&#10067; Question</button>
+        </div>
+        <textarea id="feedbackText" placeholder="Tell us what you think&#8230;"
+          style="width:100%;min-height:90px;padding:10px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;color:var(--ink);background:var(--white);resize:vertical;outline:none;box-sizing:border-box;line-height:1.5"></textarea>
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin:10px 0 6px">Reply email (optional)</div>
+        <input type="email" id="feedbackEmail" placeholder="so we can reply"
+          style="width:100%;padding:9px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;color:var(--ink);background:var(--white);outline:none;box-sizing:border-box"/>
+        <div id="feedbackErr" style="color:var(--coral);font-size:.75rem;min-height:16px;margin-top:4px"></div>
+        <button onclick="submitFeedback()" style="width:100%;margin-top:12px;padding:12px;background:var(--violet);color:white;border:none;border-radius:var(--rs);font-size:.9rem;font-weight:700;cursor:pointer;font-family:sans-serif">Send Feedback &#8594;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+
+
+
+
+
+
+
+
 
 
 
@@ -1491,13 +1605,6 @@ function maskName(name){
    // Row: status badge, masked email, role, plan, date, action buttons
  * @returns {string} Hashed password string
  */
-function hashPassword(pwd){
-  let h=0;
-  const salted=pwd+SEC.AES_KEY+SEC.SALT_ROUNDS;
-  for(let i=0;i<salted.length;i++){h=((h<<5)-h)+salted.charCodeAt(i);h|=0;}
-    // Row: status badge, masked email, role, plan, date, action buttons
-  return 'wra_'+Math.abs(h).toString(36)+'_'+btoa(String(pwd.length)).replace(/=/g,'');
-}
 
 /**
  * Compare plaintext against stored hash.
@@ -1506,13 +1613,6 @@ function hashPassword(pwd){
    // Row: status badge, masked email, role, plan, date, action buttons
  * @returns {boolean}
  */
-function verifyPassword(pwd,hash){
-  // Support legacy btoa(pass) from older versions
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(hash===btoa(pwd))return true;
-    // Row: status badge, masked email, role, plan, date, action buttons
-  return hash===hashPassword(pwd);
-}
 
 /**
    // Row: status badge, masked email, role, plan, date, action buttons
@@ -2132,86 +2232,52 @@ function emergencyReset(){
  * Display an error message in the auth form.
  * @param {string} msg
  */
-function showErr(msg) {
-    // ── Update XP display ──
-  const el = document.getElementById('authErr');
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
-}
 
 /**
  * Switch between login and register tabs on the auth screen.
  * @param {"login"|"register"} tab
  */
-function switchAuthTab(t){
-  A.authTab=t;
-    // ── Update nav tab active state ──
-    // Clear selecting highlight from all cells
-      // Also highlight the correct answer when wrong chosen
-  document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',['login','register'][i]===t));
-    // ── Update XP display ──
-  document.getElementById('loginForm').style.display=t==='login'?'block':'none';
-    // ── Update XP display ──
-  document.getElementById('registerForm').style.display=t==='register'?'block':'none';
-  clearErr();
-}
 
 /**
  * Set the selected role on the auth screen (student/parent/admin).
  * @param {"student"|"parent"|"admin"} role
  */
-function setRole(r){
-  A.authRole=r;
-    // ── Update XP display ──
-  document.getElementById('roleStudent').classList.toggle('active',r==='student');
-    // ── Update XP display ──
-  document.getElementById('roleParent').classList.toggle('active',r==='parent');
-    // ── Update XP display ──
-  document.getElementById('loginBtn').className='auth-btn '+(r==='student'?'student-btn':'parent-btn');
-    // ── Update XP display ──
-  document.getElementById('regBtn').className='auth-btn '+(r==='student'?'student-btn':'parent-btn');
-    // ── Update XP display ──
-  document.getElementById('parentLinkField').style.display=r==='parent'&&A.authTab==='register'?'block':'none';
+/**
+ * Set the current auth role and update any visible UI that reflects it.
+ * All getElementById calls are null-guarded — elements may not be present
+ * depending on which tab is active or whether the DOM has fully loaded.
+ * @param {"student"|"parent"|"admin"} r
+ */
+function setRole(r) {
+  A.authRole = r;
+
+  // Role buttons on the REGISTER form (not present on login tab)
+  var rsEl = document.getElementById('roleStudent');
+  var rpEl = document.getElementById('roleParent');
+  if (rsEl) rsEl.classList.toggle('active', r === 'student');
+  if (rpEl) rpEl.classList.toggle('active', r === 'parent');
+
+  // Sign-in button colour
+  var loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) loginBtn.className = 'auth-btn ' + (r === 'student' ? 'student-btn' : 'parent-btn');
+
+  // Register button colour
+  var regBtn = document.getElementById('regBtn');
+  if (regBtn) regBtn.className = 'auth-btn ' + (r === 'student' ? 'student-btn' : 'parent-btn');
+
+  // Parent link field (only on register tab)
+  var plf = document.getElementById('parentLinkField');
+  if (plf) plf.style.display = (r === 'parent' && A.authTab === 'register') ? 'block' : 'none';
 }
 
 /**
  * Clear the auth error message display.
  */
   // ── Update XP display ──
-function clearErr(){document.getElementById('authErr').style.display='none'}
-
 
 /**
  * Handle the register form submission. Validates, hashes password, stores user.
  */
-function doRegister(){
-    // ── Update XP display ──
-    // ── Read form inputs ──
-  const name=document.getElementById('regName').value.trim();
-    // ── Update XP display ──
-    // ── Read and normalise form inputs ──
-  const email=document.getElementById('regEmail').value.trim().toLowerCase();
-    // ── Update XP display ──
-  const pass=document.getElementById('regPassword').value;
-    // ── Update XP display ──
-  const linked=document.getElementById('regLinkedStudent').value.trim().toLowerCase();
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!name||!email||!pass){showErr('Please fill all required fields.');return}
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(pass.length<6){showErr('Password must be at least 6 characters.');return}
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(storeGet('user:'+email)){showErr('An account with this email already exists.');return}
-    // ── Build user record ──
-  const user={name,email,role:A.authRole,createdAt:Date.now(),linkedStudent:linked||null,appVersion:APP_VERSION};
-    // ── Persist credentials and user record ──
-  storeSet('user:'+email,user);
-    // ── Persist credentials and user record ──
-  storeSet('pass:'+email,btoa(pass));
-  showToast('Account created! Signing you in...');
-  clearErr();
-    // Student: sign in directly without OTP
-    // ── Sign in immediately after registration ──
-  setTimeout(()=>signIn(user),600);
-}
 
 
 
@@ -2448,7 +2514,8 @@ function adminImpersonate(email,role){
  */
 function initAdminPortal(){
     // ── Update XP display ──
-  document.getElementById('adminScreen').classList.add('active');
+  var adminScr = document.getElementById('adminScreen');
+  if (adminScr) adminScr.classList.add('active');
     // ── Check for any pending admin notifications ──
   checkNotifications();
   renderAdminPage('dashboard');
@@ -2647,9 +2714,8 @@ function renderAdminAudit(el){
 function initStudentApp(){
   const u=A.currentUser;
     // ── Update XP display ──
-  document.getElementById('sAvatar').textContent=u.name[0].toUpperCase();
-    // ── Update XP display ──
-  document.getElementById('sName').textContent=u.name;
+  var sAv=document.getElementById('sAvatar'); if(sAv) sAv.textContent=u.name[0].toUpperCase();
+  var sNm=document.getElementById('sName');  if(sNm) sNm.textContent=u.name;
   A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
   A.usedRoots=[];A.timeLeft=1800;
   updateTimerUI();newRoot();
@@ -3012,15 +3078,15 @@ async function newRoot(){
 
 function showLoading(){
     // ── Update XP display ──
-  document.getElementById('rTitle').textContent='...';
+  _setText('rTitle','...');
     // ── Update XP display ──
-  document.getElementById('rMeaning').textContent='Loading';
+  _setText('rMeaning','Loading');
     // ── Update XP display ──
-  document.getElementById('rOrigin').textContent='...';
+  _setText('rOrigin','...');
     // ── Update XP display ──
-  document.getElementById('rOriginFull').textContent='';
+  _setText('rOriginFull','');
     // ── Update XP display ──
-  document.getElementById('stepContent').innerHTML=`<div class="loading-state"><div class="spinner"></div><div class="loading-text">Generating root word ✨</div></div>`;
+  _setHTML('stepContent','<div class="loading-state"><div class="spinner"></div><div class="loading-text">Generating root word ✨</div></div>');
 }
 
 /**
@@ -3029,13 +3095,13 @@ function showLoading(){
  */
 function setCardHeader(r){
     // ── Update XP display ──
-  document.getElementById('rTitle').textContent=r.root;
+  _setText('rTitle',r.root);
     // ── Update XP display ──
-  document.getElementById('rMeaning').textContent=r.meaning;
+  _setText('rMeaning',r.meaning);
     // ── Update XP display ──
-  document.getElementById('rOrigin').textContent=r.origin;
+  _setText('rOrigin',r.origin);
     // ── Update XP display ──
-  document.getElementById('rOriginFull').textContent=r.originFull||'';
+  _setText('rOriginFull',r.originFull||'');
     // ── Update XP display ──
   document.getElementById('cardTop').setAttribute('data-emoji',r.emoji||'📖');
 }
@@ -3069,19 +3135,29 @@ function toggleTimer(){
     // No match at all — generic fallback text
   else{
       // ── Update XP display ──
-    A.timerOn=true;document.getElementById('tBtn').textContent='Pause';
+    A.timerOn=true;_setText('tBtn','Pause');
     A.timerInt=setInterval(()=>{A.timeLeft--;updateTimerUI();if(A.timeLeft<=0){clearInterval(A.timerInt);A.timerOn=false;endSession();}},1000);
   }
 }
 
-function updateTimerUI(){
-  const m=String(Math.floor(A.timeLeft/60)).padStart(2,'0'),s=String(A.timeLeft%60).padStart(2,'0');
-    // ── Update XP display ──
-  document.getElementById('tClock').textContent=`${m}:${s}`;
-  const pct=(A.timeLeft/1800)*100;
-    // ── Update XP display ──
-  const f=document.getElementById('tFill');
-  f.style.width=pct+'%';f.className='t-fill'+(pct<25?' warn':'');
+/**
+ * Update the session timer display (tClock, tFill, tBtn).
+ * Fully null-guarded — these elements only exist in the student screen.
+ * Safe to call from any context including DOMContentLoaded.
+ */
+function updateTimerUI() {
+  var m   = String(Math.floor(A.timeLeft / 60)).padStart(2, '0');
+  var sec = String(A.timeLeft % 60).padStart(2, '0');
+  var pct = (A.timeLeft / 1800) * 100;
+
+  var clock = document.getElementById('tClock');
+  var fill  = document.getElementById('tFill');
+  var btn   = document.getElementById('tBtn');
+
+  if (clock) clock.textContent = m + ':' + sec;
+  if (fill)  fill.style.width  = pct + '%';
+  if (fill)  fill.style.background = pct > 50 ? 'var(--mint)' : pct > 20 ? 'var(--sun)' : 'var(--coral)';
+  if (btn)   btn.textContent = A.timerOn ? 'Pause' : 'Start';
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -3147,10 +3223,10 @@ function showWordDetail(i){
     A.sessionData.words.push({word:b.word,root:A.currentRoot.root,meaning:b.meaning,complexity:b.complexity,learnedAt:Date.now()});
     A.sessionData.xp+=5;
       // ── Update XP display ──
-    document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+    _setText('sXp',A.sessionData.xp+' XP');
   }
     // ── Update XP display ──
-  document.getElementById('wdArea').innerHTML=buildWordDetail(b);
+  _setHTML('wdArea',buildWordDetail(b));
 }
 
 /**
@@ -3512,7 +3588,7 @@ function wfEndSelect(r,c){
     matched.positions=cells;
     A.sessionData.xp+=5;
       // ── Update XP display ──
-    document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+    _setText('sXp',A.sessionData.xp+' XP');
     showToast('Found '+matched.word+'! +5 XP');
         // Count as correct quiz attempt for session stats
       // ── Update session stats ──
@@ -3761,7 +3837,7 @@ function sdCellClick(r, cc) {
     if(isCorrect) {
       A.sessionData.xp += 3;
         // ── Update XP display ──
-      document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+      _setText('sXp',A.sessionData.xp+' XP');
       showToast(tile.word + ' placed correctly! +3 XP');
     }
     renderSudoku(A.currentRoot);
@@ -3780,7 +3856,7 @@ function sdCellClick(r, cc) {
 function sdComplete() {
   A.sessionData.xp += 30;
     // ── Update XP display ──
-  document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   A.quizAnswered = true;
   saveSession();
     // ── Update XP display ──
@@ -4102,7 +4178,7 @@ function answerBigQuiz(btn){
     showToast('Not quite. +3 XP');
   }
     // ── Update XP display ──
-  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
 
     // ── Visual feedback: highlight selected button correct/wrong ──
   btn.classList.add(ok?'correct':'wrong');
@@ -4202,7 +4278,7 @@ function completeRoot(){
   A.sessionData.roots.push({root:r.root,meaning:r.meaning,origin:r.origin,completedAt:Date.now(),words:(r.branches||[]).map(b=>b.word)});
   A.sessionData.xp+=50;
     // ── Update XP display ──
-  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   saveSession();
   A.lastLearnedRoot=A.currentRoot;showToast(`🎉 "${r.root}" mastered! +50 XP`);goStep(4);
 }
@@ -4273,7 +4349,7 @@ async function doSearch(){
   A.sessionData.searches.push({word,searchedAt:Date.now()});
   A.sessionData.xp+=2;
     // ── Update XP display ──
-  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   saveSession();
     // ── Update XP display ──
   const resultEl=document.getElementById('searchResult');
@@ -4555,7 +4631,7 @@ function renderWordResult(word,dict,synData,ai){
     // ── Award XP and save session ──
   A.sessionData.xp+=10;
     // ── Update XP display ──
-  document.getElementById('sXp').textContent=A.sessionData.xp+' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   saveSession();
   showToast('"'+word+'" looked up! +10 XP');
 
@@ -4998,13 +5074,13 @@ function updateStudentStats(){
   const r = A.sessionData;
 
   // KPI cells
-  document.getElementById('ss-roots').textContent  = r.roots.filter(x=>!x.skipped).length;
-  document.getElementById('ss-words').textContent  = r.words.length;
+  _setText('ss-roots', String(r.roots.filter(function(x){return !x.skipped;}).length));
+  _setText('ss-words',r.words.length);
   const acc = r.quizT>0 ? Math.round((r.quizC/r.quizT)*100) : 0;
-  document.getElementById('ss-acc').textContent    = acc+'%';
-  document.getElementById('ss-month').textContent  = r.roots.filter(x=>!x.skipped).length+' / 1000 roots';
+  _setText('ss-acc',acc+'%');
+  _setText('ss-month',r.roots.filter(x=>!x.skipped).length+' / 1000 roots');
   const mPct = Math.min((r.roots.filter(x=>!x.skipped).length/1000)*100, 100);
-  document.getElementById('ss-mbar').style.width   = mPct+'%';
+  _setStyle('ss-mbar','width',mPct+'%');
 
   // Spiral Review card — show after 3+ roots
   const spiral = document.getElementById('spiralTriggerCard');
@@ -5779,7 +5855,7 @@ function clozeStepAnswer(btn) {
   A.sessionData.quizT++;
   if (ok) { A.sessionData.quizC++; A.sessionData.xp += 15; showToast('Correct! +15 XP'); }
   else    { A.sessionData.xp += 5; showToast('Not quite. +5 XP'); }
-  document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   saveSession();
 
   // Visual feedback on buttons
@@ -6157,7 +6233,7 @@ function mbCheck() {
     // Don't clear slots — let them go grey as visual confirmation
     MB.slots = [];
     A.sessionData.xp += 8;
-    document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+    _setText('sXp',A.sessionData.xp+' XP');
     saveSession();
     showToast(match.result + '! +8 XP');
     _renderMorphemeBuilder(A.currentRoot);
@@ -6178,7 +6254,7 @@ function mbCheck() {
 function mbComplete() {
   A.quizAnswered = true;
   A.sessionData.xp += 30;
-  document.getElementById('sXp').textContent = A.sessionData.xp + ' XP';
+  _setText('sXp',A.sessionData.xp+' XP');
   saveSession();
   _runPosttest(A.currentRoot);
 }
@@ -6918,50 +6994,6 @@ function _showResetBanner(email, code, link) {
  * Reads email from the login form, generates an OTP, constructs a reset URL,
  * and shows the reset banner (dev) / sends email (production).
  */
-function forgotPassword() {
-  const emailEl = document.getElementById('loginEmail');
-  const email   = (emailEl?.value || '').trim().toLowerCase();
-
-  if (!email) {
-    showErr('Enter your email address in the field above, then click Forgot password.');
-    emailEl?.focus();
-    return;
-  }
-  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
-    showErr('Please enter a valid email address.');
-    return;
-  }
-
-  const user = storeGet('user:' + email);
-  if (!user) {
-    // Security: don't reveal whether account exists
-    // Show a neutral message so we don't leak account existence
-    showErr('If an account with that email exists, a reset link has been sent.');
-    return;
-  }
-
-  // Generate OTP and build the reset URL
-  const code    = generateOTP();
-  const token   = btoa(email + ':' + code).replace(/=/g, '');  // URL-safe base64
-  const baseUrl = location.href.split('#')[0];
-  const resetUrl = baseUrl + '#reset:' + token;
-
-  saveOTP(email, code);
-  sendOTPEmail(email, code, user.name || '', resetUrl);
-
-  showErr(''); // clear any previous error
-  // Show confirmation message in place of the error div
-  const errEl = document.getElementById('authErr');
-  if (errEl) {
-    errEl.style.color = 'var(--mint-d)';
-    errEl.style.background = 'rgba(6,214,160,.06)';
-    errEl.style.border = '1px solid rgba(6,214,160,.2)';
-    errEl.style.borderRadius = 'var(--rs)';
-    errEl.style.padding = '10px 12px';
-    errEl.textContent = 'Reset link generated! Check the yellow banner above '
-      + '(in production it will be emailed to ' + maskEmail(email) + ').';
-  }
-}
 
 /**
  * Check the URL hash on page load.
@@ -6969,51 +7001,6 @@ function forgotPassword() {
  * decode the token and show the reset password screen directly.
  * Called from DOMContentLoaded.
  */
-function checkResetLink() {
-  const hash = location.hash;
-  if (!hash.startsWith('#reset:')) return;
-
-  try {
-    const token = hash.replace('#reset:', '');
-    const decoded = atob(token.replace(/-/g, '+').replace(/_/g, '/'));
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) { location.hash = ''; return; }
-
-    const email = decoded.slice(0, colonIdx);
-    const code  = decoded.slice(colonIdx + 1);
-
-    // Verify OTP is still valid (not used, not expired)
-    const check = verifyOTP(email, code);
-    if (!check.ok) {
-      // Token expired or used — show login with message
-      location.hash = '';
-      setTimeout(function() {
-        const errEl = document.getElementById('authErr');
-        if (errEl) {
-          errEl.style.color = 'var(--coral)';
-          errEl.textContent = 'This reset link has expired or already been used. '
-            + 'Click "Forgot password?" to get a new one.';
-          errEl.style.display = 'block';
-        }
-      }, 200);
-      return;
-    }
-
-    // Valid token — restore OTP as unused (verifyOTP marks it used; reset form needs it)
-    const key = 'otp:' + anonId(email);
-    const rec = storeGet(key);
-    if (rec) { rec.used = false; storeSet(key, rec); }
-
-    // Store pending reset email and show the reset form
-    A.pendingResetEmail = email;
-    location.hash = '';  // clear hash from URL bar
-    setTimeout(function() { showPasswordResetScreen(email); }, 100);
-
-  } catch(e) {
-    console.warn('[Auth] checkResetLink error:', e.message);
-    location.hash = '';
-  }
-}
 
 /**
  * Render the password reset screen.
@@ -7199,61 +7186,6 @@ function submitPasswordReset() {
  *   PRIMARY  — dkris5777@gmail.com  /  Password123$
  *   FALLBACK — admin@wordroot.app   /  Admin/Password123$
  */
-function _bootstrapAdminAccount() {
-  // Version pin — change this string whenever you update default credentials
-  var BOOT_VERSION = 'admin:v2.3.2';
-
-  // If this version already ran, skip (unless we're forcing a reset)
-  var alreadyRan = storeGet(BOOT_VERSION);
-  if (alreadyRan) return;
-
-  // ── Helper: seed ONE admin account ──────────────────────────────────────
-  function seedAdmin(email, pass, name) {
-    // Always write the user record (ensures role is correct)
-    var existing = storeGet('user:' + email) || {};
-    var userRec = {
-      name:      existing.name || name,
-      email:     email,
-      role:      'admin',
-      roles:     ['admin', 'student', 'parent'],
-      createdAt: existing.createdAt || Date.now(),
-      appVersion: APP_VERSION
-    };
-    storeSet('user:' + email, userRec);
-
-    // Only write the password if it has NOT been changed by the user
-    // (user-changed passwords have a 'pwChangedAt' field on the user record)
-    if (!existing.pwChangedAt) {
-      storeSet('pass:' + email, hashPassword(pass));
-      console.info(
-        '%c[WRA] Admin credentials set: ' + email,
-        'color:#FFD93D;font-weight:700'
-      );
-    } else {
-      console.info(
-        '%c[WRA] Admin password preserved (user-changed): ' + email,
-        'color:#4CC9F0'
-      );
-    }
-  }
-
-  // ── Seed both admin accounts ─────────────────────────────────────────────
-  seedAdmin('dkris5777@gmail.com',  'Password123$',       'Admin');
-  seedAdmin('admin@wordroot.app',   'Admin/Password123$', 'Administrator');
-
-  // Mark this version as done
-  storeSet(BOOT_VERSION, { ts: Date.now(), version: APP_VERSION });
-
-  console.info(
-    '%c[WRA] Admin bootstrap v2.3.2 complete.',
-    'color:#06D6A0;font-size:11px'
-  );
-  console.info(
-    '%cPrimary:  dkris5777@gmail.com  /  Password123$\n'
-    + 'Fallback: admin@wordroot.app   /  Admin/Password123$',
-    'color:#06D6A0;font-size:11px'
-  );
-}
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -7266,34 +7198,6 @@ function _bootstrapAdminAccount() {
  * Also triggers browser save-password by relying on the form's submit event.
  * @param {object} user - validated user record from storage
  */
-function signIn(user) {
-  A.currentUser = user;
-  A.currentRole = user.role;
-
-  // Hide all screens
-  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
-
-  const roles = user.roles || [user.role];
-  const isAdmin = roles.includes('admin') || user.role === 'admin';
-
-  if (isAdmin) {
-    typeof initAdminPortal === 'function'
-      ? initAdminPortal()
-      : document.getElementById('adminScreen')?.classList.add('active');
-    showFABs && showFABs();
-  } else if (user.role === 'parent') {
-    document.getElementById('parentScreen')?.classList.add('active');
-    typeof initParentDashboard === 'function' && initParentDashboard();
-    showFABs && showFABs();
-  } else {
-    document.getElementById('studentScreen')?.classList.add('active');
-    typeof initStudentApp === 'function' && initStudentApp();
-    showFABs && showFABs();
-  }
-
-  checkNotifications && checkNotifications();
-  addAuditLog('USER_LOGIN', user.role + ' signed in', maskEmail(user.email || ''), 'system');
-}
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -7310,54 +7214,6 @@ function signIn(user) {
  * - Remember Me: stores a 30-day device token
  * @returns {void}
  */
-function doLogin() {
-  const email      = (document.getElementById('loginEmail')?.value  || '').trim().toLowerCase();
-  const pass       = (document.getElementById('loginPassword')?.value || '');
-  const rememberMe = document.getElementById('rememberMe')?.checked || false;
-
-  // Basic input check
-  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
-
-  // Lockout check
-  if (isAccountLocked && isAccountLocked(email)) {
-    const mins = Math.ceil((SEC.LOCKOUT_DURATION || 900000) / 60000);
-    showErr('Account temporarily locked after too many failed attempts. '
-      + 'Please wait ' + mins + ' minutes or reset your password.');
-    return;
-  }
-
-  const user   = storeGet('user:' + email);
-  const stored = storeGet('pass:' + email);
-
-  if (!user || !stored) {
-    recordLoginAttempt && recordLoginAttempt(email, false);
-    showErr('No account found with that email. Check the address or create a new account.');
-    return;
-  }
-
-  if (!verifyPassword(pass, stored)) {
-    recordLoginAttempt && recordLoginAttempt(email, false);
-    const attempts = storeGet('attempts:' + email);
-    const left = Math.max(0, (SEC.MAX_LOGIN_ATTEMPTS || 5) - ((attempts?.count) || 1));
-    showErr('Incorrect password.' + (left > 0 ? ' ' + left + ' attempt' + (left===1?'':'s') + ' remaining.' : ''));
-    return;
-  }
-
-  if (user.suspended) {
-    showErr('This account has been suspended. Contact the administrator for help.');
-    return;
-  }
-
-  // Successful login
-  recordLoginAttempt && recordLoginAttempt(email, true);
-
-  if (rememberMe) {
-    typeof saveDeviceToken === 'function' && saveDeviceToken(anonId(email), email);
-  }
-
-  clearErr();
-  signIn(user);
-}
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -7465,17 +7321,6 @@ function _privacySection(heading, body) {
 /**
  * Sign the current user out and return to the login screen.
  */
-function doLogout() {
-  if (A.currentUser) {
-    addAuditLog('USER_LOGOUT', 'User signed out', maskEmail(A.currentUser.email || ''), 'system');
-  }
-  A.currentUser  = null;
-  A.currentRole  = null;
-  A._pretestDone = false;
-  typeof hideFABs === 'function' && hideFABs();
-  typeof clearInterval === 'function' && A.timerInt && clearInterval(A.timerInt);
-  location.reload();
-}
 
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -8036,6 +7881,47 @@ function _planBadge(planName) {
 }
 
 
+/**
+ * Safe element getter — returns the element or null without throwing.
+ * Use instead of getElementById when the element may not be in the current screen.
+ * @param {string} id
+ * @returns {HTMLElement|null}
+ */
+function _el(id) {
+  try { return document.getElementById(id); } catch(e) { return null; }
+}
+
+/**
+ * Safely set textContent on an element (null-safe).
+ * @param {string} id
+ * @param {string} text
+ */
+function _setText(id, text) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+/**
+ * Safely set innerHTML on an element (null-safe).
+ * @param {string} id
+ * @param {string} html
+ */
+function _setHTML(id, html) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+/**
+ * Safely set a style property on an element (null-safe).
+ * @param {string} id
+ * @param {string} prop
+ * @param {string} value
+ */
+function _setStyle(id, prop, value) {
+  var el = document.getElementById(id);
+  if (el) el.style[prop] = value;
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // MODULE 21 · INIT
 // Application bootstrap. Runs once on DOMContentLoaded.
@@ -8068,13 +7954,597 @@ if(typeof initIdiomsPanel==='undefined'){
  * Bootstrap on DOM ready.
  * Sets initial UI state: default role selector, timer display, version log.
  */
+// ═════════════════════════════════════════════════════════════════════════════
+// AUTH — CLEAN REBUILD (v2.3.3)
+// Completely replaces the previous auth stack.
+// Design principles:
+//   1. Bootstrap ALWAYS runs — no version flags, no stale-state issues
+//   2. hashPassword is deterministic — same input always gives same output
+//   3. Admin passwords always re-seeded UNLESS user has changed them
+//   4. No OTP required for login — straight email+password
+//   5. Show/hide password toggle on login and register
+//   6. Save email address preference (persisted in localStorage)
+// ═════════════════════════════════════════════════════════════════════════════
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD HASHING
+// Deterministic hash — same password always produces the same hash.
+// Cannot be reversed. Not bcrypt (no server) but resistant to casual attack.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Hash a password. Deterministic — same input always gives same output.
+ * @param {string} pwd
+ * @returns {string}
+ */
+function hashPassword(pwd) {
+  // djb2 variant seeded with AES_KEY for uniqueness per installation
+  var h = 5381;
+  var salted = pwd + SEC.AES_KEY;
+  for (var i = 0; i < salted.length; i++) {
+    h = ((h << 5) + h) + salted.charCodeAt(i);
+    h = h & 0x7fffffff; // keep positive 31-bit
+  }
+  // Encode length separately so "abc" and "abcd" can't collide
+  var lenCode = pwd.length.toString(16).padStart(4, '0');
+  return 'h2_' + h.toString(36) + '_' + lenCode;
+}
+
+/**
+ * Verify a plaintext password against a stored hash.
+ * Supports both the new h2_ format and legacy wra_ format.
+ * @param {string} pwd
+ * @param {string} stored
+ * @returns {boolean}
+ */
+function verifyPassword(pwd, stored) {
+  if (!pwd || !stored) return false;
+  // New format
+  if (stored.startsWith('h2_')) return hashPassword(pwd) === stored;
+  // Legacy wra_ format (from earlier sessions)
+  if (stored.startsWith('wra_')) return _legacyHash(pwd) === stored;
+  // Very old btoa format
+  try { if (btoa(pwd) === stored) return true; } catch(e) {}
+  return false;
+}
+
+/**
+ * Legacy hash for backward compatibility with wra_ format.
+ * @param {string} pwd
+ * @returns {string}
+ */
+function _legacyHash(pwd) {
+  var h = 0;
+  var salted = pwd + SEC.AES_KEY + SEC.SALT_ROUNDS;
+  for (var i = 0; i < salted.length; i++) {
+    h = ((h << 5) - h) + salted.charCodeAt(i);
+    h = h | 0;
+  }
+  return 'wra_' + Math.abs(h).toString(36) + '_'
+    + btoa(String(pwd.length)).replace(/=/g, '');
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN BOOTSTRAP
+// Runs on EVERY page load — no flags, no skipping.
+// Writes admin credentials unless user has explicitly changed their password.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Seed default admin accounts on every page load.
+ * Admin accounts are ALWAYS written (user record + password hash)
+ * UNLESS the user has changed their password via My Profile.
+ * This guarantees credentials work even after clearing localStorage.
+ */
+function _bootstrapAdminAccount() {
+  _seedAdmin('dkris5777@gmail.com',  'Password123$',       'Jai (Admin)');
+  _seedAdmin('admin@wordroot.app',   'Admin/Password123$', 'Administrator');
+}
+
+/**
+ * Seed a single admin account.
+ * Always writes the user record. Writes password UNLESS user changed it.
+ * @param {string} email
+ * @param {string} defaultPass
+ * @param {string} name
+ */
+function _seedAdmin(email, defaultPass, name) {
+  // Always ensure correct user record exists
+  var existing = storeGet('user:' + email) || {};
+  storeSet('user:' + email, {
+    name:       existing.name      || name,
+    email:      email,
+    role:       'admin',
+    roles:      ['admin', 'student', 'parent'],
+    createdAt:  existing.createdAt || Date.now(),
+    pwChangedAt: existing.pwChangedAt || null,
+    appVersion: APP_VERSION
+  });
+
+  // Only write default password if user has NOT changed it
+  if (!existing.pwChangedAt) {
+    storeSet('pass:' + email, hashPassword(defaultPass));
+  }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGIN UI HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Toggle show/hide on the login password field.
+ */
+function toggleLoginPwd() {
+  var inp = document.getElementById('loginPassword');
+  var btn = document.getElementById('loginPwdToggle');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.innerHTML = '&#128064;'; // open eye
+  } else {
+    inp.type = 'password';
+    if (btn) btn.innerHTML = '&#128065;'; // closed eye
+  }
+}
+
+/**
+ * Toggle show/hide on the register password field.
+ */
+function toggleRegPwd() {
+  var inp = document.getElementById('regPassword');
+  var btn = document.getElementById('regPwdToggle');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.innerHTML = '&#128064;';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.innerHTML = '&#128065;';
+  }
+}
+
+/**
+ * Save the "save my email" preference and persist the email if checked.
+ * @param {boolean} checked
+ */
+function saveUserIdPref(checked) {
+  if (checked) {
+    var email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+    if (email) localStorage.setItem('wra:saved_email', email);
+    localStorage.setItem('wra:save_email_pref', '1');
+  } else {
+    localStorage.removeItem('wra:saved_email');
+    localStorage.removeItem('wra:save_email_pref');
+  }
+}
+
+/**
+ * Restore saved email and checkbox state on page load.
+ * Called from DOMContentLoaded.
+ */
+function restoreSavedEmail() {
+  var pref  = localStorage.getItem('wra:save_email_pref');
+  var saved = localStorage.getItem('wra:saved_email');
+  if (pref === '1' && saved) {
+    var emailEl = document.getElementById('loginEmail');
+    var cbEl    = document.getElementById('saveUserId');
+    if (emailEl) emailEl.value = saved;
+    if (cbEl)    cbEl.checked  = true;
+    // Focus password field since email is pre-filled
+    setTimeout(function() {
+      document.getElementById('loginPassword')?.focus();
+    }, 100);
+  }
+}
+
+/**
+ * Show an error in the auth form.
+ * @param {string} msg
+ */
+function showErr(msg) {
+  var el = document.getElementById('authErr');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = msg;
+  el.style.display  = 'block';
+  el.style.color    = 'var(--coral)';
+  el.style.background = '';
+  el.style.border   = '';
+}
+
+/**
+ * Clear any auth error message.
+ */
+function clearErr() {
+  showErr('');
+}
+
+/**
+ * Switch between login and register tabs.
+ * @param {"login"|"register"} t
+ */
+function switchAuthTab(t) {
+  A.authTab = t;
+  var loginForm = document.getElementById('loginForm');
+  var regForm   = document.getElementById('registerForm');
+  if (loginForm) loginForm.style.display = t === 'login'    ? 'block' : 'none';
+  if (regForm)   regForm.style.display   = t === 'register' ? 'block' : 'none';
+  document.querySelectorAll('.auth-tab').forEach(function(b, i) {
+    if (b) b.classList.toggle('active', ['login','register'][i] === t);
+  });
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORE LOGIN
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Handle Sign In form submission.
+ * Reads email + password, validates, and routes to correct screen.
+ */
+function doLogin() {
+  var emailEl = document.getElementById('loginEmail');
+  var passEl  = document.getElementById('loginPassword');
+  var email   = (emailEl?.value || '').trim().toLowerCase();
+  var pass    = passEl?.value || '';
+
+  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+
+  // Save email if preference is set
+  if (document.getElementById('saveUserId')?.checked) {
+    localStorage.setItem('wra:saved_email', email);
+    localStorage.setItem('wra:save_email_pref', '1');
+  }
+
+  // Lockout check
+  if (typeof isAccountLocked === 'function' && isAccountLocked(email)) {
+    showErr('Account locked after too many attempts. Wait 15 minutes or reset your password.');
+    return;
+  }
+
+  var user   = storeGet('user:' + email);
+  var stored = storeGet('pass:' + email);
+
+  if (!user || !stored) {
+    typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, false);
+    showErr('No account found with that email address.');
+    return;
+  }
+
+  if (!verifyPassword(pass, stored)) {
+    typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, false);
+    var attempts = storeGet('attempts:' + email);
+    var left = Math.max(0, 5 - ((attempts && attempts.count) ? attempts.count : 1));
+    showErr('Wrong password.' + (left > 0 ? ' ' + left + ' attempt' + (left === 1 ? '' : 's') + ' remaining.' : ''));
+    return;
+  }
+
+  if (user.suspended) {
+    showErr('Account suspended. Contact the administrator.');
+    return;
+  }
+
+  // Success
+  typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, true);
+  var rememberMe = document.getElementById('rememberMe')?.checked || false;
+  if (rememberMe && typeof saveDeviceToken === 'function') {
+    saveDeviceToken(typeof anonId === 'function' ? anonId(email) : email, email);
+  }
+
+  clearErr();
+  signIn(user);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIGN IN — routing
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Complete sign-in: hide auth screen, show correct app screen.
+ * @param {object} user
+ */
+function signIn(user) {
+  A.currentUser = user;
+  A.currentRole = user.role;
+
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(function(scr) {
+    if (scr) scr.classList.remove('active');
+  });
+
+  var roles   = user.roles || [user.role];
+  var isAdmin = roles.includes('admin') || user.role === 'admin';
+
+  if (isAdmin) {
+    var adminScr = document.getElementById('adminScreen');
+    if (adminScr) adminScr.classList.add('active');
+    typeof initAdminPortal === 'function' && initAdminPortal();
+  } else if (user.role === 'parent') {
+    var parentScr = document.getElementById('parentScreen');
+    if (parentScr) parentScr.classList.add('active');
+    typeof initParentDashboard === 'function' && initParentDashboard();
+  } else {
+    var studentScr = document.getElementById('studentScreen');
+    if (studentScr) studentScr.classList.add('active');
+    typeof initStudentApp === 'function' && initStudentApp();
+  }
+
+  typeof showFABs === 'function' && showFABs();
+  typeof checkNotifications === 'function' && checkNotifications();
+  typeof addAuditLog === 'function' && addAuditLog(
+    'USER_LOGIN', user.role + ' signed in', typeof maskEmail === 'function' ? maskEmail(user.email || '') : user.email, 'system'
+  );
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGOUT
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Sign out and reload to a clean state.
+ */
+function doLogout() {
+  if (A.currentUser && typeof addAuditLog === 'function') {
+    addAuditLog('USER_LOGOUT', 'Signed out',
+      typeof maskEmail === 'function' ? maskEmail(A.currentUser.email || '') : '',
+      'system');
+  }
+  A.currentUser = null;
+  A.currentRole = null;
+  typeof hideFABs === 'function' && hideFABs();
+  if (A.timerInt) clearInterval(A.timerInt);
+  location.reload();
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REGISTRATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Handle Create Account form submission.
+ */
+function doRegister() {
+  var name   = (document.getElementById('regName')?.value    || '').trim();
+  var email  = (document.getElementById('regEmail')?.value   || '').trim().toLowerCase();
+  var pass   = (document.getElementById('regPassword')?.value || '');
+  var plan   = document.getElementById('regPlan')?.value     || 'free';
+  var role   = A.authRole || 'student';
+
+  if (!name || !email || !pass) { showErr('Please fill in your name, email and password.'); return; }
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
+
+  var pwErr = typeof validatePassword === 'function' ? validatePassword(pass) : null;
+  if (pwErr) { showErr(pwErr); return; }
+  if (storeGet('user:' + email)) { showErr('An account with this email already exists.'); return; }
+
+  // Parent: create child accounts
+  var children = [];
+  if (role === 'parent') {
+    var c1name  = (document.getElementById('child1Name')?.value  || '').trim();
+    var c1email = (document.getElementById('child1Email')?.value || '').trim().toLowerCase();
+    var c1pass  = (document.getElementById('child1Pass')?.value  || '');
+    if (!c1name || !c1email || !c1pass) { showErr('Please fill in Child 1 details.'); return; }
+    if (c1email === email) { showErr('Child email must differ from parent email.'); return; }
+    typeof _createChildAccount === 'function' && _createChildAccount(c1email, c1name, c1pass, email);
+    children.push(c1email);
+    // Child 2 (optional)
+    var c2sec   = document.getElementById('child2Section');
+    if (c2sec && c2sec.style.display !== 'none') {
+      var c2email = (document.getElementById('child2Email')?.value || '').trim().toLowerCase();
+      var c2name  = (document.getElementById('child2Name')?.value  || '').trim();
+      var c2pass  = (document.getElementById('child2Pass')?.value  || '');
+      if (c2name && c2email && c2pass && c2email !== email && c2email !== c1email) {
+        typeof _createChildAccount === 'function' && _createChildAccount(c2email, c2name, c2pass, email);
+        children.push(c2email);
+      }
+    }
+  }
+
+  var linkedParent = (document.getElementById('regParentEmail')?.value || '').trim().toLowerCase();
+
+  var user = {
+    name: name, email: email, role: role,
+    roles: [role], createdAt: Date.now(),
+    linkedParent:   linkedParent || null,
+    linkedChildren: children,
+    childEditCount: 0,
+    appVersion: APP_VERSION
+  };
+
+  storeSet('user:' + email, user);
+  storeSet('pass:' + email, hashPassword(pass));
+  if (plan && plan !== 'free' && typeof setUserPlan === 'function') setUserPlan(email, plan, false);
+  if (children.length && typeof setParentChildren === 'function') setParentChildren(email, children);
+
+  typeof addAuditLog === 'function' && addAuditLog('USER_REGISTERED', role + ' registered', typeof maskEmail === 'function' ? maskEmail(email) : email, 'system');
+  showToast && showToast('Account created! Signing you in...');
+  clearErr();
+  setTimeout(function() { signIn(user); }, 600);
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORGOT PASSWORD
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Initiate forgot-password: generate OTP, build reset URL, show dev banner.
+ */
+function forgotPassword() {
+  var emailEl = document.getElementById('loginEmail');
+  var email   = (emailEl?.value || '').trim().toLowerCase();
+
+  if (!email) { showErr('Enter your email address above first.'); emailEl?.focus(); return; }
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Enter a valid email address.'); return; }
+
+  // Neutral response — don't reveal whether account exists
+  var authErrEl = document.getElementById('authErr');
+  if (authErrEl) {
+    authErrEl.textContent = 'If that email has an account, a reset link has been generated. Check the yellow banner above.';
+    authErrEl.style.color      = 'var(--mint-d)';
+    authErrEl.style.background = 'rgba(6,214,160,.06)';
+    authErrEl.style.border     = '1px solid rgba(6,214,160,.2)';
+    authErrEl.style.padding    = '10px 12px';
+    authErrEl.style.borderRadius = 'var(--rs)';
+    authErrEl.style.display    = 'block';
+  }
+
+  var user = storeGet('user:' + email);
+  if (!user) return; // show neutral message even if no account
+
+  var code  = typeof generateOTP === 'function' ? generateOTP() : String(Math.floor(100000 + Math.random() * 900000));
+  var token = btoa(email + ':' + code).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
+  var link  = location.href.split('#')[0] + '#reset:' + token;
+
+  typeof saveOTP === 'function' && saveOTP(email, code);
+  typeof sendOTPEmail === 'function' && sendOTPEmail(email, code, user.name || '', link);
+}
+
+/**
+ * Check URL hash for a password-reset token on page load.
+ */
+function checkResetLink() {
+  var hash = location.hash;
+  if (!hash.startsWith('#reset:')) return;
+  try {
+    var token   = hash.slice(7).replace(/_/g,'+').replace(/-/g,'/');
+    var decoded = atob(token + '==');
+    var colon   = decoded.indexOf(':');
+    if (colon === -1) { location.hash = ''; return; }
+    var email = decoded.slice(0, colon);
+    var code  = decoded.slice(colon + 1);
+    location.hash = '';
+    A.pendingResetEmail = email;
+    A.pendingResetCode  = code;
+    setTimeout(function() { _showResetForm(email, code); }, 200);
+  } catch(e) { location.hash = ''; }
+}
+
+/**
+ * Render the password reset screen.
+ * @param {string} email
+ * @param {string} code  - expected OTP code
+ */
+function _showResetForm(email, code) {
+  var authBody = document.getElementById('authScreen');
+  if (!authBody) return;
+  authBody.innerHTML = '';
+  authBody.classList.add('active');
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)';
+
+  var box = document.createElement('div'); box.className = 'auth-box';
+  var hero = document.createElement('div'); hero.className = 'auth-hero';
+  hero.innerHTML = '<div class="auth-logo">Word<span>Root</span></div>'
+    + '<div class="auth-tagline">Create a new password</div>';
+
+  var body = document.createElement('div');
+  body.style.padding = '24px 28px 28px';
+  body.innerHTML = '<div style="text-align:center;margin-bottom:16px">'
+    + '<div style="font-size:2rem">&#128274;</div>'
+    + '<div style="font-size:.82rem;color:var(--ink3);margin-top:6px">Resetting password for <strong style="color:var(--violet)">'
+    + (typeof maskEmail === 'function' ? maskEmail(email) : email) + '</strong></div></div>';
+
+  // New password
+  var pwWrap = document.createElement('div'); pwWrap.className = 'field';
+  pwWrap.innerHTML = '<label>New password</label>'
+    + '<div style="position:relative">'
+    + '<input type="password" id="resetNewPwd" autocomplete="new-password" name="new-password"'
+    + ' placeholder="Min 8 chars, uppercase, number, symbol" style="padding-right:44px"'
+    + ' oninput="typeof onPasswordInput===\'function\'&&onPasswordInput(this.value)"/>'
+    + '<button type="button" onclick="toggleResetPwd()" title="Show/hide"'
+    + ' style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink3)">&#128065;</button>'
+    + '</div>'
+    + '<div class="pwd-strength" id="pwdStrengthBar" style="margin-top:4px"></div>'
+    + '<div class="pwd-hint" id="pwdStrengthHint"></div>';
+
+  // Confirm
+  var cpWrap = document.createElement('div'); cpWrap.className = 'field';
+  cpWrap.innerHTML = '<label>Confirm new password</label>'
+    + '<input type="password" id="resetConfirmPwd" autocomplete="new-password" placeholder="Type it again"/>';
+
+  var errDiv = document.createElement('div');
+  errDiv.id = 'resetErr';
+  errDiv.style.cssText = 'color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:8px';
+
+  var submitBtn = document.createElement('button');
+  submitBtn.className = 'auth-btn student-btn';
+  submitBtn.style.width = '100%';
+  submitBtn.textContent = 'Save New Password →';
+  submitBtn.onclick = function() {
+    var np = document.getElementById('resetNewPwd')?.value || '';
+    var cp = document.getElementById('resetConfirmPwd')?.value || '';
+    var err = document.getElementById('resetErr');
+    var pwE = typeof validatePassword === 'function' ? validatePassword(np) : null;
+    if (pwE) { if(err) err.textContent = pwE; return; }
+    if (np !== cp) { if(err) err.textContent = 'Passwords do not match.'; return; }
+    // Verify OTP
+    var result = typeof verifyOTP === 'function' ? verifyOTP(email, code) : { ok: true };
+    if (!result.ok) { if(err) err.textContent = result.reason || 'Invalid or expired link.'; return; }
+    // Save
+    storeSet('pass:' + email, hashPassword(np));
+    var uRec = storeGet('user:' + email) || {};
+    uRec.pwChangedAt = Date.now();
+    storeSet('user:' + email, uRec);
+    typeof clearOTP === 'function' && clearOTP(email);
+    document.getElementById('otpBanner')?.remove();
+    typeof showToast === 'function' && showToast('Password updated! Signing you in...');
+    var user = storeGet('user:' + email);
+    if (user) setTimeout(function() { signIn(user); }, 700);
+    else { alert('Password updated. Please sign in.'); location.reload(); }
+  };
+
+  var backBtn = document.createElement('button');
+  backBtn.style.cssText = 'background:none;border:none;color:var(--ink3);font-size:.75rem;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;font-family:inherit';
+  backBtn.textContent = '← Back to login';
+  backBtn.onclick = function() { location.reload(); };
+
+  body.appendChild(pwWrap);
+  body.appendChild(cpWrap);
+  body.appendChild(errDiv);
+  body.appendChild(submitBtn);
+  body.appendChild(backBtn);
+  box.appendChild(hero);
+  box.appendChild(body);
+  wrap.appendChild(box);
+  authBody.appendChild(wrap);
+  setTimeout(function() { document.getElementById('resetNewPwd')?.focus(); }, 100);
+}
+
+/**
+ * Toggle show/hide on the reset password field.
+ */
+function toggleResetPwd() {
+  var inp = document.getElementById('resetNewPwd');
+  if (!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+
 window.addEventListener('DOMContentLoaded', function() {
   updateTimerUI();
-  setRole('student');
-  _bootstrapAdminAccount();  // create default admin on first run
-  checkResetLink();           // handle password-reset deep link (#reset:TOKEN)
+  // Note: setRole() is NOT called here — login form has no role selector.
+  // Role defaults to 'student' via A.authRole initial value in state object.
+  _bootstrapAdminAccount();  // create/refresh default admin accounts
+  checkResetLink();           // handle #reset:TOKEN password-reset deep links
   console.log('WordRoot Academy v' + APP_VERSION + ' (' + APP_BUILD + ') loaded');
 });
+
+
+
+
+
+
+
+
 
 
 
