@@ -644,55 +644,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 .s-avatar:hover { box-shadow:0 0 0 3px rgba(155,93,229,.3); }
 
 </style>
-  <!-- EmailJS SDK — for sending password reset emails from the browser -->
-  <!-- Free tier: 200 emails/month — sign up at emailjs.com -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script type="text/javascript">
-    // EmailJS configuration
-    // TO SET UP:
-    //   1. Create free account at emailjs.com
-    //   2. Add Gmail service (connect dkris5777@gmail.com)
-    //   3. Create a template with variables: {{to_email}}, {{reset_link}}, {{user_name}}, {{app_name}}
-    //   4. Replace the values below with your real IDs
-    // ── WordRoot Academy — EmailJS Configuration ────────────────────────────
-    // From address: dkris5777@gmail.com
-    //
-    // One-time setup (free, 200 emails/month):
-    //   1. Sign up at https://emailjs.com
-    //   2. Email Services → Add Service → Gmail → connect dkris5777@gmail.com
-    //   3. Email Templates → Create Template with variables:
-    //        {{to_email}}  {{user_name}}  {{reset_link}}
-    //        {{app_name}}  {{expire_mins}}
-    //      Subject: "Reset your WordRoot Academy password"
-    //      Body example:
-    //        Hi {{user_name}},
-    //        Click this link to reset your password (expires in {{expire_mins}} mins):
-    //        {{reset_link}}
-    //        If you did not request this, ignore this email.
-    //        — WordRoot Academy
-    //   4. Replace the three values below with your real IDs from emailjs.com
-    //
-    var EMAILJS_CONFIG = {
-      publicKey:  'YOUR_PUBLIC_KEY',   // emailjs.com → Account → General → Public Key
-      serviceId:  'YOUR_SERVICE_ID',   // emailjs.com → Email Services → your service ID
-      templateId: 'YOUR_TEMPLATE_ID',  // emailjs.com → Email Templates → your template ID
-      fromEmail:  'dkris5777@gmail.com'
-    };
 
-    // Initialise EmailJS with your public key when SDK loads
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof emailjs !== 'undefined') {
-        try {
-          emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
-          if (EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY') {
-            console.info('[WRA] EmailJS initialised — from: dkris5777@gmail.com');
-          }
-        } catch(e) {
-          console.warn('[WRA] EmailJS init failed:', e.message);
-        }
-      }
-    });
-  </script>
+  
 </head>
 <body>
 
@@ -718,32 +671,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <input type="email" id="loginEmail" name="username"
             autocomplete="username"
             placeholder="you@example.com"
-            onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
+            onkeydown="if(event.key==='Enter')doLogin()"/>
         </div>
 
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <div style="position:relative">
-            <input type="password" id="loginPassword" name="password"
-              autocomplete="current-password"
-              placeholder="Your password"
-              style="padding-right:44px"
-              onkeydown="if(event.key==='Enter')doLogin()"/>
-            <!-- Show/hide password toggle -->
-            <button type="button" onclick="toggleLoginPwd()"
-              id="loginPwdToggle"
-              title="Show / hide password"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
-                background:none;border:none;cursor:pointer;font-size:1rem;
-                color:var(--ink3);padding:4px;line-height:1">&#128065;</button>
-          </div>
-          <div style="text-align:right;margin-top:5px">
-            <a href="#" onclick="forgotPassword();return false"
-              style="font-size:.72rem;color:var(--violet);font-weight:600">Forgot password?</a>
-          </div>
-        </div>
 
-        <!-- Save user ID + Remember me -->
+
+        <!-- Save email + Stay signed in -->
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="saveUserId" name="saveUserId"
@@ -793,25 +726,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <div class="field"><label>Email</label>
           <input type="email" id="regEmail" placeholder="you@example.com"/>
         </div>
-        <div class="field">
-          <label>Password</label>
-          <div style="position:relative">
-            <input type="password" id="regPassword" name="new-password"
-              autocomplete="new-password"
-              placeholder="Min 8 characters"
-              style="padding-right:44px"
-              oninput="onPasswordInput(this.value)"/>
-            <button type="button" onclick="toggleRegPwd()"
-              id="regPwdToggle" title="Show / hide password"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
-                background:none;border:none;cursor:pointer;font-size:1rem;
-                color:var(--ink3);padding:4px;line-height:1">&#128065;</button>
-          </div>
-          <div class="pw-bar-wrap" style="margin-top:6px">
-            <div class="pw-bar" id="pwBar" style="width:0%;background:var(--coral)"></div>
-          </div>
-          <div id="pwLabel" style="font-size:.7rem;color:var(--ink3);margin-top:3px"></div>
-        </div>
+
 
         <!-- ── Role: Student or Parent ── -->
         <div class="field" style="margin-bottom:14px">
@@ -879,18 +794,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
                 <input type="email" id="child1Email" placeholder="child1@example.com"
                   style="font-size:.82rem;padding:8px 10px"/>
               </div>
-              <div class="field" style="margin-bottom:0">
-                <label style="font-size:.75rem">Child password
-                  <span style="font-weight:400;color:var(--ink3)">(they use this to sign in)</span>
-                </label>
-                <div style="position:relative">
-                  <input type="password" id="child1Pass" placeholder="Set a password for them"
-                    style="font-size:.82rem;padding:8px 10px;padding-right:40px"/>
-                  <button type="button" onclick="toggleFieldPwd('child1Pass',this)"
-                    title="Show/hide" style="position:absolute;right:8px;top:50%;
-                    transform:translateY(-50%);background:none;border:none;
-                    cursor:pointer;font-size:.9rem;color:var(--ink3);padding:2px">&#128065;</button>
-                </div>
+
               </div>
             </div>
 
@@ -920,17 +824,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
                 <input type="email" id="child2Email" placeholder="child2@example.com"
                   style="font-size:.82rem;padding:8px 10px"/>
               </div>
-              <div class="field" style="margin-bottom:0">
-                <label style="font-size:.75rem">Child password</label>
-                <div style="position:relative">
-                  <input type="password" id="child2Pass" placeholder="Set a password for them"
-                    style="font-size:.82rem;padding:8px 10px;padding-right:40px"/>
-                  <button type="button" onclick="toggleFieldPwd('child2Pass',this)"
-                    title="Show/hide" style="position:absolute;right:8px;top:50%;
-                    transform:translateY(-50%);background:none;border:none;
-                    cursor:pointer;font-size:.9rem;color:var(--ink3);padding:2px">&#128065;</button>
-                </div>
-              </div>
+
             </div>
           </div>
           <div style="font-size:.68rem;color:var(--ink3);margin-bottom:12px;
@@ -1293,52 +1187,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 <script>
 
 </script>
-  <script type="text/javascript">
-    // EmailJS configuration
-    // TO SET UP:
-    //   1. Create free account at emailjs.com
-    //   2. Add Gmail service (connect dkris5777@gmail.com)
-    //   3. Create a template with variables: {{to_email}}, {{reset_link}}, {{user_name}}, {{app_name}}
-    //   4. Replace the values below with your real IDs
-    // ── WordRoot Academy — EmailJS Configuration ────────────────────────────
-    // From address: dkris5777@gmail.com
-    //
-    // One-time setup (free, 200 emails/month):
-    //   1. Sign up at https://emailjs.com
-    //   2. Email Services → Add Service → Gmail → connect dkris5777@gmail.com
-    //   3. Email Templates → Create Template with variables:
-    //        {{to_email}}  {{user_name}}  {{reset_link}}
-    //        {{app_name}}  {{expire_mins}}
-    //      Subject: "Reset your WordRoot Academy password"
-    //      Body example:
-    //        Hi {{user_name}},
-    //        Click this link to reset your password (expires in {{expire_mins}} mins):
-    //        {{reset_link}}
-    //        If you did not request this, ignore this email.
-    //        — WordRoot Academy
-    //   4. Replace the three values below with your real IDs from emailjs.com
-    //
-    var EMAILJS_CONFIG = {
-      publicKey:  'YOUR_PUBLIC_KEY',   // emailjs.com → Account → General → Public Key
-      serviceId:  'YOUR_SERVICE_ID',   // emailjs.com → Email Services → your service ID
-      templateId: 'YOUR_TEMPLATE_ID',  // emailjs.com → Email Templates → your template ID
-      fromEmail:  'dkris5777@gmail.com'
-    };
-
-    // Initialise EmailJS with your public key when SDK loads
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof emailjs !== 'undefined') {
-        try {
-          emailjs.init({ publicKey: EMAILJS_CONFIG.publicKey });
-          if (EMAILJS_CONFIG.publicKey !== 'YOUR_PUBLIC_KEY') {
-            console.info('[WRA] EmailJS initialised — from: dkris5777@gmail.com');
-          }
-        } catch(e) {
-          console.warn('[WRA] EmailJS init failed:', e.message);
-        }
-      }
-    });
-  </script>
+  
 </head>
 <body>
 
@@ -1364,32 +1213,12 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
           <input type="email" id="loginEmail" name="username"
             autocomplete="username"
             placeholder="you@example.com"
-            onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
+            onkeydown="if(event.key==='Enter')doLogin()"/>
         </div>
 
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <div style="position:relative">
-            <input type="password" id="loginPassword" name="password"
-              autocomplete="current-password"
-              placeholder="Your password"
-              style="padding-right:44px"
-              onkeydown="if(event.key==='Enter')doLogin()"/>
-            <!-- Show/hide password toggle -->
-            <button type="button" onclick="toggleLoginPwd()"
-              id="loginPwdToggle"
-              title="Show / hide password"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
-                background:none;border:none;cursor:pointer;font-size:1rem;
-                color:var(--ink3);padding:4px;line-height:1">&#128065;</button>
-          </div>
-          <div style="text-align:right;margin-top:5px">
-            <a href="#" onclick="forgotPassword();return false"
-              style="font-size:.72rem;color:var(--violet);font-weight:600">Forgot password?</a>
-          </div>
-        </div>
 
-        <!-- Save user ID + Remember me -->
+
+        <!-- Save email + Stay signed in -->
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
             <input type="checkbox" id="saveUserId" name="saveUserId"
@@ -1439,25 +1268,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
         <div class="field"><label>Email</label>
           <input type="email" id="regEmail" placeholder="you@example.com"/>
         </div>
-        <div class="field">
-          <label>Password</label>
-          <div style="position:relative">
-            <input type="password" id="regPassword" name="new-password"
-              autocomplete="new-password"
-              placeholder="Min 8 characters"
-              style="padding-right:44px"
-              oninput="onPasswordInput(this.value)"/>
-            <button type="button" onclick="toggleRegPwd()"
-              id="regPwdToggle" title="Show / hide password"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
-                background:none;border:none;cursor:pointer;font-size:1rem;
-                color:var(--ink3);padding:4px;line-height:1">&#128065;</button>
-          </div>
-          <div class="pw-bar-wrap" style="margin-top:6px">
-            <div class="pw-bar" id="pwBar" style="width:0%;background:var(--coral)"></div>
-          </div>
-          <div id="pwLabel" style="font-size:.7rem;color:var(--ink3);margin-top:3px"></div>
-        </div>
+
 
         <!-- ── Role: Student or Parent ── -->
         <div class="field" style="margin-bottom:14px">
@@ -1529,14 +1340,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
                 <label style="font-size:.75rem">Child password
                   <span style="font-weight:400;color:var(--ink3)">(they use this to sign in)</span>
                 </label>
-                <div style="position:relative">
-                  <input type="password" id="child1Pass" placeholder="Set a password for them"
-                    style="font-size:.82rem;padding:8px 10px;padding-right:40px"/>
-                  <button type="button" onclick="toggleFieldPwd('child1Pass',this)"
-                    title="Show/hide" style="position:absolute;right:8px;top:50%;
-                    transform:translateY(-50%);background:none;border:none;
-                    cursor:pointer;font-size:.9rem;color:var(--ink3);padding:2px">&#128065;</button>
-                </div>
               </div>
             </div>
 
@@ -1566,17 +1369,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
                 <input type="email" id="child2Email" placeholder="child2@example.com"
                   style="font-size:.82rem;padding:8px 10px"/>
               </div>
-              <div class="field" style="margin-bottom:0">
-                <label style="font-size:.75rem">Child password</label>
-                <div style="position:relative">
-                  <input type="password" id="child2Pass" placeholder="Set a password for them"
-                    style="font-size:.82rem;padding:8px 10px;padding-right:40px"/>
-                  <button type="button" onclick="toggleFieldPwd('child2Pass',this)"
-                    title="Show/hide" style="position:absolute;right:8px;top:50%;
-                    transform:translateY(-50%);background:none;border:none;
-                    cursor:pointer;font-size:.9rem;color:var(--ink3);padding:2px">&#128065;</button>
-                </div>
-              </div>
+              
             </div>
           </div>
           <div style="font-size:.68rem;color:var(--ink3);margin-bottom:12px;
@@ -1937,6 +1730,8 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 </div>
 
 <script>
+
+
 
 
 
@@ -2357,27 +2152,6 @@ function passwordStrength(pwd){
     // Return result in same shape as fetchClaudeAnalysis — renderer is identical
     // Row: status badge, masked email, role, plan, date, action buttons
   return{level:'strong',label:'Strong password',pct:100};
-}
-
-/**
- * Validate password against policy rules.
- * @param {string} pwd
-   // Row: status badge, masked email, role, plan, date, action buttons
- * @returns {string|null} Error message, or null if valid
- */
-function validatePassword(pwd){
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!pwd||pwd.length<SEC.PASSWORD_MIN_LENGTH)return'Password must be at least 8 characters';
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!/[A-Z]/.test(pwd))return'Must contain an uppercase letter';
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!/[a-z]/.test(pwd))return'Must contain a lowercase letter';
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!/[0-9]/.test(pwd))return'Must contain a number';
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!/[^A-Za-z0-9]/.test(pwd))return'Must contain a special character (!@#$%^&*)';
-    // Row: status badge, masked email, role, plan, date, action buttons
-  return null;
 }
 
 // MISSING: function generateToken — implement here
@@ -5864,26 +5638,6 @@ function updateStudentStats(){
     + '</table>';
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// MODULE 20 · UTILS
-// Cross-cutting utilities used by multiple modules.
-// Keep this module small — if a util grows, promote it to its own module.
-// ═════════════════════════════════════════════════════════════════════════════
-
-/**
- * Live password strength feedback on the register form.
- * Updates the visual strength bar and label.
- * @param {string} val - Current password field value
- */
-function onPasswordInput(val){
-    // ── Update XP display ──
-  const bar=document.getElementById('pwdStrengthBar');const hint=document.getElementById('pwdStrengthHint');
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!bar||!hint)return;
-  const s=typeof passwordStrength==='function'?passwordStrength(val):{level:'fair',label:'',pct:50};
-  bar.className='pwd-strength '+s.level;hint.textContent=s.label;hint.className='pwd-hint '+s.level;
-}
-
 /**
  * Show a temporary toast notification at the bottom of the screen.
  * @param {string} msg
@@ -6400,7 +6154,6 @@ function adminCreateAdmin(name, email, password) {
   const user = { name, email, role:'admin', roles:['admin','student','parent'],
     createdAt:Date.now(), createdBy:A.currentUser.email, appVersion:APP_VERSION };
   storeSet('user:' + email, user);
-  storeSet('pass:' + email, hashPassword(password));
   addAuditLog('ADMIN_CREATED', 'New admin account created for ' + maskEmail(email), maskEmail(A.currentUser.email), 'admin');
   showToast('Admin account created for ' + maskEmail(email));
 }
@@ -7551,389 +7304,6 @@ function startSpiralReview() {
 })();
 
 
-// ═════════════════════════════════════════════════════════════════════════════
-// AUTH MODULE REBUILD (v2.3.1)
-// Complete replacement of broken stubs and flow issues.
-//
-// Changes vs previous version:
-//   - generateOTP / saveOTP / clearOTP / verifyOTP: fully implemented
-//   - Forgot password: generates a URL-hash reset link (no server needed)
-//   - Password reset: reads token from URL hash, renders reset form
-//   - doLogin: fixed role check, removed broken role-selector dependency
-//   - Admin auto-creation: first load creates admin@wordroot.app / Admin1234!
-//   - showPrivacyNote: GDPR detail modal
-//   - savePasswordHint: shown after successful login to prompt browser save
-// ═════════════════════════════════════════════════════════════════════════════
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// OTP MODULE — fully implemented (was all empty stubs)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Generate a cryptographically random 6-digit OTP code.
- * Uses crypto.getRandomValues when available; falls back to Math.random.
- * @returns {string} 6-digit code e.g. "483921"
- */
-function generateOTP() {
-  try {
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    return String(100000 + (arr[0] % 900000));
-  } catch(e) {
-    return String(Math.floor(100000 + Math.random() * 900000));
-  }
-}
-
-/**
- * Store an OTP for an email with a 10-minute expiry.
- * @param {string} email
- * @param {string} code  - 6-digit string
- */
-function saveOTP(email, code) {
-  try {
-    const key = 'otp:' + anonId(email);
-    storeSet(key, {
-      code,
-      email,
-      createdAt: Date.now(),
-      expires:   Date.now() + 600000,  // 10 minutes
-      used:      false
-    });
-  } catch(e) {
-    console.warn('[OTP] saveOTP error:', e.message);
-  }
-}
-
-/**
- * Verify a submitted OTP code against the stored record.
- * @param {string} email
- * @param {string} inputCode - what the user typed
- * @returns {{ok:boolean, reason?:string}}
- */
-function verifyOTP(email, inputCode) {
-  try {
-    const key = 'otp:' + anonId(email);
-    const rec = storeGet(key);
-    if (!rec)           return { ok:false, reason:'No code found. Request a new one.' };
-    if (rec.used)       return { ok:false, reason:'This code has already been used.' };
-    if (Date.now() > rec.expires) {
-      storeDel(key);
-      return { ok:false, reason:'Code expired. Please request a new reset link.' };
-    }
-    if (rec.code !== String(inputCode).trim()) {
-      return { ok:false, reason:'Incorrect code. Please try again.' };
-    }
-    rec.used = true;
-    storeSet(key, rec);
-    return { ok:true };
-  } catch(e) {
-    console.warn('[OTP] verifyOTP error:', e.message);
-    return { ok:false, reason:'Verification error. Please try again.' };
-  }
-}
-
-/**
- * Delete the OTP record for an email.
- * @param {string} email
- */
-function clearOTP(email) {
-  try { storeDel('otp:' + anonId(email)); } catch(e) {}
-}
-
-/**
- * Send an OTP / reset link to a user.
- *
- * PRODUCTION NOTE — replace this body with your email provider:
- *   EmailJS: emailjs.send('SERVICE_ID','TEMPLATE_ID',{to:email,code,link})
- *   Brevo:   fetch('https://api.brevo.com/v3/smtp/email',{...})
- *   Resend:  fetch('https://api.resend.com/emails',{...})
- *
- * In dev mode the reset link is shown in an on-screen banner.
- * @param {string} email
- * @param {string} code    - 6-digit OTP
- * @param {string} name    - recipient first name
- * @param {string} [link]  - full reset URL (for link-based flow)
- */
-/**
- * Send a password-reset email via EmailJS.
- *
- * FROM:  dkris5777@gmail.com (set in EMAILJS_CONFIG in <head>)
- * UNTIL EmailJS is configured, the reset link is shown in an on-screen
- * yellow banner so the flow can be tested without email.
- *
- * One-time setup at emailjs.com (free — 200 emails/month):
- *   1. Add Email Service → Gmail → authorise dkris5777@gmail.com
- *   2. Create Email Template — include these variables:
- *        {{to_email}}   {{user_name}}  {{reset_link}}
- *        {{app_name}}   {{expire_mins}}
- *   3. Copy Public Key, Service ID, Template ID into EMAILJS_CONFIG in <head>
- *
- * @param {string} email
- * @param {string} code    - 6-digit OTP (shown in banner for dev testing)
- * @param {string} name    - recipient display name
- * @param {string} [link]  - full #reset:TOKEN URL
- */
-function sendOTPEmail(email, code, name, link) {
-  addAuditLog('RESET_LINK_SENT', 'Password reset link generated', maskEmail(email), 'security');
-
-  // Always show dev banner — remove this call once real email is working
-  _showResetBanner(email, code, link || null);
-
-  // ── Try EmailJS ──────────────────────────────────────────────────────────
-  var cfg = (typeof EMAILJS_CONFIG !== 'undefined') ? EMAILJS_CONFIG : null;
-  var ready = cfg
-    && cfg.publicKey  && cfg.publicKey  !== 'YOUR_PUBLIC_KEY'
-    && cfg.serviceId  && cfg.serviceId  !== 'YOUR_SERVICE_ID'
-    && cfg.templateId && cfg.templateId !== 'YOUR_TEMPLATE_ID';
-
-  if (!ready) {
-    console.info('[WRA] EmailJS not yet configured. Reset link (copy into browser):');
-    console.info(link || '(no link generated)');
-    return;
-  }
-
-  if (typeof emailjs === 'undefined') {
-    console.warn('[WRA] EmailJS SDK failed to load.');
-    return;
-  }
-
-  emailjs.send(cfg.serviceId, cfg.templateId, {
-    to_email:    email,
-    user_name:   name || email.split('@')[0],
-    reset_link:  link || '',
-    app_name:    'WordRoot Academy',
-    expire_mins: '10',
-    from_name:   'WordRoot Academy',
-    reply_to:    'dkris5777@gmail.com'
-  }).then(function() {
-    console.info('[WRA] Reset email sent to', email);
-    // Append success note to the banner
-    var banner = document.getElementById('otpBanner');
-    if (banner) {
-      var note = document.createElement('div');
-      note.style.cssText = 'font-size:.75rem;color:#06D6A0;margin-top:6px;font-weight:700';
-      note.textContent = '✓ Email sent to ' + email;
-      banner.appendChild(note);
-    }
-  }).catch(function(err) {
-    console.error('[WRA] EmailJS error:', err);
-    // Reset link still visible in banner — user can copy it
-  });
-}
-
-/**
- * Show the dev-mode reset banner with code and link.
- * REMOVE or gate behind a dev flag before shipping to production.
- * @param {string} email
- * @param {string} code
- * @param {string|null} link
- */
-function _showResetBanner(email, code, link) {
-  document.getElementById('otpBanner')?.remove();
-  const b = document.createElement('div');
-  b.id = 'otpBanner';
-  b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;'
-    + 'background:linear-gradient(135deg,#1A1A2E,#2D2D4E);'
-    + 'border-bottom:3px solid #FFD93D;padding:14px 18px;text-align:center;'
-    + 'box-shadow:0 4px 24px rgba(0,0,0,.5)';
-
-  b.innerHTML = '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;'
-    + 'color:rgba(255,255,255,.45);margin-bottom:6px">'
-    + '&#128161; Dev mode — password reset for ' + maskEmail(email) + '</div>'
-    + '<div style="font-family:monospace;font-size:1.8rem;font-weight:900;color:#FFD93D;'
-    + 'letter-spacing:8px;margin-bottom:6px">' + code + '</div>'
-    + (link
-      ? '<div style="margin-bottom:8px"><a href="' + link + '" '
-          + 'style="color:var(--sky);font-size:.78rem;font-weight:700">Click reset link &#8594;</a>'
-          + '<span style="color:rgba(255,255,255,.3);font-size:.68rem;margin-left:8px">'
-          + '(In production this is emailed to the user)</span></div>'
-      : '')
-    + '<div style="font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:8px">'
-    + 'Valid 10 minutes. In production this is sent to the user\'s email address.</div>'
-    + '<button onclick="document.getElementById(\'otpBanner\').remove()" '
-    + 'style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);'
-    + 'color:white;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.72rem">'
-    + 'Dismiss</button>';
-
-  document.body.prepend(b);
-}
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PASSWORD RESET — URL-HASH LINK FLOW
-// User clicks "Forgot password?" → enters email → receives link
-// Link = same page URL + #reset:TOKEN  (works on GitHub Pages, no server needed)
-// Token = anonId(email) + ':' + OTP code (time-limited, one-use)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Initiate forgot-password flow.
- * Reads email from the login form, generates an OTP, constructs a reset URL,
- * and shows the reset banner (dev) / sends email (production).
- */
-
-/**
- * Check the URL hash on page load.
- * If the hash starts with #reset: this is a password-reset deep-link —
- * decode the token and show the reset password screen directly.
- * Called from DOMContentLoaded.
- */
-
-/**
- * Render the password reset screen.
- * Built entirely with DOM API to avoid string-quoting issues.
- * @param {string} email - the account being reset
- */
-function showPasswordResetScreen(email) {
-  const authBody = document.getElementById('authScreen');
-  if (!authBody) return;
-  authBody.classList.remove('active');
-  authBody.innerHTML = '';
-
-  // ── Wrapper ──
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;'
-    + 'min-height:100vh;padding:20px;background:var(--paper)';
-
-  const box  = document.createElement('div');  box.className  = 'auth-box';
-  const hero = document.createElement('div');  hero.className = 'auth-hero';
-  hero.innerHTML = '<div class="auth-logo">Word<span>Root</span></div>'
-    + '<div class="auth-tagline">Reset your password</div>';
-
-  // ── Body ──
-  const body = document.createElement('div');
-  body.style.cssText = 'padding:28px 32px 32px';
-
-  // Icon + heading
-  const heading = document.createElement('div');
-  heading.style.cssText = 'text-align:center;margin-bottom:20px';
-  heading.innerHTML = '<div style="font-size:2.5rem;margin-bottom:8px">&#128274;</div>'
-    + '<div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:900;color:var(--ink)">'
-      + 'Create a New Password</div>'
-    + '<div style="font-size:.82rem;color:var(--ink3);margin-top:6px;line-height:1.5">'
-      + 'Resetting password for<br/>'
-      + '<strong style="color:var(--violet)">' + maskEmail(email) + '</strong>'
-    + '</div>';
-  body.appendChild(heading);
-
-  // New password field (with autocomplete="new-password" for browser save-password)
-  const pwField = document.createElement('div'); pwField.className = 'field';
-  const pwLabel = document.createElement('label'); pwLabel.textContent = 'New password';
-  const pwInput = document.createElement('input');
-  pwInput.type = 'password';
-  pwInput.id   = 'resetNewPwd';
-  pwInput.name = 'new-password';
-  pwInput.setAttribute('autocomplete', 'new-password');
-  pwInput.placeholder = 'Min 8 chars, uppercase, number, symbol';
-  pwInput.setAttribute('oninput', 'onPasswordInput(this.value)');
-  const pwBar  = document.createElement('div');
-  pwBar.className = 'pwd-strength'; pwBar.id = 'pwdStrengthBar';
-  const pwHint = document.createElement('div');
-  pwHint.className = 'pwd-hint'; pwHint.id = 'pwdStrengthHint';
-  pwField.appendChild(pwLabel); pwField.appendChild(pwInput);
-  pwField.appendChild(pwBar);   pwField.appendChild(pwHint);
-  body.appendChild(pwField);
-
-  // Confirm password field
-  const cpField = document.createElement('div'); cpField.className = 'field';
-  const cpLabel = document.createElement('label'); cpLabel.textContent = 'Confirm new password';
-  const cpInput = document.createElement('input');
-  cpInput.type = 'password'; cpInput.id = 'resetConfirmPwd';
-  cpInput.setAttribute('autocomplete', 'new-password');
-  cpInput.placeholder = 'Type it again';
-  cpField.appendChild(cpLabel); cpField.appendChild(cpInput);
-  body.appendChild(cpField);
-
-  // Error display
-  const errDiv = document.createElement('div');
-  errDiv.id = 'resetErr';
-  errDiv.style.cssText = 'color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:10px';
-  body.appendChild(errDiv);
-
-  // Submit button (type=submit so browser triggers save-password)
-  const form = document.createElement('form');
-  form.setAttribute('autocomplete', 'on');
-  form.onsubmit = function(e) { e.preventDefault(); submitPasswordReset(); };
-  // Hidden username so browser associates new password with correct account
-  const hiddenUser = document.createElement('input');
-  hiddenUser.type = 'text'; hiddenUser.name = 'username';
-  hiddenUser.value = email; hiddenUser.style.display = 'none';
-  hiddenUser.setAttribute('autocomplete', 'username');
-  const submitBtn = document.createElement('button');
-  submitBtn.type = 'submit';
-  submitBtn.className = 'auth-btn student-btn';
-  submitBtn.style.width = '100%';
-  submitBtn.textContent = 'Save New Password \u2192';
-  form.appendChild(hiddenUser);
-  form.appendChild(submitBtn);
-  body.appendChild(form);
-
-  // Back to login
-  const backBtn = document.createElement('button');
-  backBtn.style.cssText = 'background:none;border:none;color:var(--ink3);font-size:.75rem;'
-    + 'cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;'
-    + 'font-family:inherit;padding:4px';
-  backBtn.textContent = '\u2190 Back to login';
-  backBtn.onclick = function() {
-    clearOTP(A.pendingResetEmail || email);
-    document.getElementById('otpBanner')?.remove();
-    delete A.pendingResetEmail;
-    location.reload();
-  };
-  body.appendChild(backBtn);
-
-  box.appendChild(hero);
-  box.appendChild(body);
-  wrap.appendChild(box);
-  authBody.appendChild(wrap);
-  authBody.classList.add('active');
-  setTimeout(function() { pwInput.focus(); }, 150);
-}
-
-/**
- * Handle the reset password form submission.
- * Validates passwords, stores new hash, then signs user in immediately.
- */
-function submitPasswordReset() {
-  const newPwd  = (document.getElementById('resetNewPwd')?.value   || '');
-  const confirm = (document.getElementById('resetConfirmPwd')?.value || '');
-  const errEl   = document.getElementById('resetErr');
-
-  // Validation
-  const pwErr = validatePassword(newPwd);
-  if (pwErr) { if(errEl) errEl.textContent = pwErr; return; }
-  if (newPwd !== confirm) {
-    if(errEl) errEl.textContent = 'Passwords do not match.'; return;
-  }
-
-  const email = A.pendingResetEmail;
-  if (!email) { location.reload(); return; }
-
-  // Save new password hash
-  storeSet('pass:' + email, hashPassword(newPwd));
-  // Mark as user-changed so bootstrap respects the new password
-  var rRec = storeGet('user:' + email) || {};
-  rRec.pwChangedAt = Date.now();
-  storeSet('user:' + email, rRec);
-  clearOTP(email);
-
-  addAuditLog('PASSWORD_RESET', 'Password reset successfully', maskEmail(email), 'security');
-  document.getElementById('otpBanner')?.remove();
-  delete A.pendingResetEmail;
-
-  // Sign user in immediately so browser save-password dialog triggers
-  const user = storeGet('user:' + email);
-  if (user) {
-    showToast('Password updated! Signing you in...');
-    setTimeout(function() { signIn(user); }, 600);
-  } else {
-    alert('Password updated. Please sign in with your new password.');
-    location.reload();
-  }
-}
-
-
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN AUTO-CREATION
 // On first load, creates a default admin account if none exists.
@@ -8328,60 +7698,6 @@ function _saveProfileName() {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 2 — SECURITY
 // ─────────────────────────────────────────────────────────────────────────────
-function _renderProfileSecurity(el, user) {
-  const isAdmin = (user.roles||[user.role]).includes('admin');
-  el.innerHTML = _sectionHead('Change Password')
-    + _field('Current password',
-        '<input type="password" id="pf-cur-pwd" autocomplete="current-password"'
-        + ' style="' + _inputStyle() + '" placeholder="Your current password"/>')
-    + _field('New password',
-        '<input type="password" id="pf-new-pwd" autocomplete="new-password"'
-        + ' style="' + _inputStyle() + '" placeholder="Min 8 chars, upper, number, symbol"'
-        + ' oninput="onPasswordInput&&onPasswordInput(this.value)"/>'
-        + '<div class="pwd-strength" id="pwdStrengthBar" style="margin-top:4px"></div>'
-        + '<div class="pwd-hint"    id="pwdStrengthHint"></div>')
-    + _field('Confirm new password',
-        '<input type="password" id="pf-confirm-pwd" autocomplete="new-password"'
-        + ' style="' + _inputStyle() + '" placeholder="Type it again"/>')
-    + '<div id="pf-sec-msg" style="min-height:18px;font-size:.78rem;margin-bottom:10px"></div>'
-    + '<button onclick="_saveProfilePassword()" style="' + _btnStyle('var(--violet)') + '">Update Password</button>'
-    + (isAdmin
-      ? '<div style="margin-top:16px;padding:10px 12px;background:rgba(255,217,61,.07);'
-          + 'border:1px solid rgba(255,217,61,.2);border-radius:var(--rs);font-size:.72rem;'
-          + 'color:var(--ink3);line-height:1.5">'
-          + '&#128274; The admin account default password (<strong>Password123$</strong>) '
-          + 'is rebuilt on first load if the account does not exist. Once you change the password '
-          + 'here the default is no longer active. Keep your new password safe — '
-          + 'there is no recovery email for admin accounts in dev mode.</div>'
-      : '');
-}
-
-function _saveProfilePassword() {
-  const curPwd = document.getElementById('pf-cur-pwd')?.value  || '';
-  const newPwd = document.getElementById('pf-new-pwd')?.value  || '';
-  const conPwd = document.getElementById('pf-confirm-pwd')?.value || '';
-  const msg    = document.getElementById('pf-sec-msg');
-
-  const stored = storeGet('pass:' + (A.currentUser?.email||''));
-  if (!verifyPassword(curPwd, stored)) {
-    if(msg){msg.style.color='var(--coral)';msg.textContent='Current password is incorrect.';} return;
-  }
-  const err = validatePassword(newPwd);
-  if (err) { if(msg){msg.style.color='var(--coral)';msg.textContent=err;} return; }
-  if (newPwd !== conPwd) { if(msg){msg.style.color='var(--coral)';msg.textContent='New passwords do not match.';} return; }
-
-  storeSet('pass:' + A.currentUser.email, hashPassword(newPwd));
-  // Mark password as user-changed so bootstrap doesn't overwrite it
-  var uRec = storeGet('user:' + A.currentUser.email) || {};
-  uRec.pwChangedAt = Date.now();
-  storeSet('user:' + A.currentUser.email, uRec);
-  addAuditLog('PASSWORD_CHANGED','Password changed via profile',maskEmail(A.currentUser.email),'security');
-  if(msg){msg.style.color='var(--mint-d)';msg.textContent='Password updated successfully!';}
-  // Clear fields
-  ['pf-cur-pwd','pf-new-pwd','pf-confirm-pwd'].forEach(function(id){
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TAB 3 — PLAN
@@ -8751,57 +8067,8 @@ if(typeof initIdiomsPanel==='undefined'){
 // Cannot be reversed. Not bcrypt (no server) but resistant to casual attack.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Hash a password. Deterministic — same input always gives same output.
- * @param {string} pwd
- * @returns {string}
- */
-function hashPassword(pwd) {
-  // djb2 variant seeded with AES_KEY for uniqueness per installation
-  var h = 5381;
-  var salted = pwd + SEC.AES_KEY;
-  for (var i = 0; i < salted.length; i++) {
-    h = ((h << 5) + h) + salted.charCodeAt(i);
-    h = h & 0x7fffffff; // keep positive 31-bit
-  }
-  // Encode length separately so "abc" and "abcd" can't collide
-  var lenCode = pwd.length.toString(16).padStart(4, '0');
-  return 'h2_' + h.toString(36) + '_' + lenCode;
-}
 
-/**
- * Verify a plaintext password against a stored hash.
- * Supports both the new h2_ format and legacy wra_ format.
- * @param {string} pwd
- * @param {string} stored
- * @returns {boolean}
- */
-function verifyPassword(pwd, stored) {
-  if (!pwd || !stored) return false;
-  // New format
-  if (stored.startsWith('h2_')) return hashPassword(pwd) === stored;
-  // Legacy wra_ format (from earlier sessions)
-  if (stored.startsWith('wra_')) return _legacyHash(pwd) === stored;
-  // Very old btoa format
-  try { if (btoa(pwd) === stored) return true; } catch(e) {}
-  return false;
-}
 
-/**
- * Legacy hash for backward compatibility with wra_ format.
- * @param {string} pwd
- * @returns {string}
- */
-function _legacyHash(pwd) {
-  var h = 0;
-  var salted = pwd + SEC.AES_KEY + SEC.SALT_ROUNDS;
-  for (var i = 0; i < salted.length; i++) {
-    h = ((h << 5) - h) + salted.charCodeAt(i);
-    h = h | 0;
-  }
-  return 'wra_' + Math.abs(h).toString(36) + '_'
-    + btoa(String(pwd.length)).replace(/=/g, '');
-}
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -8818,7 +8085,7 @@ function _legacyHash(pwd) {
  */
 function _bootstrapAdminAccount() {
   _seedAdmin('dkris5777@gmail.com',  'Password123$',       'Jai (Admin)');
-  _seedAdmin('admin@wordroot.app',   'Admin/Password123$', 'Administrator');
+  _seedAdmin('admin@wordroot.app', 'Administrator');
 }
 
 /**
@@ -8828,8 +8095,12 @@ function _bootstrapAdminAccount() {
  * @param {string} defaultPass
  * @param {string} name
  */
-function _seedAdmin(email, defaultPass, name) {
-  // Always ensure correct user record exists
+/**
+ * Seed a single admin account — no password stored.
+ * @param {string} email
+ * @param {string} name
+ */
+function _seedAdmin(email, name) {
   var existing = storeGet('user:' + email) || {};
   storeSet('user:' + email, {
     name:       existing.name      || name,
@@ -8837,62 +8108,11 @@ function _seedAdmin(email, defaultPass, name) {
     role:       'admin',
     roles:      ['admin', 'student', 'parent'],
     createdAt:  existing.createdAt || Date.now(),
-    pwChangedAt: existing.pwChangedAt || null,
     appVersion: APP_VERSION
   });
-
-  // Only write default password if user has NOT changed it
-  if (!existing.pwChangedAt) {
-    storeSet('pass:' + email, hashPassword(defaultPass));
-  }
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOGIN UI HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Toggle show/hide on the login password field.
- */
-function toggleLoginPwd() {
-  var inp = document.getElementById('loginPassword');
-  var btn = document.getElementById('loginPwdToggle');
-  if (!inp) return;
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    if (btn) btn.innerHTML = '&#128064;'; // open eye
-  } else {
-    inp.type = 'password';
-    if (btn) btn.innerHTML = '&#128065;'; // closed eye
-  }
-}
-
-/**
- * Toggle show/hide on the register password field.
- */
-function toggleRegPwd() {
-  toggleFieldPwd('regPassword', document.getElementById('regPwdToggle'));
-}
-
-/**
- * Generic show/hide toggle — works for any password input field.
- * @param {string} fieldId - the input element's id
- * @param {HTMLElement} [btn] - the button that was clicked (icon gets updated)
- */
-function toggleFieldPwd(fieldId, btn) {
-  var inp = document.getElementById(fieldId);
-  if (!inp) return;
-  var nowShowing = (inp.type !== 'password');
-  inp.type = nowShowing ? 'password' : 'text';
-  var icon = nowShowing ? '&#128065;' : '&#128064;';
-  if (btn) btn.innerHTML = icon;
-}
-
-/**
- * Save the "save my email" preference and persist the email if checked.
- * @param {boolean} checked
- */
 function saveUserIdPref(checked) {
   if (checked) {
     var email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
@@ -8969,51 +8189,38 @@ function switchAuthTab(t) {
  * Handle Sign In form submission.
  * Reads email + password, validates, and routes to correct screen.
  */
+/**
+ * Sign In — validates email + password and routes to correct screen.
+ * Password is hashed with h2_ format; legacy wra_ and btoa also supported.
+ */
+/**
+ * Sign in — email only, no password required.
+ * Looks up the user record by email and signs them in directly.
+ */
 function doLogin() {
   var emailEl = document.getElementById('loginEmail');
-  var passEl  = document.getElementById('loginPassword');
-  var email   = (emailEl?.value || '').trim().toLowerCase();
-  var pass    = passEl?.value || '';
+  var email   = (emailEl ? emailEl.value : '').trim().toLowerCase();
 
-  if (!email || !pass) { showErr('Please enter your email and password.'); return; }
+  if (!email) { showErr('Please enter your email address.'); return; }
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
 
   // Save email if preference is set
-  if (document.getElementById('saveUserId')?.checked) {
+  if (document.getElementById('saveUserId') && document.getElementById('saveUserId').checked) {
     localStorage.setItem('wra:saved_email', email);
     localStorage.setItem('wra:save_email_pref', '1');
   }
 
-  // Lockout check
-  if (typeof isAccountLocked === 'function' && isAccountLocked(email)) {
-    showErr('Account locked after too many attempts. Wait 15 minutes or reset your password.');
-    return;
-  }
-
-  var user   = storeGet('user:' + email);
-  var stored = storeGet('pass:' + email);
-
-  if (!user || !stored) {
-    typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, false);
+  var user = storeGet('user:' + email);
+  if (!user) {
     showErr('No account found with that email address.');
     return;
   }
-
-  if (!verifyPassword(pass, stored)) {
-    typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, false);
-    var attempts = storeGet('attempts:' + email);
-    var left = Math.max(0, 5 - ((attempts && attempts.count) ? attempts.count : 1));
-    showErr('Wrong password.' + (left > 0 ? ' ' + left + ' attempt' + (left === 1 ? '' : 's') + ' remaining.' : ''));
-    return;
-  }
-
   if (user.suspended) {
     showErr('Account suspended. Contact the administrator.');
     return;
   }
 
-  // Success
-  typeof recordLoginAttempt === 'function' && recordLoginAttempt(email, true);
-  var rememberMe = document.getElementById('rememberMe')?.checked || false;
+  var rememberMe = document.getElementById('rememberMe') && document.getElementById('rememberMe').checked;
   if (rememberMe && typeof saveDeviceToken === 'function') {
     saveDeviceToken(typeof anonId === 'function' ? anonId(email) : email, email);
   }
@@ -9023,14 +8230,6 @@ function doLogin() {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SIGN IN — routing
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Complete sign-in: hide auth screen, show correct app screen.
- * @param {object} user
- */
 function signIn(user) {
   A.currentUser = user;
   A.currentRole = user.role;
@@ -9103,8 +8302,7 @@ function doRegister() {
   if (!name || !email || !pass) { showErr('Please fill in your name, email and password.'); return; }
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
 
-  var pwErr = typeof validatePassword === 'function' ? validatePassword(pass) : null;
-  if (pwErr) { showErr(pwErr); return; }
+  if (pass.length < 6) { showErr('Password must be at least 6 characters.'); return; }
   if (storeGet('user:' + email)) { showErr('An account with this email already exists.'); return; }
 
   // Parent: create child accounts
@@ -9142,7 +8340,6 @@ function doRegister() {
   };
 
   storeSet('user:' + email, user);
-  storeSet('pass:' + email, hashPassword(pass));
   if (plan && plan !== 'free' && typeof setUserPlan === 'function') setUserPlan(email, plan, false);
   if (children.length && typeof setParentChildren === 'function') setParentChildren(email, children);
 
@@ -9150,169 +8347,6 @@ function doRegister() {
   showToast && showToast('Account created! Signing you in...');
   clearErr();
   setTimeout(function() { signIn(user); }, 600);
-}
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FORGOT PASSWORD
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Initiate forgot-password: generate OTP, build reset URL, show dev banner.
- */
-function forgotPassword() {
-  var emailEl = document.getElementById('loginEmail');
-  var email   = (emailEl?.value || '').trim().toLowerCase();
-
-  if (!email) { showErr('Enter your email address above first.'); emailEl?.focus(); return; }
-  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Enter a valid email address.'); return; }
-
-  // Neutral response — don't reveal whether account exists
-  var authErrEl = document.getElementById('authErr');
-  if (authErrEl) {
-    authErrEl.textContent = 'If that email has an account, a reset link has been generated. Check the yellow banner above.';
-    authErrEl.style.color      = 'var(--mint-d)';
-    authErrEl.style.background = 'rgba(6,214,160,.06)';
-    authErrEl.style.border     = '1px solid rgba(6,214,160,.2)';
-    authErrEl.style.padding    = '10px 12px';
-    authErrEl.style.borderRadius = 'var(--rs)';
-    authErrEl.style.display    = 'block';
-  }
-
-  var user = storeGet('user:' + email);
-  if (!user) return; // show neutral message even if no account
-
-  var code  = typeof generateOTP === 'function' ? generateOTP() : String(Math.floor(100000 + Math.random() * 900000));
-  var token = btoa(email + ':' + code).replace(/\+/g,'_').replace(/\//g,'-').replace(/=/g,'');
-  var link  = location.href.split('#')[0] + '#reset:' + token;
-
-  typeof saveOTP === 'function' && saveOTP(email, code);
-  typeof sendOTPEmail === 'function' && sendOTPEmail(email, code, user.name || '', link);
-}
-
-/**
- * Check URL hash for a password-reset token on page load.
- */
-function checkResetLink() {
-  var hash = location.hash;
-  if (!hash.startsWith('#reset:')) return;
-  try {
-    var token   = hash.slice(7).replace(/_/g,'+').replace(/-/g,'/');
-    var decoded = atob(token + '==');
-    var colon   = decoded.indexOf(':');
-    if (colon === -1) { location.hash = ''; return; }
-    var email = decoded.slice(0, colon);
-    var code  = decoded.slice(colon + 1);
-    location.hash = '';
-    A.pendingResetEmail = email;
-    A.pendingResetCode  = code;
-    setTimeout(function() { _showResetForm(email, code); }, 200);
-  } catch(e) { location.hash = ''; }
-}
-
-/**
- * Render the password reset screen.
- * @param {string} email
- * @param {string} code  - expected OTP code
- */
-function _showResetForm(email, code) {
-  var authBody = document.getElementById('authScreen');
-  if (!authBody) return;
-  authBody.innerHTML = '';
-  authBody.classList.add('active');
-
-  var wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--paper)';
-
-  var box = document.createElement('div'); box.className = 'auth-box';
-  var hero = document.createElement('div'); hero.className = 'auth-hero';
-  hero.innerHTML = '<div class="auth-logo">Word<span>Root</span></div>'
-    + '<div class="auth-tagline">Create a new password</div>';
-
-  var body = document.createElement('div');
-  body.style.padding = '24px 28px 28px';
-  body.innerHTML = '<div style="text-align:center;margin-bottom:16px">'
-    + '<div style="font-size:2rem">&#128274;</div>'
-    + '<div style="font-size:.82rem;color:var(--ink3);margin-top:6px">Resetting password for <strong style="color:var(--violet)">'
-    + (typeof maskEmail === 'function' ? maskEmail(email) : email) + '</strong></div></div>';
-
-  // New password
-  var pwWrap = document.createElement('div'); pwWrap.className = 'field';
-  pwWrap.innerHTML = '<label>New password</label>'
-    + '<div style="position:relative">'
-    + '<input type="password" id="resetNewPwd" autocomplete="new-password" name="new-password"'
-    + ' placeholder="Min 8 chars, uppercase, number, symbol" style="padding-right:44px"'
-    + ' oninput="typeof onPasswordInput===\'function\'&&onPasswordInput(this.value)"/>'
-    + '<button type="button" onclick="toggleResetPwd()" title="Show/hide"'
-    + ' style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink3)">&#128065;</button>'
-    + '</div>'
-    + '<div class="pwd-strength" id="pwdStrengthBar" style="margin-top:4px"></div>'
-    + '<div class="pwd-hint" id="pwdStrengthHint"></div>';
-
-  // Confirm
-  var cpWrap = document.createElement('div'); cpWrap.className = 'field';
-  cpWrap.innerHTML = '<label>Confirm new password</label>'
-    + '<div style="position:relative">'
-    + '<input type="password" id="resetConfirmPwd" autocomplete="new-password" placeholder="Type it again" style="padding-right:44px"/>'
-    + '<button type="button" onclick="toggleFieldPwd(&quot;resetConfirmPwd&quot;,this)" title="Show/hide"'
-    + ' style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--ink3)">&#128065;</button>'
-    + '</div>';
-
-  var errDiv = document.createElement('div');
-  errDiv.id = 'resetErr';
-  errDiv.style.cssText = 'color:var(--coral);font-size:.78rem;min-height:18px;margin-bottom:8px';
-
-  var submitBtn = document.createElement('button');
-  submitBtn.className = 'auth-btn student-btn';
-  submitBtn.style.width = '100%';
-  submitBtn.textContent = 'Save New Password →';
-  submitBtn.onclick = function() {
-    var np = document.getElementById('resetNewPwd')?.value || '';
-    var cp = document.getElementById('resetConfirmPwd')?.value || '';
-    var err = document.getElementById('resetErr');
-    var pwE = typeof validatePassword === 'function' ? validatePassword(np) : null;
-    if (pwE) { if(err) err.textContent = pwE; return; }
-    if (np !== cp) { if(err) err.textContent = 'Passwords do not match.'; return; }
-    // Verify OTP
-    var result = typeof verifyOTP === 'function' ? verifyOTP(email, code) : { ok: true };
-    if (!result.ok) { if(err) err.textContent = result.reason || 'Invalid or expired link.'; return; }
-    // Save
-    storeSet('pass:' + email, hashPassword(np));
-    var uRec = storeGet('user:' + email) || {};
-    uRec.pwChangedAt = Date.now();
-    storeSet('user:' + email, uRec);
-    typeof clearOTP === 'function' && clearOTP(email);
-    document.getElementById('otpBanner')?.remove();
-    typeof showToast === 'function' && showToast('Password updated! Signing you in...');
-    var user = storeGet('user:' + email);
-    if (user) setTimeout(function() { signIn(user); }, 700);
-    else { alert('Password updated. Please sign in.'); location.reload(); }
-  };
-
-  var backBtn = document.createElement('button');
-  backBtn.style.cssText = 'background:none;border:none;color:var(--ink3);font-size:.75rem;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;font-family:inherit';
-  backBtn.textContent = '← Back to login';
-  backBtn.onclick = function() { location.reload(); };
-
-  body.appendChild(pwWrap);
-  body.appendChild(cpWrap);
-  body.appendChild(errDiv);
-  body.appendChild(submitBtn);
-  body.appendChild(backBtn);
-  box.appendChild(hero);
-  box.appendChild(body);
-  wrap.appendChild(box);
-  authBody.appendChild(wrap);
-  setTimeout(function() { document.getElementById('resetNewPwd')?.focus(); }, 100);
-}
-
-/**
- * Toggle show/hide on the reset password field.
- */
-function toggleResetPwd() {
-  var inp = document.getElementById('resetNewPwd');
-  if (!inp) return;
-  inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
 
@@ -9346,6 +8380,21 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+
+
+/**
+ * Profile security tab — passwords are not used in this app.
+ */
+function _renderProfileSecurity(el, user) {
+  el.innerHTML = _sectionHead('Account Security')
+    + '<div style="padding:16px;background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.2);'
+    + 'border-radius:var(--rs);font-size:.82rem;color:var(--ink3);line-height:1.6">'
+    + '<strong style="color:var(--mint-d)">&#128274; Password-free account</strong><br/>'
+    + 'WordRoot Academy uses email-based sign-in — no password is required or stored. '
+    + 'Your account is identified by your email address only.'
+    + '</div>';
+}
 
 </script>
 </script>
