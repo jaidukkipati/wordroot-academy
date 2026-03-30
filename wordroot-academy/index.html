@@ -800,554 +800,6 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
                 <input type="email" id="child1Email" placeholder="child1@example.com"
                   style="font-size:.82rem;padding:8px 10px"/>
               </div>
-
-              </div>
-            </div>
-
-            <!-- Child 2 — optional, can add later -->
-            <div id="child2Toggle" style="margin-bottom:4px">
-              <button type="button" onclick="toggleChild2()"
-                style="background:none;border:1.5px dashed rgba(26,26,46,.2);
-                  border-radius:var(--rs);padding:8px 14px;width:100%;cursor:pointer;
-                  font-size:.78rem;color:var(--ink3);font-family:sans-serif;
-                  transition:all .2s"
-                onmouseover="this.style.borderColor='var(--violet)';this.style.color='var(--violet)'"
-                onmouseout="this.style.borderColor='rgba(26,26,46,.2)';this.style.color='var(--ink3)'">
-                + Add Child 2 now (optional — can do later)
-              </button>
-            </div>
-            <div id="child2Section" style="display:none;padding:12px;background:var(--white);
-              border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.08)">
-              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;
-                letter-spacing:.7px;color:var(--ink3);margin-bottom:8px">Child 2 (optional)</div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child name</label>
-                <input type="text" id="child2Name" placeholder="Child full name"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child email</label>
-                <input type="email" id="child2Email" placeholder="child2@example.com"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
-
-            </div>
-          </div>
-          <div style="font-size:.68rem;color:var(--ink3);margin-bottom:12px;
-            background:rgba(255,217,61,.06);border-radius:var(--rs);padding:8px 10px;
-            border:1px solid rgba(255,217,61,.15)">
-            ⚠️ Children can be added or changed up to <strong>2 times</strong> after registration.
-            Choose carefully — contact support if you need an extra change.
-          </div>
-        </div>
-
-        <!-- ── Plan selection ── -->
-        <div class="field" style="margin-bottom:6px">
-          <label style="margin-bottom:8px;display:block">Choose your plan</label>
-          <div id="planCards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="plan-pick active" id="planFree" onclick="selectPlan('free',this)">
-              <div style="font-weight:800;font-size:.92rem;color:var(--ink)">Free</div>
-              <div style="font-size:.65rem;color:var(--ink3);margin-top:2px">£0 / month</div>
-              <div style="font-size:.68rem;color:var(--ink3);margin-top:5px;line-height:1.4">
-                Word Search · Root Learn<br/>5 searches/day · 5 roots/day
-              </div>
-            </div>
-            <div class="plan-pick" id="planPaid" onclick="selectPlan('standard',this)">
-              <div style="font-weight:800;font-size:.92rem;color:var(--violet)">Premium</div>
-              <div style="font-size:.65rem;color:var(--ink3);margin-top:2px">£9.99 / month</div>
-              <div style="font-size:.68rem;color:var(--ink3);margin-top:5px;line-height:1.4">
-                Unlimited · Idioms · Parent Dashboard<br/>Claude AI · Priority support
-              </div>
-            </div>
-          </div>
-          <input type="hidden" id="regPlan" value="free"/>
-          <div style="font-size:.68rem;color:var(--ink3);margin-top:6px">
-            🔒 No payment needed now — upgrade anytime.
-          </div>
-        </div>
-
-        <button class="auth-btn student-btn" id="regBtn" onclick="doRegister()" style="margin-top:10px">
-          Create Account →
-        </button>
-        <div style="text-align:center;margin-top:10px;font-size:.78rem;color:var(--ink3)">
-          Already registered? <a href="#" onclick="switchAuthTab('login');return false"
-            style="color:var(--violet);font-weight:600">Sign in</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ STUDENT SCREEN ═══════════ -->
-<div id="studentScreen" class="screen">
-  <div class="s-wrap">
-    <div class="s-header">
-      <div class="s-logo">Word<span>Root</span></div>
-      <div class="s-user">
-        <div class="s-avatar" id="sAvatar" onclick="openProfile()" style="cursor:pointer" title="My Profile">?</div>
-        <div><div class="s-name" id="sName">Student</div><div class="s-xp" id="sXp">0 XP</div></div>
-        <button class="logout-btn" onclick="openProfile()" title="Profile" style="margin-right:4px;background:rgba(255,255,255,.08)">&#128100;</button>
-        <button class="logout-btn" onclick="doLogout()">Sign out</button>
-      </div>
-    </div>
-    <div class="timer-bar">
-      <div class="t-label">📅 Session</div>
-      <div class="t-track"><div class="t-fill" id="tFill" style="width:100%"></div></div>
-      <div class="t-clock" id="tClock">30:00</div>
-      <button class="t-btn" id="tBtn" onclick="toggleTimer()">Start</button>
-    </div>
-    <div class="panel-tabs">
-      <button class="ptab active" id="ptab-learn"  onclick="showPanel('learn')">📚 Learn</button>
-      <button class="ptab"        id="ptab-search" onclick="showPanel('search')">🔍 Search</button>
-      <button class="ptab"        id="ptab-history"onclick="showPanel('history')">📖 History</button>
-      <button class="ptab"        id="ptab-stats"  onclick="showPanel('stats')">📊 Stats</button>
-    </div>
-    <div id="panel-learn">
-      <div class="fam-tabs">
-        <button class="ftab active" onclick="setFamily('all',this)">🌍 All</button>
-        <button class="ftab" onclick="setFamily('Latin',this)">🏛 Latin</button>
-        <button class="ftab" onclick="setFamily('Greek',this)">⚗️ Greek</button>
-        <button class="ftab" onclick="setFamily('Anglo-Saxon',this)">⚔️ Anglo-Saxon</button>
-      </div>
-      <div class="prog-row" style="display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px">
-        <div class="prog-card active" id="pc1" onclick="goStep(1)"><div class="prog-icon">📖</div><div class="prog-name">Explore</div></div>
-        <div class="prog-card" id="pc2" onclick="goStep(2)"><div class="prog-icon">🏷️</div><div class="prog-name">Identify</div></div>
-        <div class="prog-card" id="pc3" onclick="goStep(3)"><div class="prog-icon">🔗</div><div class="prog-name">Build</div></div>
-        <div class="prog-card" id="pc4" onclick="goStep(4)"><div class="prog-icon">✍️</div><div class="prog-name">Context</div></div>
-        <div class="prog-card" id="pc5" onclick="goStep(5)"><div class="prog-icon">🃏</div><div class="prog-name">Deep Dive</div></div>
-        <div class="prog-card" id="pc6" onclick="goStep(6)"><div class="prog-icon">🧪</div><div class="prog-name">Quiz</div></div>
-      </div>
-      <div class="main-card" id="mainCard">
-        <div class="card-top" id="cardTop" data-emoji="📖">
-          <div class="origin-tag"><span id="rOrigin">—</span><span class="origin-full" id="rOriginFull"></span></div>
-          <div class="root-title" id="rTitle">—</div>
-          <div class="root-meaning">means: <strong id="rMeaning">—</strong></div>
-        </div>
-        <!-- 7-step curriculum sequence (Word Roots pedagogy):
-             Pre-test auto-gates entry. Post-test auto-runs after step 7.
-             1 Explore → 2 Identify → 3 Build → 4 Cloze → 5 Context → 6 Deep Dive → 7 Quiz -->
-        <div class="step-tabs" style="display:flex;gap:2px;padding:8px 10px;overflow-x:auto">
-          <button class="stab s1 on" id="stab1" onclick="goStep(1)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">1</div><br/>Explore</button>
-          <button class="stab s2"    id="stab2" onclick="goStep(2)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">2</div><br/>Identify</button>
-          <button class="stab s3"    id="stab3" onclick="goStep(3)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">3</div><br/>Build</button>
-          <button class="stab s4"    id="stab4" onclick="goStep(4)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">4</div><br/>Cloze</button>
-          <button class="stab s5"    id="stab5" onclick="goStep(5)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">5</div><br/>Context</button>
-          <button class="stab s6"    id="stab6" onclick="goStep(6)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">6</div><br/>Deep&nbsp;Dive</button>
-          <button class="stab s7"    id="stab7" onclick="goStep(7)" style="min-width:0;font-size:.52rem;padding:6px 4px"><div class="snum">7</div><br/>Quiz</button>
-        </div>
-        <div class="step-content" id="stepContent">
-          <div class="loading-state"><div class="spinner"></div><div class="loading-text">Loading your first root...</div></div>
-        </div>
-      </div>
-      <div class="action-bar">
-        <button class="btn btn-skip" onclick="skipRoot()">⏭ Skip</button>
-        <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>← Prev</button>
-        <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next →</button>
-        <button class="btn btn-accent" onclick="newRoot()">🎲 New Root</button>
-      </div>
-    </div>
-    <!-- ── Search panel (moved from separate section) ── -->
-    <div id="panel-search" style="display:none">
-      <div id="rootSuggestion" style="display:none;margin-bottom:12px"></div>
-      <div class="search-bar">
-        <div class="sentence-warning" id="sentenceWarning" style="display:none">
-          ⚠️ Please enter a single word — Word Search works with one word at a time.
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" class="search-input" id="searchInput"
-            placeholder="Search any English word…" autocomplete="off"
-            oninput="onSearchInput(this.value)"
-            onkeydown="if(event.key==='Enter')doSearch()"/>
-          <button class="search-btn" id="searchBtn" onclick="doSearch()">Search →</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <label style="font-size:.72rem;color:var(--ink3);white-space:nowrap">Accent:</label>
-          <select id="accentSelect" style="flex:1;padding:5px 8px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.12);font-size:.75rem;background:var(--white);color:var(--ink);outline:none">
-            <option value="en-GB">🇬🇧 British</option>
-            <option value="en-US">🇺🇸 American</option>
-            <option value="en-AU">🇦🇺 Australian</option>
-            <option value="en-IN">🇮🇳 Indian</option>
-            <option value="en-ZA">🇿🇦 South African</option>
-          </select>
-        </div>
-      </div>
-      <div id="searchResult" style="margin-top:12px">
-        <div style="text-align:center;padding:40px 20px;color:var(--ink3)">
-          <div style="font-size:2rem;margin-bottom:8px">🔍</div>
-          <div style="font-size:.9rem">Type any English word to explore its roots, etymology, and meaning.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── History panel: last 5 words searched + last 5 roots studied ── -->
-    <div id="panel-history" style="display:none">
-      <div class="main-card">
-        <div style="padding:18px 22px">
-          <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;margin-bottom:4px">📖 Recent Activity</div>
-          <div style="font-size:.75rem;color:var(--ink3);margin-bottom:16px">Your last 5 word searches and 5 roots studied</div>
-          <div id="historyList">
-            <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No activity yet — start searching or learning!</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="panel-stats" style="display:none">
-      <!-- Spiral Review trigger — shown after 3+ roots completed -->
-      <div id="spiralTriggerCard" style="display:none">
-        <div class="spiral-trigger" onclick="startSpiralReview()">
-          <div>
-            <div class="spiral-title">&#128260; Spiral Review</div>
-            <div class="spiral-sub" id="spiralSubtitle">Review everything you have studied so far</div>
-          </div>
-          <div style="font-size:1.8rem;color:var(--violet)">&#8594;</div>
-        </div>
-      </div>
-      <!-- KPI grid -->
-      <div class="stats-g">
-        <div class="stat-c"><div class="stat-icon">&#128218;</div><div class="stat-val" id="ss-roots">0</div><div class="stat-lab">Roots Done</div></div>
-        <div class="stat-c"><div class="stat-icon">&#128288;</div><div class="stat-val" id="ss-words">0</div><div class="stat-lab">Words Found</div></div>
-        <div class="stat-c"><div class="stat-icon">&#127919;</div><div class="stat-val" id="ss-acc">0%</div><div class="stat-lab">Quiz Accuracy</div></div>
-        <div class="stat-c"><div class="stat-icon">&#128293;</div><div class="stat-val" id="ss-streak">1</div><div class="stat-lab">Day Streak</div></div>
-      </div>
-      <!-- Monthly goal bar -->
-      <div class="month-bar-wrap">
-        <div class="mb-label"><span>Monthly Goal</span><span id="ss-month">0 / 1000 roots</span></div>
-        <div class="mb-track"><div class="mb-fill" id="ss-mbar" style="width:0%"></div></div>
-      </div>
-      <!-- Pre → Post learning delta table -->
-      <div class="main-card" style="margin-top:12px">
-        <div style="padding:14px 18px">
-          <div style="font-family:Fraunces,serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:4px">
-            &#128200; Learning Progress
-          </div>
-          <div style="font-size:.72rem;color:var(--ink3);margin-bottom:12px">
-            Before vs after scores for each root you have studied
-          </div>
-          <div id="deltaTableWrap">
-            <div style="text-align:center;color:var(--ink3);font-size:.78rem;padding:20px;font-style:italic">
-              Complete your first root to see your learning progress here.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search panel -->
-    <div id="panel-search" style="display:none">
-      <div id="rootSuggestion" style="display:none;margin-bottom:12px"></div>
-      <div class="search-bar">
-        <div class="sentence-warning" id="sentenceWarning" style="display:none">
-          &#9888;&#65039; Please enter a single word — Word Search works with one word at a time.
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" class="search-input" id="searchInput"
-            placeholder="Search any English word&#8230;" autocomplete="off"
-            oninput="onSearchInput(this.value)"
-            onkeydown="if(event.key===&#39;Enter&#39;)doSearch()"/>
-          <button class="search-btn" id="searchBtn" onclick="doSearch()">Search &#8594;</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <label style="font-size:.72rem;color:var(--ink3);white-space:nowrap">Accent:</label>
-          <select id="accentSelect" style="flex:1;padding:5px 8px;border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.12);font-size:.75rem;background:var(--white);color:var(--ink);outline:none">
-            <option value="en-GB">&#127468;&#127463; British</option>
-            <option value="en-US">&#127482;&#127480; American</option>
-            <option value="en-AU">&#127462;&#127482; Australian</option>
-            <option value="en-IN">&#127470;&#127475; Indian</option>
-            <option value="en-ZA">&#127487;&#127462; South African</option>
-          </select>
-        </div>
-      </div>
-      <div id="searchResult" style="margin-top:12px">
-        <div style="text-align:center;padding:40px 20px;color:var(--ink3)">
-          <div style="font-size:2rem;margin-bottom:8px">&#128269;</div>
-          <div style="font-size:.9rem">Type any English word to explore its roots, etymology, and meaning.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- History panel -->
-    <div id="panel-history" style="display:none">
-      <div class="main-card">
-        <div style="padding:18px 22px">
-          <div style="font-family:&#39;Fraunces&#39;,serif;font-size:1.2rem;font-weight:700;margin-bottom:4px">&#128218; Recent Activity</div>
-          <div style="font-size:.75rem;color:var(--ink3);margin-bottom:16px">Your last 5 word searches and 5 roots studied</div>
-          <div id="historyList">
-            <div style="text-align:center;color:var(--ink3);padding:40px 0;font-style:italic">No activity yet &#8212; start searching or learning!</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end s-wrap -->
-</div><!-- end studentScreen -->
-
-<!-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; PARENT DASHBOARD &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552; -->
-<div id="parentScreen" class="screen">
-  <div class="pd-wrap">
-    <div class="pd-header">
-      <div>
-        <div class="pd-title">&#128065; Parent Dashboard</div>
-        <div class="pd-sub" id="pdWelcome">Monitoring your learner's progress</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="pd-logout" onclick="openProfile()" title="My Profile"
-          style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)">
-          &#128100; Profile</button>
-        <button class="pd-logout" onclick="doLogout()">Sign Out</button>
-      </div>
-    </div>
-    <div id="pdStudentSelector"></div>
-    <div id="pdContent">
-      <div class="pd-no-data"><div>&#128202;</div><p>Select a student above to view their progress.</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-<div class="version-badge" id="versionBadge">v2.3.0</div>
-
-
-<!-- ═══════════ FLOATING ACTION BUTTONS ═══════════ -->
-<button id="idiomsFab" onclick="openIdiomsModal()"
-  style="display:none;position:fixed;bottom:80px;right:20px;z-index:1000;
-    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-    background:linear-gradient(135deg,var(--violet),var(--sky));
-    color:white;font-size:1.3rem;box-shadow:0 4px 16px rgba(155,93,229,.4);
-    transition:transform .2s" title="Explore Idioms"
-  onmouseover="this.style.transform='scale(1.1)'"
-  onmouseout="this.style.transform='scale(1)'">&#128172;</button>
-
-<button id="feedbackFab" onclick="openFeedbackModal()"
-  style="display:none;position:fixed;bottom:20px;right:20px;z-index:1000;
-    width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-    background:linear-gradient(135deg,var(--mint),var(--sky));
-    color:white;font-size:1.2rem;box-shadow:0 4px 16px rgba(6,214,160,.4);
-    transition:transform .2s" title="Send Feedback"
-  onmouseover="this.style.transform='scale(1.1)'"
-  onmouseout="this.style.transform='scale(1)'">&#128172;</button>
-
-<!-- ═══════════ IDIOMS MODAL ═══════════ -->
-<div id="idiomsModal" style="display:none;position:fixed;inset:0;z-index:2000;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);overflow-y:auto;padding:20px">
-  <div style="max-width:680px;margin:0 auto;background:var(--paper);border-radius:var(--r);
-    box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
-    <div style="background:linear-gradient(135deg,var(--ink),var(--ink2));padding:20px 24px;
-      display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:Fraunces,serif;font-size:1.3rem;font-weight:900;color:var(--sun)">
-          &#128172; English Idioms Explorer</div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px">Origins, history and geography of iconic expressions</div>
-      </div>
-      <button onclick="closeIdiomsModal()"
-        style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-          color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">&#10005;</button>
-    </div>
-    <div style="padding:16px 20px;border-bottom:1px solid rgba(26,26,46,.08)">
-      <input type="text" id="idiomModalSearch" placeholder="Search idioms&#8230;" oninput="filterIdiomsModal()" autocomplete="off"
-        style="width:100%;padding:10px 14px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);background:var(--white);font-size:.88rem;outline:none;box-sizing:border-box;font-family:sans-serif;color:var(--ink)"/>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="idiomEraFilters">
-        <button class="era-btn active" onclick="setIdiomsEra('all',this)">All Eras</button>
-        <button class="era-btn" onclick="setIdiomsEra('Biblical',this)">Biblical</button>
-        <button class="era-btn" onclick="setIdiomsEra('Pre-Victorian',this)">Pre-Victorian</button>
-        <button class="era-btn" onclick="setIdiomsEra('Victorian',this)">Victorian</button>
-        <button class="era-btn" onclick="setIdiomsEra('Modern',this)">Modern</button>
-      </div>
-    </div>
-    <div id="idiomModalList" style="padding:16px 20px;max-height:60vh;overflow-y:auto"></div>
-    <div id="idiomModalPager" style="padding:12px 20px;border-top:1px solid rgba(26,26,46,.08);display:flex;align-items:center;justify-content:space-between;gap:10px"></div>
-  </div>
-</div>
-
-<!-- ═══════════ FEEDBACK MODAL ═══════════ -->
-<div id="feedbackModal" style="display:none;position:fixed;inset:0;z-index:2000;
-  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:20px;align-items:center;justify-content:center">
-  <div style="max-width:480px;width:100%;background:var(--paper);border-radius:var(--r);box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden">
-    <div style="background:linear-gradient(135deg,var(--mint),var(--sky));padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:Fraunces,serif;font-size:1.1rem;font-weight:900;color:white">&#128173; Share Your Thoughts</div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:2px">Feedback, ideas, or questions</div>
-      </div>
-      <button onclick="closeFeedbackModal()" style="background:rgba(255,255,255,.2);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.95rem">&#10005;</button>
-    </div>
-    <div style="padding:20px 22px" id="feedbackFormWrap">
-      <div id="feedbackFormInner">
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin-bottom:8px">Category</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-          <button class="fbcat active" data-cat="suggestion" onclick="selectFbCat(this)">&#128161; Suggestion</button>
-          <button class="fbcat" data-cat="bug" onclick="selectFbCat(this)">&#128027; Bug</button>
-          <button class="fbcat" data-cat="praise" onclick="selectFbCat(this)">&#11088; Praise</button>
-          <button class="fbcat" data-cat="question" onclick="selectFbCat(this)">&#10067; Question</button>
-        </div>
-        <textarea id="feedbackText" placeholder="Tell us what you think&#8230;"
-          style="width:100%;min-height:90px;padding:10px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;color:var(--ink);background:var(--white);resize:vertical;outline:none;box-sizing:border-box;line-height:1.5"></textarea>
-        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3);margin:10px 0 6px">Reply email (optional)</div>
-        <input type="email" id="feedbackEmail" placeholder="so we can reply"
-          style="width:100%;padding:9px 12px;border-radius:var(--rs);border:2px solid rgba(26,26,46,.12);font-size:.85rem;font-family:sans-serif;color:var(--ink);background:var(--white);outline:none;box-sizing:border-box"/>
-        <div id="feedbackErr" style="color:var(--coral);font-size:.75rem;min-height:16px;margin-top:4px"></div>
-        <button onclick="submitFeedback()" style="width:100%;margin-top:12px;padding:12px;background:var(--violet);color:white;border:none;border-radius:var(--rs);font-size:.9rem;font-weight:700;cursor:pointer;font-family:sans-serif">Send Feedback &#8594;</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-
-</script>
-  
-</head>
-<body>
-
-<!-- ═══════════ AUTH SCREEN ═══════════ -->
-<div id="authScreen" class="screen active">
-  <div class="auth-box">
-    <div class="auth-hero">
-      <div class="auth-logo">Word<span>Root</span> Academy</div>
-      <div class="auth-tagline">Master etymology, unlock vocabulary, think deeply</div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
-        <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
-      </div>
-    </div>
-    <div class="auth-body">
-      <div id="authErr" class="auth-err"></div>
-
-      <!-- ── LOGIN ── -->
-      <form id="loginForm" onsubmit="doLogin();return false" autocomplete="on">
-
-        <div class="field">
-          <label for="loginEmail">Email address</label>
-          <input type="email" id="loginEmail" name="username"
-            autocomplete="username"
-            placeholder="you@example.com"
-            onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"/>
-        </div>
-
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" name="password"
-            autocomplete="current-password"
-            placeholder="Your password"
-            onkeydown="if(event.key==='Enter')doLogin()"/>
-        </div>
-
-        <!-- Save email + Stay signed in -->
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="saveUserId" name="saveUserId"
-              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"
-              onchange="saveUserIdPref(this.checked)"/>
-            <span style="font-size:.78rem;color:var(--ink3)">Save my email address</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="rememberMe" name="remember"
-              style="width:15px;height:15px;cursor:pointer;accent-color:var(--violet)"/>
-            <span style="font-size:.78rem;color:var(--ink3)">Stay signed in for 30 days</span>
-          </label>
-        </div>
-
-        <button type="submit" class="auth-btn student-btn" id="loginBtn">
-          Sign In &#8594;
-        </button>
-
-        <div style="text-align:center;margin-top:12px;font-size:.78rem;color:var(--ink3)">
-          No account?
-          <a href="#" onclick="switchAuthTab('register');return false"
-            style="color:var(--violet);font-weight:600">Create one free</a>
-        </div>
-      </form>
-
-      <!-- ── GDPR privacy strip ── -->
-      <div style="margin-top:16px;padding:10px 12px;background:rgba(6,214,160,.05);
-        border:1px solid rgba(6,214,160,.18);border-radius:var(--rs);font-size:.68rem;
-        color:var(--ink3);line-height:1.55">
-        <strong style="color:var(--mint-d)">&#128274; Your privacy, guaranteed.</strong>
-        WordRoot Academy stores your data only on this device — nothing is sent to any server.
-        We collect no personal information, no analytics, and no cookies beyond what is needed
-        to keep you signed in. Your password is one-way hashed (never stored in readable form).
-        You can delete all your data at any time from Settings.
-        <a href="#" onclick="showPrivacyNote();return false"
-          style="color:var(--violet);font-weight:600">Full privacy notice</a>
-      </div>
-
-      <!-- ── REGISTER: name, email, password, role (student/parent), plan ── -->
-      <!-- ═══ REGISTER FORM ═══ -->
-      <div id="registerForm" style="display:none">
-
-        <!-- ── Your details ── -->
-        <div class="field"><label>Full Name</label>
-          <input type="text" id="regName" placeholder="Your name"/>
-        </div>
-        <div class="field"><label>Email</label>
-          <input type="email" id="regEmail" placeholder="you@example.com"/>
-        </div>
-
-
-        <!-- ── Role: Student or Parent ── -->
-        <div class="field" style="margin-bottom:14px">
-          <label style="margin-bottom:8px;display:block">I am registering as…</label>
-          <div class="role-toggle">
-            <button class="role-btn student active" id="regRoleStudent"
-              onclick="setRegRole('student',this)">📚 Student</button>
-            <button class="role-btn parent" id="regRoleParent"
-              onclick="setRegRole('parent',this)">👁 Parent / Monitor</button>
-          </div>
-          <div style="font-size:.68rem;color:var(--ink3);margin-top:6px">
-            Administrators are created by an existing admin — not via self-registration.
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════
-             STUDENT SECTION: optional parent email
-        ══════════════════════════════════════════════ -->
-        <div id="studentRegSection" style="display:block">
-          <div style="background:rgba(76,201,240,.06);border:1px solid rgba(76,201,240,.15);
-            border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
-            <div style="font-size:.75rem;font-weight:700;color:var(--sky-d);margin-bottom:8px">
-              👁 Parent / Guardian details <span style="font-weight:400;color:var(--ink3)">(optional)</span>
-            </div>
-            <div style="font-size:.72rem;color:var(--ink3);margin-bottom:10px;line-height:1.4">
-              If your parent has an account, enter their email so they can monitor your progress.
-            </div>
-            <div class="field" style="margin-bottom:0">
-              <label style="font-size:.75rem">Parent email</label>
-              <input type="email" id="regParentEmail" placeholder="parent@example.com"
-                style="font-size:.82rem;padding:8px 10px"/>
-            </div>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════════════════════
-             PARENT SECTION: child 1 (required) + child 2 (optional)
-        ══════════════════════════════════════════════ -->
-        <div id="parentRegSection" style="display:none">
-          <div style="background:rgba(255,107,107,.05);border:1px solid rgba(255,107,107,.18);
-            border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
-            <div style="font-size:.75rem;font-weight:700;color:var(--coral);margin-bottom:4px">
-              📚 Your Children's Accounts
-            </div>
-            <div style="font-size:.7rem;color:var(--ink3);margin-bottom:12px;line-height:1.4">
-              Add Child 1 now (required). Child 2 can be added now or later from your dashboard.
-              <br/>Child accounts are created automatically — they sign in with the email and
-              password you set here.
-            </div>
-
-            <!-- Child 1 — required when parent registers -->
-            <div style="margin-bottom:12px;padding:12px;background:var(--white);
-              border-radius:var(--rs);border:1.5px solid rgba(26,26,46,.08)">
-              <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;
-                letter-spacing:.7px;color:var(--coral);margin-bottom:8px">
-                Child 1 <span style="color:var(--coral);font-size:.65rem">(required)</span>
-              </div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child name</label>
-                <input type="text" id="child1Name" placeholder="Child full name"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
-              <div class="field" style="margin-bottom:8px">
-                <label style="font-size:.75rem">Child email</label>
-                <input type="email" id="child1Email" placeholder="child1@example.com"
-                  style="font-size:.82rem;padding:8px 10px"/>
-              </div>
               <div class="field" style="margin-bottom:0">
                 <label style="font-size:.75rem">Child password
                   <span style="font-weight:400;color:var(--ink3)">(they use this to sign in)</span>
@@ -1743,6 +1195,7 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
 <script>
 
+
 // ═════════════════════════════════════════════════════════════════════════════
 // WORDROOT ACADEMY · AUTH v3.0
 // A proper SaaS-style auth module. Zero legacy. Zero external dependencies.
@@ -1819,6 +1272,17 @@ function _bootstrapAdminAccount() {
   var versionKey = 'wra:auth_version';
   var storedVersion = localStorage.getItem(versionKey);
   var isNewVersion = storedVersion !== AUTH_VERSION;
+
+  // On version change: wipe ALL stale password hashes so old formats can't block login
+  if (isNewVersion) {
+    var stalePwKeys = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.startsWith('wra:pass:')) stalePwKeys.push(k);
+    }
+    stalePwKeys.forEach(function(k) { localStorage.removeItem(k); });
+    if (stalePwKeys.length) console.info('[WRA] Cleared', stalePwKeys.length, 'stale password hash(es)');
+  }
 
   _seedAdmin('dkris5777@gmail.com', 'WRAdmin#9271', 'Jai (Admin)',   isNewVersion);
   _seedAdmin('admin@wordroot.app',  'WRAdmin#4856', 'Administrator', isNewVersion);
@@ -3516,9 +2980,9 @@ function renderAdminAudit(el){
     // Student (or admin in student view) → student app
 function initStudentApp(){
   const u=A.currentUser;
-    // ── Update XP display ──
-  var sAv=document.getElementById('sAvatar'); if(sAv) sAv.textContent=u.name[0].toUpperCase();
-  var sNm=document.getElementById('sName');  if(sNm) sNm.textContent=u.name;
+  if(!u) return;
+  var sAv=document.getElementById('sAvatar'); if(sAv) sAv.textContent=(u.name||'?')[0].toUpperCase();
+  var sNm=document.getElementById('sName');  if(sNm) sNm.textContent=u.name||'Student';
   A.sessionData={roots:[],words:[],quizC:0,quizT:0,startTime:Date.now(),xp:0};
   A.usedRoots=[];A.timeLeft=1800;
   updateTimerUI();newRoot();
@@ -3897,19 +3361,17 @@ function showLoading(){
  * @param {object} r - ROOT_DATABASE entry
  */
 function setCardHeader(r){
-    // ── Update XP display ──
   _setText('rTitle',r.root);
-    // ── Update XP display ──
   _setText('rMeaning',r.meaning);
-    // ── Update XP display ──
   _setText('rOrigin',r.origin);
-    // ── Update XP display ──
   _setText('rOriginFull',r.originFull||'');
-    // ── Update XP display ──
-  document.getElementById('cardTop').setAttribute('data-emoji',r.emoji||'📖');
+  var ct=document.getElementById('cardTop');
+  if(ct) ct.setAttribute('data-emoji',r.emoji||'\u{1F4D6}');
 }
 
 async function generateRoot(fam){
+  const key = typeof ANTHROPIC_API_KEY !== 'undefined' ? ANTHROPIC_API_KEY : '';
+  if(!key){ throw new Error('No API key — using fallback'); }
   const used=A.usedRoots.slice(-50).join(', ');
   const prompt=`You are an expert etymologist. Generate ONE root word from ${fam} origin for a 17-year-old advanced learner. Do NOT use: ${used||'none'}.
 Respond ONLY with valid JSON, no markdown:
@@ -3920,8 +3382,8 @@ Include: 6-8 branches, 4-5 sentences, 2 literary quotes, 4-5 combinations. Rich,
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
   });
   const d=await resp.json();
+  if(!d.content || d.error){ throw new Error(d.error?.message || 'API error'); }
   const txt=d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    // Row: status badge, masked email, role, plan, date, action buttons
   return JSON.parse(txt);
 }
 
@@ -8365,6 +7827,7 @@ function _renderProfileSecurity(el, user) {
     + 'Your account is identified by your email address only.'
     + '</div>';
 }
+
 
 
 
