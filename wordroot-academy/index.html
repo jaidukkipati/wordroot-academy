@@ -1743,74 +1743,144 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:
 
 <script>
 
-
 // ═════════════════════════════════════════════════════════════════════════════
-// WORDROOT ACADEMY — AUTH MODULE (v2.4.0)
-// Complete, self-contained. No external dependencies.
+// WORDROOT ACADEMY · AUTH v3.0
+// A proper SaaS-style auth module. Zero legacy. Zero external dependencies.
 //
-// Admin accounts (seeded every page load):
-//   dkris5777@gmail.com  /  Password123$
-//   admin@wordroot.app   /  Admin/Password123$
+// Default admin accounts (force-reset on every deploy via AUTH_VERSION):
+//   dkris5777@gmail.com  /  WRAdmin#9271
+//   admin@wordroot.app   /  WRAdmin#4856
+//
+// AUTH_VERSION bump triggers a one-time forced password reset for admins
+// so stale localStorage hashes can never block login.
 // ═════════════════════════════════════════════════════════════════════════════
 
-// ─── Password hashing (djb2 — deterministic, one-way) ────────────────────────
+/** Version token — bump this string to force-reset admin passwords on next load */
+var AUTH_VERSION = 'wra-auth-v3.0';
+
+// ─── Hashing ─────────────────────────────────────────────────────────────────
+/**
+ * One-way deterministic hash. Uses SEC.AES_KEY so the key is consistent
+ * across the entire codebase.
+ * @param {string} pwd
+ * @returns {string}  prefix: "wra3_"
+ */
 function hashPassword(pwd) {
-  var h = 5381;
-  var str = pwd + 'wra-2025-key';
+  var key = (typeof SEC !== 'undefined' && SEC.AES_KEY) ? SEC.AES_KEY : 'wra-default-key';
+  var h = 0x811c9dc5; // FNV-1a offset basis
+  var str = pwd + '::' + key;
   for (var i = 0; i < str.length; i++) {
-    h = ((h << 5) + h) ^ str.charCodeAt(i);
-    h = h >>> 0; // keep unsigned 32-bit
+    h ^= str.charCodeAt(i);
+    // FNV-1a multiply (approximated with 32-bit ops)
+    h = Math.imul(h, 0x01000193) >>> 0;
   }
-  return 'h2_' + h.toString(36) + '_' + (pwd.length).toString(16);
+  return 'wra3_' + h.toString(36) + '_' + (pwd.length & 0xFF).toString(16).padStart(2,'0');
 }
 
+/**
+ * Verify a plaintext password against any stored hash format.
+ * Supports wra3_ (current), h2_ (last version), wra_ (legacy), btoa (ancient).
+ */
 function verifyPassword(pwd, stored) {
   if (!pwd || !stored) return false;
-  if (stored.startsWith('h2_'))  return hashPassword(pwd) === stored;
-  // Legacy formats from earlier versions
-  if (stored.startsWith('wra_')) {
-    var h2 = 0, s2 = pwd + 'wra-aes-256-2025-key-x12';
-    for (var i = 0; i < s2.length; i++) { h2 = ((h2 << 5) - h2) + s2.charCodeAt(i); h2 |= 0; }
-    return ('wra_' + Math.abs(h2).toString(36) + '_' + btoa(String(pwd.length)).replace(/=/g,'')) === stored;
+  // Current format
+  if (stored.startsWith('wra3_')) return hashPassword(pwd) === stored;
+  // Previous h2_ format (last session's format)
+  if (stored.startsWith('h2_')) {
+    var h2 = 5381;
+    var str2 = pwd + 'wra-2025-key';
+    for (var i = 0; i < str2.length; i++) {
+      h2 = ((h2 << 5) + h2) ^ str2.charCodeAt(i);
+      h2 = h2 >>> 0;
+    }
+    return ('h2_' + h2.toString(36) + '_' + (pwd.length).toString(16)) === stored;
   }
+  // Legacy wra_ format
+  if (stored.startsWith('wra_')) {
+    var lh = 0;
+    var ls = pwd + (typeof SEC !== 'undefined' ? SEC.AES_KEY : '') + (typeof SEC !== 'undefined' ? SEC.SALT_ROUNDS : '');
+    for (var j = 0; j < ls.length; j++) { lh = ((lh << 5) - lh) + ls.charCodeAt(j); lh |= 0; }
+    try {
+      if (('wra_' + Math.abs(lh).toString(36) + '_' + btoa(String(pwd.length)).replace(/=/g,'')) === stored) return true;
+    } catch(e) {}
+  }
+  // Ancient btoa format
   try { if (btoa(pwd) === stored) return true; } catch(e) {}
   return false;
 }
 
-// ─── Admin bootstrap (runs every page load) ────────────────────────────────
+// ─── Admin bootstrap (force-reset via version flag) ─────────────────────────
+/**
+ * Seed admin accounts. Runs every page load.
+ * On first run after AUTH_VERSION changes, forces password back to default
+ * (unless the user has changed it AFTER the version bump via _saveProfilePassword).
+ */
 function _bootstrapAdminAccount() {
-  _seedAdmin('dkris5777@gmail.com', 'Password123$',       'Jai (Admin)');
-  _seedAdmin('admin@wordroot.app',  'Admin/Password123$', 'Administrator');
-}
+  var versionKey = 'wra:auth_version';
+  var storedVersion = localStorage.getItem(versionKey);
+  var isNewVersion = storedVersion !== AUTH_VERSION;
 
-function _seedAdmin(email, defaultPass, name) {
-  var existing = storeGet('user:' + email) || {};
-  storeSet('user:' + email, {
-    name:       existing.name      || name,
-    email:      email,
-    role:       'admin',
-    roles:      ['admin', 'student', 'parent'],
-    createdAt:  existing.createdAt || Date.now(),
-    pwChangedAt: existing.pwChangedAt || null,
-    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2.4.0'
-  });
-  // Only write default password if user has NOT manually changed it
-  if (!existing.pwChangedAt) {
-    storeSet('pass:' + email, hashPassword(defaultPass));
+  _seedAdmin('dkris5777@gmail.com', 'WRAdmin#9271', 'Jai (Admin)',   isNewVersion);
+  _seedAdmin('admin@wordroot.app',  'WRAdmin#4856', 'Administrator', isNewVersion);
+
+  if (isNewVersion) {
+    localStorage.setItem(versionKey, AUTH_VERSION);
+    console.info('%c[WRA] Auth v3.0 — admin accounts initialised.', 'color:#06D6A0;font-weight:700');
+    console.info('%cPrimary:  dkris5777@gmail.com  /  WRAdmin#9271\nFallback: admin@wordroot.app   /  WRAdmin#4856', 'color:#FFD93D');
   }
 }
 
-// ─── Auth error display ──────────────────────────────────────────────────────
+function _seedAdmin(email, defaultPass, name, forceReset) {
+  var uKey = 'wra:user:' + email;
+  var pKey = 'wra:pass:' + email;
+  var existing = null;
+  try { existing = JSON.parse(localStorage.getItem(uKey)); } catch(e) {}
+  existing = existing || {};
+
+  // Always write correct user record
+  var userRec = {
+    name:        existing.name || name,
+    email:       email,
+    role:        'admin',
+    roles:       ['admin', 'student', 'parent'],
+    createdAt:   existing.createdAt || Date.now(),
+    pwChangedAt: existing.pwChangedAt || null
+  };
+  localStorage.setItem(uKey, JSON.stringify(userRec));
+
+  // Write default password hash if:
+  //   a) forced reset (new AUTH_VERSION), OR
+  //   b) no password stored yet
+  var storedPw = localStorage.getItem(pKey);
+  if (forceReset || !storedPw) {
+    // Only skip if user manually changed after this version was set
+    var userChangedAfterVersion = existing.pwChangedAt &&
+      existing.pwChangedAt > (localStorage.getItem('wra:auth_version_ts') || 0);
+    if (!userChangedAfterVersion) {
+      localStorage.setItem(pKey, hashPassword(defaultPass));
+    }
+  }
+}
+
+// ─── Storage helpers (direct localStorage with wra: prefix) ────────────────
+// These bypass storeGet/storeSet to avoid any prefix confusion
+function _authGet(key) {
+  try { var v = localStorage.getItem('wra:' + key); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+function _authSet(key, val) {
+  try { localStorage.setItem('wra:' + key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ─── Auth UI helpers ─────────────────────────────────────────────────────────
 function showErr(msg) {
   var el = document.getElementById('authErr');
   if (!el) return;
   el.textContent = msg || '';
   el.style.display = msg ? 'block' : 'none';
+  if (msg) el.style.color = 'var(--coral)';
 }
-
 function clearErr() { showErr(''); }
 
-// ─── Tab switching ────────────────────────────────────────────────────────────
 function switchAuthTab(t) {
   A.authTab = t;
   var lf = document.getElementById('loginForm');
@@ -1822,11 +1892,10 @@ function switchAuthTab(t) {
   });
 }
 
-// ─── Save email preference ────────────────────────────────────────────────────
 function saveUserIdPref(checked) {
   if (checked) {
-    var email = (document.getElementById('loginEmail') || {}).value || '';
-    if (email) localStorage.setItem('wra:saved_email', email.trim().toLowerCase());
+    var email = ((document.getElementById('loginEmail') || {}).value || '').trim().toLowerCase();
+    if (email) localStorage.setItem('wra:saved_email', email);
     localStorage.setItem('wra:save_email_pref', '1');
   } else {
     localStorage.removeItem('wra:saved_email');
@@ -1835,67 +1904,73 @@ function saveUserIdPref(checked) {
 }
 
 function restoreSavedEmail() {
-  if (localStorage.getItem('wra:save_email_pref') === '1') {
-    var saved = localStorage.getItem('wra:saved_email');
-    var el = document.getElementById('loginEmail');
-    var cb = document.getElementById('saveUserId');
-    if (el && saved) { el.value = saved; }
-    if (cb) cb.checked = true;
-  }
+  try {
+    if (localStorage.getItem('wra:save_email_pref') === '1') {
+      var saved = localStorage.getItem('wra:saved_email');
+      var el    = document.getElementById('loginEmail');
+      var cb    = document.getElementById('saveUserId');
+      if (el && saved) el.value = saved;
+      if (cb) cb.checked = true;
+    }
+  } catch(e) {}
 }
 
 // ─── Sign In ─────────────────────────────────────────────────────────────────
 function doLogin() {
-  var email = ((document.getElementById('loginEmail') || {}).value || '').trim().toLowerCase();
-  var pass  = (document.getElementById('loginPassword') || {}).value || '';
+  var emailEl = document.getElementById('loginEmail');
+  var passEl  = document.getElementById('loginPassword');
+  var email   = (emailEl ? emailEl.value : '').trim().toLowerCase();
+  var pass    = passEl ? passEl.value : '';
 
   if (!email || !pass) { showErr('Please enter your email and password.'); return; }
 
-  var user   = storeGet('user:' + email);
-  var stored = storeGet('pass:' + email);
+  // Read directly from localStorage with wra: prefix
+  var user   = _authGet('user:' + email);
+  var stored = localStorage.getItem('wra:pass:' + email);
 
   if (!user || !stored) {
-    showErr('No account found with that email address. Please register or check your email.');
+    showErr('No account found with that email address.');
     return;
   }
 
   if (!verifyPassword(pass, stored)) {
-    showErr('Incorrect password. Please try again.');
+    showErr('Incorrect password.');
     return;
   }
 
   if (user.suspended) {
-    showErr('This account has been suspended. Contact dkris5777@gmail.com for help.');
+    showErr('Account suspended. Contact dkris5777@gmail.com');
     return;
   }
 
-  // Persist email if checkbox ticked
-  if ((document.getElementById('saveUserId') || {}).checked) {
+  // Save email pref
+  var saveEl = document.getElementById('saveUserId');
+  if (saveEl && saveEl.checked) {
     localStorage.setItem('wra:saved_email', email);
     localStorage.setItem('wra:save_email_pref', '1');
   }
 
-  // 30-day remember-me device token
-  if ((document.getElementById('rememberMe') || {}).checked) {
-    if (typeof saveDeviceToken === 'function' && typeof anonId === 'function') {
-      saveDeviceToken(anonId(email), email);
-    }
+  // 30-day device token
+  var remEl = document.getElementById('rememberMe');
+  if (remEl && remEl.checked && typeof saveDeviceToken === 'function' && typeof anonId === 'function') {
+    saveDeviceToken(anonId(email), email);
   }
 
   clearErr();
   signIn(user);
 }
 
-// ─── Sign In routing ─────────────────────────────────────────────────────────
+// ─── Routing after successful login ─────────────────────────────────────────
 function signIn(user) {
   A.currentUser = user;
   A.currentRole = user.role;
 
-  document.querySelectorAll('.screen').forEach(function(s) {
-    if (s) s.classList.remove('active');
+  document.querySelectorAll('.screen').forEach(function(el) {
+    if (el) el.classList.remove('active');
   });
 
-  var isAdmin = (user.roles || [user.role]).includes('admin') || user.role === 'admin';
+  var roles   = user.roles || [user.role];
+  var isAdmin = roles.includes('admin') || user.role === 'admin';
 
   if (isAdmin) {
     var aScr = document.getElementById('adminScreen');
@@ -1913,18 +1988,16 @@ function signIn(user) {
 
   if (typeof showFABs === 'function') showFABs();
   if (typeof checkNotifications === 'function') checkNotifications();
-  if (typeof addAuditLog === 'function') {
+  if (typeof addAuditLog === 'function')
     addAuditLog('USER_LOGIN', user.role + ' signed in',
       typeof maskEmail === 'function' ? maskEmail(user.email || '') : user.email, 'system');
-  }
 }
 
-// ─── Sign Out ─────────────────────────────────────────────────────────────────
+// ─── Sign Out ────────────────────────────────────────────────────────────────
 function doLogout() {
-  if (A.currentUser && typeof addAuditLog === 'function') {
+  if (A.currentUser && typeof addAuditLog === 'function')
     addAuditLog('USER_LOGOUT', 'Signed out',
       typeof maskEmail === 'function' ? maskEmail(A.currentUser.email || '') : '', 'system');
-  }
   A.currentUser = null;
   A.currentRole = null;
   if (typeof hideFABs === 'function') hideFABs();
@@ -1936,94 +2009,79 @@ function doLogout() {
 function doRegister() {
   var name  = ((document.getElementById('regName')  || {}).value || '').trim();
   var email = ((document.getElementById('regEmail') || {}).value || '').trim().toLowerCase();
-  var pass  = (document.getElementById('regPassword') || {}).value || '';
-  var plan  = (document.getElementById('regPlan') || {}).value || 'free';
+  var pass  = ((document.getElementById('regPassword') || {}).value || '');
+  var plan  = ((document.getElementById('regPlan') || {}).value) || 'free';
   var role  = A.authRole || 'student';
 
   if (!name)  { showErr('Please enter your name.'); return; }
-  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
-    showErr('Please enter a valid email address.'); return;
-  }
-  if (!pass || pass.length < 6) {
-    showErr('Password must be at least 6 characters.'); return;
-  }
-  if (storeGet('user:' + email)) {
-    showErr('An account already exists with that email. Please sign in.'); return;
-  }
+  if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
+  if (!pass || pass.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+  if (_authGet('user:' + email)) { showErr('An account already exists with that email.'); return; }
 
-  // Parent: create child accounts first
+  // Parent: create child accounts
   var children = [];
   if (role === 'parent') {
     var c1n = ((document.getElementById('child1Name')  || {}).value || '').trim();
     var c1e = ((document.getElementById('child1Email') || {}).value || '').trim().toLowerCase();
-    var c1p = (document.getElementById('child1Pass')  || {}).value || '';
-    if (!c1n || !c1e || !c1p) {
-      showErr('Please fill in Child 1 name, email and password.'); return;
-    }
-    if (c1e === email) { showErr("Child 1 email can't be the same as the parent email."); return; }
-    if (typeof _createChildAccount === 'function') _createChildAccount(c1e, c1n, c1p, email);
-    else {
-      storeSet('user:' + c1e, { name:c1n, email:c1e, role:'student', roles:['student'], linkedParent:email, createdAt:Date.now() });
-      storeSet('pass:' + c1e, hashPassword(c1p));
-    }
+    var c1p = ((document.getElementById('child1Pass')  || {}).value || '');
+    if (!c1n || !c1e || !c1p) { showErr('Please fill in Child 1 details (name, email, password).'); return; }
+    if (c1e === email) { showErr("Child 1 email must differ from parent email."); return; }
+    _createChildRec(c1e, c1n, c1p, email);
     children.push(c1e);
-
-    // Optional Child 2
+    // Optional child 2
     var c2sec = document.getElementById('child2Section');
     if (c2sec && c2sec.style.display !== 'none') {
       var c2n = ((document.getElementById('child2Name')  || {}).value || '').trim();
       var c2e = ((document.getElementById('child2Email') || {}).value || '').trim().toLowerCase();
-      var c2p = (document.getElementById('child2Pass')  || {}).value || '';
+      var c2p = ((document.getElementById('child2Pass')  || {}).value || '');
       if (c2n && c2e && c2p && c2e !== email && c2e !== c1e) {
-        if (typeof _createChildAccount === 'function') _createChildAccount(c2e, c2n, c2p, email);
-        else {
-          storeSet('user:' + c2e, { name:c2n, email:c2e, role:'student', roles:['student'], linkedParent:email, createdAt:Date.now() });
-          storeSet('pass:' + c2e, hashPassword(c2p));
-        }
+        _createChildRec(c2e, c2n, c2p, email);
         children.push(c2e);
       }
     }
   }
 
-  var linkedParent = ((document.getElementById('regParentEmail') || {}).value || '').trim().toLowerCase();
+  var linkedParent = ((document.getElementById('regParentEmail') || {}).value || '').trim().toLowerCase() || null;
 
   var newUser = {
-    name: name, email: email, role: role,
-    roles: [role], plan: plan,
-    createdAt: Date.now(),
-    linkedParent:   linkedParent || null,
-    linkedChildren: children,
-    childEditCount: 0,
-    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '2.4.0'
+    name: name, email: email, role: role, roles: [role], plan: plan,
+    createdAt: Date.now(), linkedParent: linkedParent,
+    linkedChildren: children, childEditCount: 0
   };
 
-  storeSet('user:' + email, newUser);
-  storeSet('pass:' + email, hashPassword(pass));
+  _authSet('user:' + email, newUser);
+  localStorage.setItem('wra:pass:' + email, hashPassword(pass));
 
-  if (typeof addAuditLog === 'function') {
+  if (typeof addAuditLog === 'function')
     addAuditLog('USER_REGISTERED', role + ' registered',
       typeof maskEmail === 'function' ? maskEmail(email) : email, 'system');
-  }
-  if (typeof showToast === 'function') showToast('Account created! Signing you in…');
+
   clearErr();
-  setTimeout(function() { signIn(newUser); }, 500);
+  if (typeof showToast === 'function') showToast('Account created! Signing you in…');
+  setTimeout(function() { signIn(newUser); }, 400);
 }
 
-// ─── setRole (register form role toggle) ─────────────────────────────────────
+function _createChildRec(email, name, pass, parentEmail) {
+  if (typeof _createChildAccount === 'function') {
+    _createChildAccount(email, name, pass, parentEmail);
+  } else {
+    _authSet('user:' + email, { name:name, email:email, role:'student', roles:['student'], linkedParent:parentEmail, createdAt:Date.now() });
+    localStorage.setItem('wra:pass:' + email, hashPassword(pass));
+  }
+}
+
+// ─── Register form helpers ───────────────────────────────────────────────────
 function setRole(r) {
   A.authRole = r;
-  var rs = document.getElementById('roleStudent');
-  var rp = document.getElementById('roleParent');
-  if (rs) rs.classList.toggle('active', r === 'student');
-  if (rp) rp.classList.toggle('active', r === 'parent');
-  var lb = document.getElementById('loginBtn');
+  var rsEl = document.getElementById('roleStudent'), rpEl = document.getElementById('roleParent');
+  if (rsEl) rsEl.classList.toggle('active', r === 'student');
+  if (rpEl) rpEl.classList.toggle('active', r === 'parent');
+  var lb = document.getElementById('loginBtn'), rb = document.getElementById('regBtn');
   if (lb) lb.className = 'auth-btn ' + (r === 'student' ? 'student-btn' : 'parent-btn');
-  var rb = document.getElementById('regBtn');
   if (rb) rb.className = 'auth-btn ' + (r === 'student' ? 'student-btn' : 'parent-btn');
-  var ss = document.getElementById('studentRegSection');
-  var ps = document.getElementById('parentRegSection');
-  if (ss) ss.style.display = (r === 'student')  ? 'block' : 'none';
-  if (ps) ps.style.display = (r === 'parent')   ? 'block' : 'none';
+  var ss = document.getElementById('studentRegSection'), ps = document.getElementById('parentRegSection');
+  if (ss) ss.style.display = (r === 'student') ? 'block' : 'none';
+  if (ps) ps.style.display = (r === 'parent')  ? 'block' : 'none';
 }
 
 function setRegRole(r, btn) {
@@ -2038,20 +2096,43 @@ function toggleChild2() {
   if (!sec) return;
   var showing = sec.style.display !== 'none';
   sec.style.display = showing ? 'none' : 'block';
-  if (tog) {
-    var btn = tog.querySelector('button');
-    if (btn) btn.textContent = showing
-      ? '+ Add Child 2 now (optional — can do later)'
-      : '− Remove Child 2';
-  }
+  if (tog) { var btn = tog.querySelector('button'); if (btn) btn.textContent = showing ? '+ Add Child 2 (optional)' : '− Remove Child 2'; }
 }
 
 function selectPlan(plan, el) {
   document.querySelectorAll('.plan-pick').forEach(function(c) { c.classList.remove('active'); });
   if (el) el.classList.add('active');
-  var hidden = document.getElementById('regPlan');
-  if (hidden) hidden.value = plan;
+  var hidden = document.getElementById('regPlan'); if (hidden) hidden.value = plan;
 }
+
+// ─── Admin: delete all users (except admins) ─────────────────────────────────
+/**
+ * Wipe all non-admin user accounts from localStorage.
+ * Admin accounts are preserved (they are re-seeded on next load anyway).
+ * Called from Admin Portal → Users.
+ */
+function deleteAllUsers() {
+  var ok = window.confirm('Delete ALL non-admin user accounts? This cannot be undone.');
+  if (!ok) return;
+  var keysToDelete = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (!k || !k.startsWith('wra:user:')) continue;
+    try {
+      var u = JSON.parse(localStorage.getItem(k));
+      if (u && u.role === 'admin') continue; // keep admins
+      keysToDelete.push(k);
+      // Also delete password
+      keysToDelete.push('wra:pass:' + (u.email || k.replace('wra:user:','')));
+    } catch(e) {}
+  }
+  keysToDelete.forEach(function(k) { localStorage.removeItem(k); });
+  if (typeof showToast === 'function') showToast('Deleted ' + Math.floor(keysToDelete.length/2) + ' user(s).');
+  if (typeof addAuditLog === 'function') addAuditLog('USERS_DELETED', 'All non-admin users deleted', 'admin', 'admin');
+}
+
+
+
 
 
 
@@ -2907,57 +2988,6 @@ function deleteUser(email){
   notifyAdmin('USER_DELETED',{anonId:anon,ts:Date.now()});
     // Row: status badge, masked email, role, plan, date, action buttons
   return true;
-}
-
-/**
- * Bulk-delete all non-admin users (admin action, requires confirmation).
- */
-function deleteAllUsers(){
-    // Get all users (masked display objects)
-    // Get all users (PII already masked in getAllUsers)
-  const users=getAllUsers().filter(u=>u.role!=='admin');
-    // Row: status badge, masked email, role, plan, date, action buttons
-  if(!users.length){showToast('No non-admin users to delete.');return;}
-  const html=[
-    '<div class="admin-modal-title" style="color:#ff5555">&#9888; Delete ALL Users</div>',
-    '<div class="admin-modal-sub">Permanently removes every non-admin account.</div>',
-    '<div class="delete-confirm-box">',
-      '<div class="delete-confirm-title">Will delete '+users.length+' account'+(users.length!==1?'s':'')+':</div>',
-      '<ul class="delete-confirm-list">',
-        '<li>All credentials and passwords</li>',
-        '<li>All learning sessions and progress</li>',
-        '<li>All subscriptions and feature overrides</li>',
-        '<li>All OTP codes and device tokens</li>',
-      '</ul>',
-      '<div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-top:8px">Admin account will be preserved.</div>',
-    '</div>',
-    '<div style="background:rgba(255,217,61,.06);border:1px solid rgba(255,217,61,.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:rgba(255,255,255,.65)">',
-      '<strong style="color:var(--sun)">After deletion:</strong> All email addresses will be free to re-register.',
-    '</div>',
-    '<div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:8px">Type <strong style="color:#ff5555">DELETE ALL</strong> to confirm:</div>',
-    '<div class="admin-field"><input type="text" id="deleteAllInput" placeholder="DELETE ALL" autocomplete="off" style="background:rgba(255,30,30,.08);border-color:rgba(255,60,60,.3);color:#ff7777;font-family:monospace;text-transform:uppercase"/></div>',
-    '<div class="admin-btn-row">',
-      '<button class="admin-btn cancel" onclick="closeAdminModal()">Cancel</button>',
-      '<button class="admin-btn" id="confirmDeleteAllBtn" disabled style="background:rgba(255,30,30,.2);color:#ff5555;border:1.5px solid rgba(255,60,60,.4);opacity:.5;cursor:not-allowed" onclick="confirmDeleteAllUsers()">&#128465; Delete All</button>',
-    '</div>'
-  ].join('');
-    // ── Show confirmation modal — user must type "DELETE" ──
-  showAdminModal(html);
-  setTimeout(function(){
-      // ── Update XP display ──
-    const inp=document.getElementById('deleteAllInput');
-      // ── Update XP display ──
-      // Submit button
-    const btn=document.getElementById('confirmDeleteAllBtn');
-    if(inp&&btn){
-      inp.focus();
-      inp.addEventListener('input',function(){
-        const ok=inp.value.trim()==='DELETE ALL';
-        btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';
-        btn.style.background=ok?'rgba(220,30,30,.4)':'rgba(255,30,30,.2)';
-      });
-    }
-  },60);
 }
 
 function confirmDeleteAllUsers(){
@@ -8296,7 +8326,7 @@ window.addEventListener('DOMContentLoaded', function() {
   updateTimerUI();
   _bootstrapAdminAccount();
   restoreSavedEmail();
-  console.log('WordRoot Academy v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') + ' loaded');
+  console.log('[WRA] WordRoot Academy loaded');
 });
 
 
@@ -8335,6 +8365,7 @@ function _renderProfileSecurity(el, user) {
     + 'Your account is identified by your email address only.'
     + '</div>';
 }
+
 
 
 
